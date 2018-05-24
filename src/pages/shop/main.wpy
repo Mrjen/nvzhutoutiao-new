@@ -1,0 +1,18 @@
+<template>
+<view class="shop"></view>
+</template>
+
+<script>
+import wepy from 'wepy';
+export default class shop extends wepy.page {
+  config={
+    navigationBarTitleText:'积分商城'
+  }
+  data = {}
+  methos={}
+}
+</script>
+
+<style lang="less" scoped>
+
+</style>

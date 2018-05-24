@@ -1,0 +1,128 @@
+<template>
+   <div class="like-list">
+    <view wx:if="{{commentList.length?true:false}}">
+        <div class="comm-item" wx:for="{{commentList}}" wx:key="{{index}}">
+            <view class="time">{{item.date}}</view>
+            <view class="in-item" wx:for="{{item.list}}" wx:for-item="list" wx:key="list.article_id" @tap="toDetail({{list.article_id}})">
+            <view class="item-left">
+                <view class="title">{{list.comment}}</view>
+                <view class="info">
+                #{{list.title}}
+                </view>
+            </view>
+            </view>
+        </div>
+    </view>
+    <view wx:else class="none-more">
+       暂无数据
+    </view>
+
+  </div>
+</template>
+
+<script>
+import wepy from 'wepy';
+import wxRequest from "../../utils/http.js";
+import api from "../../utils/api.js";
+import commItem from './components/comment-item';
+export default class commentList extends wepy.page {
+  config = {
+     "navigationBarTitleText":"评论列表"
+  }
+   data = {
+     commentList:[],
+     page: 2
+   }
+   components = {
+    commItem
+  }
+  async onShow(){
+     let commentList = await this.getList(1,'comment');
+     if(commentList.data.code === api.STATUS){
+       this.commentList = commentList.data.data;
+       this.$apply();
+     }else{
+       console.warn('请求错误',commentList);
+     }
+     
+  }
+  methods = {
+    toDetail(id){
+      wx.navigateTo({
+        url: '../details/main?id=' + id
+      })
+    }
+  }
+
+  async getList(page,type='comment'){
+     let list =  wxRequest(api.userCommentList,{ page: page, type: type },'POST')
+     return list;
+  }
+
+  async onReachBottom(){
+    console.log('到底了')
+     let list = await this.getList(this.page, 'comment')
+     if(list.data.code === api.STATUS){
+        if(list.data.data.length>0){
+           let commentList = this.commentList;
+           this.commentList = [...commentList,...list.data.data];
+           this.page++;
+           this.$apply();
+        }
+     }
+  }
+}
+</script>
+
+<style lang="less" scoped>
+.like-list{
+   .list-item{
+     width: 100%;
+     box-sizing: border-box;
+   }
+   .time{
+     height: 50rpx;
+     background: #eee;
+     font-size: 22rpx;
+     line-height: 50rpx;
+     color:#9f9f9f;
+     padding:0 10rpx;
+   }
+   .in-item{
+     display: flex;
+     align-items: center;
+     min-height: 120rpx;
+     padding:20rpx;
+     position: relative;
+   }
+   .in-item::after{
+     content: '';
+     display: block;
+     width: 100%;
+     border-bottom: 1px solid rgba(0, 0, 0, .1);
+     position: absolute;
+     left: 0;
+     bottom: 0;
+     transform: scaleY(.5);
+   }
+   .item-left{
+     flex: 1;
+     padding-right: 14rpx;
+     display: flex;
+     flex-direction: column;
+     justify-content: space-around;
+     .title{
+       font-size: 28rpx;
+     }
+     .info{
+       display: flex;
+       justify-content: space-between;
+       font-size: 24rpx;
+       color: #666;
+       margin-top: 10rpx;
+     }
+    
+   }
+}
+</style>
+

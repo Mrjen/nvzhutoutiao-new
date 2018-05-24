@@ -1,0 +1,335 @@
+<template>
+  <div class="chart-room">
+    <view class="chatRoom">
+        <!-- 时间信息 -->
+        <!-- <view v-if="item.who==0" class="timeInfo">
+          <view class="readBg timeDate">
+            <view>{{item.date}}</view>
+            <view>{{item.time}}</view>
+          </view>
+        </view> -->
+        <view class="chart-list" wx:for="{{msgList}}" wx:key="{{item.id}}">
+          <!-- <view class="time">{{}}</view> -->
+          <view class="mySay" wx:if="{{item.is_self===0?false:true}}">
+            <image src="{{item.avatarUrl}}" class="myPotrait" />
+            <view>
+              <view class="readBg  flex_reverse">
+                <view class="talkName">{{item.nickName}}</view>
+                <image class="gender" wx:if="{{item.gender==2?true:false}}" src="../image/girl.png" />
+                <image class="gender" wx:if="{{item.gender==1}}" src="../image/boy.png" />
+                <view wx:if="{{item.owner}}" class="floorHost">楼主</view>
+              </view>
+              <view class="myPotraitContent">
+                {{item.msg}}
+              </view>
+            </view>
+          </view>
+          <!-- 别人说的消息 -->
+          <view wx:if="{{item.is_self===0?true:false}}" class="say">
+            <image src="{{item.avatarUrl}}" class="potrait" />
+            <view>
+              <view class="readBg">
+                <view class="talkName">{{item.nickName}}</view>
+                <image class="gender" wx:if="{{item.gender==2?true:false}}" src="../image/girl.png" />
+                <image class="gender" wx:if="{{item.gender==1?true:false}}" src="../image/boy.png" />
+                <!-- <view v-if="item.owner" class="floorHost">楼主</view> -->
+              </view>
+              <view class="potraitContent">
+                {{item.msg}}
+              </view>
+            </view>
+          </view>
+        </view>
+        <view class="zhanwei"></view>
+    </view>
+
+  <!-- 评论输入 -->
+    <view class="writeBg">
+        <textarea  placeholder="{{inputPlaceholder}}"
+                  auto-height="true"
+                  fixed="true"
+                  cursor-spacing="20"
+                  @confirm="addComment"
+                  @input="inputComment"
+                  confirm-type="send"
+                  value="{{inputValue}}" 
+                  placeholder-style="color:#999"
+                  class="inputRedict"/>
+    </view>
+
+  </div>
+</template>
+
+
+<script>
+import wepy from 'wepy';
+import wxRequest from "../../utils/http.js";
+import api from "../../utils/api.js";
+import utils from '../../utils/utils';
+export default class messageDetail extends wepy.page{
+  config = {
+     "navigationBarTitleText":"私聊"
+  }
+  data = {
+    msgList: [],
+    commContent: '',
+    reid: '',
+    inputPlaceholder: '',
+    scrollTop: 0,
+    user_id:'',
+    inputValue:'',
+    timer: null,        // 心跳定时器
+    page: 2
+  }
+  async onLoad(options){
+    console.log(options);
+    let that = this;
+    this.user_id = options.user_id;
+    await utils.getToken();
+    setTimeout(()=>{
+      wx.pageScrollTo({
+          scrollTop: 99999,
+          duration: 500
+      })
+    },100)
+  }
+
+  onShow(){
+      let that = this;
+      let obj = {user_id: wx.getStorageSync('myid'), accept_id: that.user_id};
+      wx.connectSocket({
+        url: 'wss://nvzhu.zealcdn.cn/ws',
+        data: obj,
+        header:{ 'content-type': 'application/json'},
+        protocols: ['protocol1'],
+        method:"GET",
+        success(res){
+            console.log(res)
+        }
+    })
+    wx.onSocketOpen(function(res) {
+      console.log('WebSocket连接已打开！');
+      let obj = {user_id: wx.getStorageSync('myid'), accept_id: that.user_id};
+       wx.sendSocketMessage({
+            data:JSON.stringify(obj),
+            success(res){
+                console.log('发送user_id', res)
+            }
+        })
+      let timer = setInterval(()=>{
+         wx.sendSocketMessage({
+            data:'84ddfb34126fc3a48ee38d7044e87276'
+         })
+      },50000);
+      that.timer = timer;
+      that.$apply();
+    })
+
+    wx.sendSocketMessage({
+        data:JSON.stringify({user_id: wx.getStorageSync('myid'), accept_id: that.user_id}),
+        success(res){
+            typeof cb == 'function'&&cb(res)
+        }
+    })
+
+    wx.onSocketClose(function(res) {
+      console.log('WebSocket 已关闭！');
+      if(that.timer){
+        clearInterval(that.timer);
+      }
+    })
+    
+    // 收到服务器消息
+    wx.onSocketMessage(function(res) {
+      //  console.log('收到服务器内容：' + res.data)
+       let oldMsgList = that.msgList;
+       try {
+         let json = JSON.parse(res.data);
+         console.log('json',json);
+         let newArr = [];
+         let list = json.list;
+         console.log('list',list);
+        //  console.log('myid',wx.getStorageSync('myid'), 'user_id',that.user_id);
+         list.map(el=>{
+           if(el.user_id==wx.getStorageSync('myid')||el.user_id==that.user_id){
+               newArr.push(el);
+           }
+         });
+          // 把原来的数据置空
+         if(json.page===1) oldMsgList = [];
+         
+         if(json.is_hostory===1){
+            that.msgList = [...newArr,...oldMsgList];
+         }else{
+            that.msgList = [...oldMsgList,...newArr];
+         }
+         that.$apply();
+         if(json.is_hostory!=1){
+           setTimeout(() => {
+              wx.pageScrollTo({
+                  scrollTop: 99999,
+                  duration: 50
+              })
+            }, 50);
+         }
+         
+       } catch (error) {
+           console.warn('数据格式不对无法解析',res.data);
+       }
+    })
+  }
+
+  async getMsgList(page=1){
+    console.log(this.commContent)
+      let msg = await wxRequest(api.systemMsgDetail, {reid: this.reid,page:page}, 'POST')
+    if(msg.data.code === api.STATUS){
+      console.log('msg',msg)
+      this.commList = msg.data.data;
+      this.$apply();
+    }
+  }
+
+  // 加载聊天记录
+  onPullDownRefresh(){
+     console.log('加载聊天记录');
+     let that = this;
+     let _data = { page:this.page, user_id: wx.getStorageSync('myid'), accept_id: that.user_id }
+     wx.sendSocketMessage({
+       data:JSON.stringify(_data),
+       success(res){
+         console.log('加载聊天记录',res)
+          that.page++;
+          that.$apply();
+          wx.stopPullDownRefresh()
+       }
+     })
+  }
+
+  methods ={
+    // 发送消息
+    addComment(e){
+      let that = this;
+      let content = e.detail.value;
+      if(!content) return;
+      let _data = { accept_id: this.user_id,message: content };
+      console.log('_data',_data)
+      wx.sendSocketMessage({
+        data:JSON.stringify(_data),
+        success(res){
+            console.log('发送消息成功', res);
+            that.inputValue = '';
+            that.$apply();
+            setTimeout(()=>{
+               wx.pageScrollTo({
+                  scrollTop: 99999,
+                  duration: 800
+               },20)
+            })
+            
+        }
+      })
+    },
+    inputComment(e){
+        this.inputValue = e.detail.value;
+        this.$apply();
+    }
+  }
+}
+
+</script>
+
+<style lang="less" scoped>
+  .chatRoom {
+    padding: 40rpx 20rpx 0 20rpx;
+    box-sizing: border-box;
+  }
+
+  .say {
+    display: flex;
+    margin-bottom: 50rpx;
+  }
+
+  .mySay {
+    display: flex;
+    margin-bottom: 50rpx;
+    flex-direction: row-reverse;
+  }
+
+  .zhanwei{
+      width: 550rpx;
+      height: 250rpx;
+  }
+
+  .timeInfo {
+    font-size: 20rpx;
+    color: #FFFFFF;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 50rpx;
+  }
+
+  .timeDate {
+    padding: 8rpx 25rpx;
+    background-color: #E7E0F0;
+    border-radius: 10rpx;
+  }
+
+  .talkName {
+    font-size: 30rpx;
+    color: #999999;
+
+  }
+
+  .potrait {
+    width: 100rpx;
+    height: 100rpx;
+    border-radius: 50%;
+    margin-right: 30rpx;
+  }
+
+  .myPotrait {
+    width: 100rpx;
+    height: 100rpx;
+    border-radius: 50%;
+    margin-left: 30rpx;
+  }
+
+  .floorHost {
+    background-color: #F8B551;
+    color: #FEFEFE;
+    font-size: 20rpx;
+    padding: 5rpx 14rpx;
+    border-radius: 10rpx;
+  }
+
+  .potraitContent {
+    margin-top: 24rpx;
+    border-top-right-radius: 20rpx;
+    border-bottom-left-radius: 20rpx;
+    border-bottom-right-radius: 20rpx;
+    border: 1rpx solid #E5E5E5;
+    background-color: #FFFFFF;
+    color: #333333;
+    font-size: 30rpx;
+    padding: 25rpx 35rpx;
+    max-width: 420rpx;
+  }
+
+  .myPotraitContent {
+    margin-top: 24rpx;
+    border-top-left-radius: 20rpx;
+    border-bottom-left-radius: 20rpx;
+    border-bottom-right-radius: 20rpx;
+    background-color: #00C921;
+    color: #FFFFFF;
+    font-size: 30rpx;
+    padding: 25rpx 35rpx;
+    max-width: 420rpx;
+  }
+
+  .flex_reverse {
+    flex-direction: row-reverse;
+  }
+</style>
+

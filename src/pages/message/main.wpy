@@ -1,0 +1,518 @@
+<template>
+   <div class="message">   
+    <!-- 导航 -->
+    <view class="nav">
+      <form wx:for="{{nav}}" 
+            wx:key="{{item.id}}" 
+            report-submit="true" 
+            bindsubmit="changeNav" 
+            data-idx="{{index}}">
+         <button class="btn-item btn-item{{index+1}}  {{item.active?'btn-active':''}}" 
+          wx:if="{{item.show}}"
+         formType="submit">{{item.text}}<text wx:if="{{item.msgNum>0}}" class="btn-dian"></text></button>
+      </form>
+    </view>
+
+    <!-- 信息列表 -->
+    <view class="msg-list">
+      <block>
+       <view wx:if="{{currentList=='sys'?true:false}}" class="notice">
+          <view class="item-block" 
+                wx:for="{{noticeList}}" 
+                wx:key="{{item.id}}">
+             <view class="notice-item {{item.is_read==1?'':'no_read'}}"
+                   @touchstart="touchS" 
+                   @touchmove="touchM" 
+                   data-index="{{index}}"
+                   data-infoid="{{item.inform_id}}"
+                   @touchend="touchE"  
+                   @tap="toDetail" 
+                   data-type="{{item.type}}"
+                   data-aid="{{item.article_id}}" 
+                   data-uid="{{item.user_id}}"
+                   data-reid="{{item.reid}}"
+                   style="{{item.txtStyle}}">
+                <view class="avatar">
+                  <image src="{{item.avatarUrl}}" mode="widthFix"/>
+                </view>
+                <view class="notice-right">
+                   <view class="header">
+                     <view>{{item.desc}}</view>
+                     <view class="time">{{item.create_time}}</view>
+                   </view>
+                   <view class="content" wx:if="{{item.type=='sys'?true:false}}">
+                     {{item.msg}}</view>
+                   <view class="content" wx:elif="{{item.type=='comment'?true:false}}">
+                     {{item.nickName}}回复了你的评论：{{item.msg}}</view>
+                   <view class="content" wx:elif="{{item.type=='commentlike'?true:false}}">
+                     {{item.nickName}}{{item.msg>2?'等':''}}{{item.msg}}人给你点赞</view>
+                </view>
+             </view>
+             <view class="delete" 
+                   @tap="deleteMsg" 
+                   data-idx="{{index}}" 
+                   data-type="{{item.type}}"
+                   data-infoid="{{item.inform_id}}">删除</view>
+          </view>
+       </view>
+       <view wx:if="{{noticeList.length===0}}" class="none-more">
+         暂无数据
+       </view>
+      </block>
+
+      <block>
+       <view wx:if="{{currentList=='chat'?true:false}}" class="notice">
+          <view wx:for="{{chartList}}" 
+                wx:key="{{item.id}}"
+                class="item-block">
+             <view class="notice-item  {{item.is_read==1?'':'no_read'}}"
+                   @touchstart="touchS" 
+                   @touchmove="touchM" 
+                   data-index="{{index}}"
+                   data-infoid="{{item.inform_id}}"
+                   @touchend="touchE"  
+                   @tap="toDetail" 
+                   data-type="{{item.type}}"
+                   data-aid="{{item.article_id}}" 
+                   data-reid="{{item.reid}}"
+                   data-uid="{{item.user_id}}"
+                   style="{{item.txtStyle}}">
+                <view class="avatar">
+                  <image src="{{item.avatarUrl}}" mode="widthFix"/>
+                </view>
+                <view class="notice-right">
+                   <view class="header">
+                     <view>{{item.nickName}}</view>
+                     <view class="time">{{item.create_time}}</view>
+                   </view>
+                   <view class="content">
+                     {{item.msg}}</view>
+                </view>
+             </view>
+             <view class="delete" 
+                   @tap="deleteMsg" 
+                   data-idx="{{index}}" 
+                   data-type="{{item.type}}"
+                   data-infoid="{{item.inform_id}}">删除</view>
+          </view>
+       </view>
+       <view wx:if="{{chartList.length===0}}" class="none-more">
+         暂无数据
+       </view>
+      </block>
+    </view>
+
+     
+    
+    
+  </div>
+</template>
+
+<script>
+import wepy from 'wepy';
+import wxRequest from "../../utils/http.js";
+import api from "../../utils/api.js";
+export default class Message extends wepy.page{
+  config = {
+     "navigationBarTitleText":"系统消息"
+  }
+  data = {
+    page: 2,
+    msgList:[],
+    startX: 0,
+    delBtnWidth: 120,
+    nav:[{
+      id: '1',
+      tag: 'sys',
+      text: '通知',
+      active: true,
+      show: true,
+      msgNum: ''
+    },{
+      id: '2',
+      tag: 'chat',
+      text: '私聊',
+      active: false,
+      show: true,
+      msgNum: ''
+    }],
+    currentList: 'sys',  // 当前导航所在标签 sys chat
+    chartList: [],
+    noticeList: []
+  }
+  async onShow(e){
+     let that = this;
+     let msg = await this.getMsg(1,this.currentList);
+     console.log('msg', msg)
+     if(msg.data.code === api.STATUS){
+        msg.data.data.list.map(el=>{
+          el.txtStyle = 'left:0';
+        })
+        let nav = this.nav;
+        nav[1].show = msg.data.data.is_view;
+        
+        if(this.currentList==='sys'){
+          this.noticeList = msg.data.data.list;
+        }else if(this.currentList==='chat'){
+          this.chartList = msg.data.data.list;
+        }
+        nav[1].msgNum = msg.data.data.chatNum;
+        nav[0].msgNum = msg.data.data.sysNum;
+        this.nav = nav;
+        this.$apply();
+     }
+    
+  }
+
+  methods = {
+    async changeNav(e){
+      console.log('切换导航');
+      let that = this;
+      let idx = e.currentTarget.dataset.idx;
+      let nav = that.nav;
+      nav.map(el=>{
+        el.active = false;
+      })
+      nav[idx].active = true;
+      this.currentList = nav[idx].tag;
+      this.nav = nav;
+      this.page=2;
+      this.$apply();
+      let msg = await this.getMsg(1,nav[idx].tag);
+      if(msg.data.code===api.STATUS&&msg.data.data.list.length>0){
+         if(idx===0){
+           this.noticeList = msg.data.data.list;
+         }else if(idx===1){
+           this.chartList = msg.data.data.list;
+         }
+         this.$apply();
+      }
+    },
+
+    // 去聊天界面
+    toChart(id){
+      console.log('id',id)
+      wx.navigateTo({
+        url:'../chartRoom/main?user_id='+id
+      })
+    },
+
+    //  消息详情
+    async toDetail(e){
+      console.log('e',e.currentTarget)
+      let dataset = e.currentTarget.dataset;
+      console.log('dataset',dataset)
+      if(dataset.type==="comment"||dataset.type==="commentlike"){
+        wx.navigateTo({
+          url:`../details/main?id=${dataset.aid}`
+        })
+      }else if(dataset.type==='sys'){
+        wx.navigateTo({
+          url:`../messageDetail/main?id=${dataset.reid}`
+        })
+      }else if(dataset.type==='chat'){
+        wx.navigateTo({
+          url:`../chartRoom/main?user_id=${dataset.uid}`
+        })
+      }
+
+      // 如果是从个人中心通知里面跳转过来
+      let deleteData = await wxRequest(api.systemMsgStatus,{inform_id:dataset.infoid},'POST');
+     }
+
+  }
+
+  async getMsg(page=1,type='sys'){
+      let msg = await wxRequest(api.systemMsgList,{ page: page, type:type },'POST');
+      return msg;
+  }
+
+  async getChartList(page=1){
+     let chart = await wxRequest(api.chartList,{page:page},'POST');
+     console.log('chart', chart);
+     if(chart.data.code === api.STATUS&&chart.data.data.length){
+        return chart.data.data;
+     }
+  }
+
+  //  删除消息
+  async deleteMsg(e){
+    let dataset = e.currentTarget.dataset;
+      let msg = await wxRequest(api.deleteSystemMsg,{ inform_id: dataset.infoid }, 'POST')
+      if(msg.data.code === api.STATUS){
+        let msgList = [];
+        if(dataset.type==="comment"||dataset.type==="sys"){
+           msgList = this.noticeList;
+           msgList.splice(dataset.idx,1);
+           this.noticeList = msgList;
+           this.$apply();
+        }else if(dataset.type==='chat'){
+          msgList = this.chartList;
+          msgList.splice(dataset.idx,1);
+          this.chartList = msgList;
+          this.$apply();
+        }
+      }
+  }
+  
+  //手指刚放到屏幕触发
+  touchS(e){
+    // console.log("touchS", e);
+   //判断是否只有一个触摸点
+    if(e.touches.length==1){
+      this.startX = e.touches[0].clientX
+    }
+  }
+  //触摸时触发，手指在屏幕上每移动一次，触发一次
+  touchM(e){
+      // console.log("touchM:",e);
+    var that = this
+    if(e.touches.length==1){
+     //记录触摸点位置的X坐标
+      var moveX = e.touches[0].clientX;
+      //计算手指起始点的X坐标与当前触摸点的X坐标的差值
+      var disX = this.startX - moveX;
+     //delBtnWidth 为右侧按钮区域的宽度
+      var delBtnWidth = this.delBtnWidth;
+      var txtStyle = "";
+      if(disX == 0 || disX < 0){//如果移动距离小于等于0，文本层位置不变
+        txtStyle = "left:0px";
+      }else if(disX > 0 ){//移动距离大于0，文本层left值等于手指移动距离
+        txtStyle = "left:-"+disX+"rpx";
+        if(disX>=delBtnWidth){
+          //控制手指移动距离最大值为删除按钮的宽度
+          txtStyle = "left:-"+delBtnWidth+"rpx";
+        }
+      }
+      //获取手指触摸的是哪一个item
+      var index = e.currentTarget.dataset.index;
+      let dataset = e.currentTarget.dataset;
+      var msgList = [];
+      if(dataset.type==="comment"||dataset.type==="sys"||dataset.type==='commentlike'){
+        // console.log('这里是滑动的数据', e.currentTarget.dataset);
+        msgList = this.noticeList;
+        //将拼接好的样式设置到当前item中
+        msgList[index].txtStyle = txtStyle; 
+        this.noticeList = msgList;
+        this.$apply();
+      }else if(dataset.type==="chat"){
+        msgList = this.chartList;
+        msgList[index].txtStyle = txtStyle; 
+        this.chartList = msgList;
+        this.$apply();
+      }
+
+    }
+  }
+  touchE(e){
+    // console.log("touchE", e);
+    var that = this
+    if(e.changedTouches.length==1){
+      //手指移动结束后触摸点位置的X坐标
+      var endX = e.changedTouches[0].clientX;
+      //触摸开始与结束，手指移动的距离
+      var disX = this.startX - endX;
+      var delBtnWidth = this.delBtnWidth;
+      //如果距离小于删除按钮的1/2，不显示删除按钮
+      var txtStyle = disX > delBtnWidth/2 ? "left:-"+delBtnWidth+"rpx":"left:0px";
+      //获取手指触摸的是哪一项
+      var index = e.currentTarget.dataset.index;
+      let dataset = e.currentTarget.dataset;
+      var msgList = [];
+      if(dataset.type==="comment"||dataset.type==="sys"||dataset.type==='commentlike'){
+        msgList = this.noticeList;
+        msgList.map(el=>{
+          el.txtStyle = 'left:0'
+        })
+        msgList[index].txtStyle = txtStyle; 
+        this.noticeList = msgList;
+        this.$apply();
+      }else if(dataset.type==='chat'){
+        msgList = this.chartList;
+        msgList.map(el=>{
+          el.txtStyle = 'left:0'
+        })
+        msgList[index].txtStyle = txtStyle;
+        this.chartList = msgList;
+        this.$apply();
+      }
+    }
+  }
+
+  async onReachBottom(){
+    console.log('触底了')
+     let currentList = this.currentList;
+     if(currentList==="sys"){
+        console.log('加载通知列表数据');
+        let more = await this.getMsg(this.page)
+        if(more.data.code === api.STATUS){
+            if(more.data.data.list.length>0){
+              let oldList = this.noticeList;
+              more.data.data.list.map(el=>{
+                el.txtStyle = 'left:0'
+              })
+              this.noticeList = [...oldList,...more.data.data.list];
+              this.page++;
+              this.$apply();
+            }
+        }
+     }else if(currentList==='chart'){
+       let more = await this.getChartList(this.page)
+       if(more.data.code===api.STATUS){
+         if(more.data.data.length>0){
+            let oldList = this.chartList;
+            more.data.data.map(el=>{
+              el.txtStyle = 'left:0'
+            })
+            this.chartList = [...oldList,...more.data.data];
+            this.$apply();
+         }
+       }
+     }
+     
+  }
+
+  onShareAppMessage(){
+
+  }
+
+
+}
+</script>
+
+<style lang="less">
+page{
+    background-color: #fafbfc;
+}
+
+.nav{
+  width: 456rpx;
+  height: 52rpx;
+  margin:25rpx auto;
+  display: flex;
+  background: #fff;
+  .btn-item{
+    width: 228rpx;
+    height: 52rpx;
+    line-height: 52rpx;
+    padding: 0;
+    margin: 0;
+    font-size: 28rpx;
+    background: #fff;
+    border:1px solid #e5e5e5;
+    position: relative;
+  }
+  .btn-item1{
+     border-radius: 6rpx 0 0 6rpx;
+  }
+  .btn-item2{
+     border-radius: 0 6rpx 6rpx 0;
+  }
+  .btn-active{
+    width: 228rpx;
+    height: 52rpx;
+    line-height: 52rpx;
+    color: #fff;
+    border:none;
+    background-image: linear-gradient(90deg, 
+        #111111 0%, 
+        #504081 0%, 
+        #8e6ff1 0%, 
+        #c576d1 100%);
+  }
+  .btn-dian{
+    display: block;
+    width: 16rpx;
+    height: 16rpx;
+    background: red;
+    position: absolute;
+    top: 0;
+    right: 0;
+    border-radius: 50%;
+  }
+}
+
+.msg-list{
+  .item-block{
+    position: relative;
+    z-index: 2;
+    height: 190rpx;
+    margin-bottom: 10rpx;
+    position: relative;
+  }
+}
+
+.notice{
+  .avatar{
+    width: 102rpx;
+    height: 102rpx;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-right: 20rpx;
+  }
+  .header{
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20rpx;
+  }
+  .notice-item{
+    display: flex;
+    align-items: center;
+    width: 750rpx;
+    height: 190rpx;
+    background: #fff;
+    padding: 30rpx 20rpx;
+    margin-bottom: 10rpx;
+    position: absolute;
+    z-index: 2;
+  }
+  .no_read::before{
+    content: '';
+    display: block;
+    width: 12rpx;
+    height: 12rpx;
+    position: absolute;
+    background: red;
+    border-radius: 50%;
+    right: 20rpx;
+    top: 20rpx;
+  }
+  .time{
+    color: #72727f;
+  }
+  .notice-right{
+    flex: 1;
+    height: 120rpx;
+  }
+  .content{
+    font-size: 28rpx;
+    width: 100%;
+    color: #72727f;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+}
+
+.delete{
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 120rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background: red;
+  height: 100%;
+  font-size: 30rpx;
+  z-index: 1;
+}
+
+
+</style>

@@ -1,0 +1,322 @@
+
+<script>
+import wepy from 'wepy';
+import 'wepy-async-function';
+
+import api from './utils/api';
+import wxRequest from './utils/http';
+import utils from './utils/utils';
+
+import userAuth from './utils/userMethod/userAuth.js';
+
+// userAuth.fromPageData({ 
+//   kid:110, 
+//   scene:'735a42e66988eb9e271b1a0e193ea751', 
+//   token:'VoXF2TkTM22CKyJp51NQ'
+// })
+
+export default class extends wepy.app {
+  config = {
+    pages: [
+      'pages/index/main',
+      'pages/commList/main',
+      'pages/details/main',
+      'pages/editUserInfo/main',
+      'pages/feedback/main',
+      'pages/followers/main',
+      'pages/following/main',
+      'pages/likesList/main',
+      'pages/messageDetail/main',
+      'pages/message/main',
+      'pages/mycenter/main',
+      'pages/otherUserCenter/main',
+      'pages/search/main',
+      'pages/chartRoom/main',
+      'pages/myWallet/main',
+      'pages/shop/main',
+      'pages/gradeDetail/main',
+      'pages/wxCropper/wxCropper'
+    ],
+    window: {
+      backgroundTextStyle: "light",
+      navigationBarBackgroundColor: "#7c48c6",
+      navigationBarTitleText: "萤火虫亮了",
+      navigationBarTextStyle: "white",
+      enablePullDownRefresh: true,
+      backgroundColor: "#e9e9e9",
+      onReachBottomDistance: 100
+    },
+    tabBar: {
+      color: "#333333",
+      selectedColor: "#793292",
+      backgroundColor: "#F5F4F1",
+      borderStyle: "black",
+      list: [{
+          pagePath: "pages/index/main",
+          text: "话题",
+          iconPath: "pages/image/index.png",
+          selectedIconPath: "pages/image/h_index.png"
+        },{
+          pagePath: "pages/mycenter/main",
+          text: "我的",
+          iconPath: "pages/image/myCenter.png",
+          selectedIconPath: "pages/image/h_myCenter.png"
+        }]
+    }
+  }
+
+  globalData = {
+    userInfo: null
+  }
+
+  constructor () {
+      super();
+      this.use('promisify');
+  }
+
+  onLaunch() {
+    let that = this;
+    wx.setStorage({key:'desc',data:'new'});
+    wx.login({
+      success(res){
+         wxRequest(api.getToken,{code:res.code}).then((res)=>{
+          //  console.log('获取token', res)
+          wx.setStorage({ key:'myid',data:res.data.data.id });
+          wx.setStorage({ key:'token',data: res.data.data.token});
+          that.getWxToken();
+        })
+      }
+    })
+  }
+
+  onPageNotFound(){
+    wx.switchTab({
+      url: './pages/index/main'
+    })
+  }
+
+  async getWxToken(){
+      // 获取微信access_token
+      let wx_token = await wxRequest(api.getAccessToken,{},'post');
+      // console.log('wx_token', wx_token);
+      if(wx_token.data.code===200){
+        wx.setStorage({key:'wx_token', data:wx_token.data.data})
+      }
+  }
+
+  getUserInfo(cb) {
+    const that = this
+    if (this.globalData.userInfo) {
+      return this.globalData.userInfo
+    }
+    wepy.getUserInfo({
+      success (res) {
+        that.globalData.userInfo = res.userInfo
+        cb && cb(res.userInfo)
+      }
+    })
+  }
+}
+</script>
+
+<style lang="less">
+
+view{
+  font-size: 30rpx;
+  box-sizing: border-box;
+}
+
+.space_b{
+  justify-content: space-between;
+}
+
+.topic_time{
+  font-size: 20rpx;
+  color: #999999;
+  display: flex;
+  flex-direction:row-reverse;
+  justify-content:right;
+  margin-bottom: 23rpx;
+}
+
+.readBg{
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+.read{
+  font-size: 28rpx;
+  color: #999999;
+}
+
+.read_time{
+  margin-left: 10rpx;
+  font-size: 28rpx;
+  color: #999999;
+}
+
+.topic_bottom{
+  margin-top: 23rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.topic_button{
+  width: 34rpx;
+  height: 27rpx;
+  border:none;
+  margin-right:10rpx;
+}
+.topic_button_w{
+  width: 34rpx;
+  height: 30rpx;
+  border:none;
+  margin-right:10rpx;
+}
+.topic_button_o{
+  width: 34rpx;
+  height: 28rpx;
+  border:none;
+  margin-right:10rpx;
+}
+.topic_top{
+  background-color: #FFFFFF;
+  padding: 30rpx 40rpx 20rpx 40rpx;
+}
+.button_flex{
+  display: flex;
+  border-top: 1rpx solid #EEEEEE;
+}
+.three_button{
+  border-radius:0;
+  color: #666666;
+  font-size: 28rpx;
+  flex: 3;
+  background-color: #FFFFFF;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.three_button_focus{
+  background-color: #cccccc;
+}
+
+button::after{
+  border: none;
+}
+
+/* 性别 */
+.gender{
+  width: 24rpx;
+  height: 24rpx;
+  margin-left: 10rpx;
+  margin-right: 10rpx;
+}
+
+.writeComment{
+    width:34rpx;
+    height:32rpx;
+    margin:34rpx 0;
+    position:absolute;
+    top:0;
+    bottom:0;
+    left:50rpx;
+}
+
+
+.d_fle{
+  display: flex;
+}
+
+.active_text{
+  color: #7c48c6 !important;
+}
+
+
+.none-more{
+  width: 750rpx;
+  height: 500rpx;
+  text-align: center;
+  line-height: 500rpx;
+  color: #999;
+  font-size: 30rpx;
+}
+
+/* 评论输入框 */
+
+.writeBg{
+    position:fixed;
+    bottom:0rpx;
+    left: 0;
+    right: 0;
+    background-color:#fff;
+    border-top:1rpx solid #D7D7D9; 
+    display:flex;
+    align-items:center;
+    padding:20rpx 30rpx;
+    min-height: 100rpx;
+    box-sizing: border-box;
+}
+
+.inputRedict{
+    background-color:#eee;
+    border-radius:14rpx;
+    min-height: 70rpx;
+    padding-left: 20rpx;
+    line-height: 40rpx;
+    box-sizing: border-box;
+    font-size:30rpx;
+    color: #333;
+    max-height: 200rpx;
+    flex: 1;
+    display: block;
+}
+
+.writeBg_zhanwei{
+  width: 750rpx;
+  height: 120rpx;
+}
+
+/* 获取用户信息按钮 */
+.getinfo{
+  width: 750rpx;
+  height: 100rpx;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  margin: 0;
+  box-sizing: border-box;
+  padding: 20rpx 30rpx !important;
+}
+
+.same-input{
+  width: 100%;
+  height: 60rpx;
+  line-height: 60rpx;
+  text-indent: 20rpx;
+  font-size: 30rpx;
+  background: #eee;
+  color: #999;
+  text-align: left;
+  border-radius: 14rpx;
+}
+
+button::after{
+  display: none;
+}
+
+/* 假的评论按钮 */
+page .same-comm{
+  background-color: transparent;
+  width: 32rpx;
+  height: 32rpx;
+  line-height: 1;
+  padding: 0 !important;
+  margin:0 !important;
+  overflow: inherit !important;
+}
+
+/* this rule will be remove */
+
+</style>
+

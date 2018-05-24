@@ -1,0 +1,348 @@
+<template>
+  <div class="mine">
+     <view class="my-center space_b">
+        <view class="info">
+          <view class="info-left">
+          <view class="info-nickname">
+            <view wx:if="{{userInfo.nickName?true:false}}" 
+                  class="nick-name">{{userInfo.nickName}}</view>
+            <view wx:else 
+                  class="nick-name">
+              <open-data type="userNickName"></open-data>
+            </view>
+          </view>
+          <block>
+             <image wx:if="{{userInfo.gender==2?true:false}}" 
+                    class="gender mg_15" 
+                    src="../image/girl.png" />
+             <image wx:if="{{userInfo.gender==1?true:false}}" 
+                    class="gender mg_15" 
+                    src="../image/boy.png"/>
+          </block>
+          </view>
+          <view class="user-leval">
+             <!-- <view class="grade">Lv9</view>
+             <text class="user-tag">实习</text> -->
+          </view>
+          
+        </view>
+        
+
+        <block>
+            <image wx:if="{{userInfo.avatarUrl?true:false}}" 
+                   class="myCenterImg" 
+                   @tap="editInfo" 
+                   src="{{userInfo.avatarUrl}}"/>
+            <view wx:else class="myCenterImg">
+               <open-data type="userAvatarUrl" @tap="editInfo"></open-data>
+            </view>
+        </block>
+    </view>
+
+<!-- 和我相关 -->
+      <!-- <aboutMe :listNav="listNav"></aboutMe> -->
+      <view class="about-me">
+        <view class="list">
+            <navigator class="list-item"
+                  hover-class="none" 
+                  wx:for="{{listNav}}" 
+                  wx:for-item="nav"
+                  wx:key="{{index}}"
+                  url="{{nav.url}}">
+                <view class="num">{{nav.num}}</view>
+                <view class="text">{{nav.text}}</view>
+            </navigator>
+        </view>
+      </view>
+
+      <!-- <listItem :itemData="listData"></listItem> -->
+
+      <div class="list-item">
+        <navigator class="messageList readBg space_b" 
+                    wx:for="{{listData}}" 
+                    wx:key="{{item.url}}"
+                    url="{{item.url}}">
+          <view class="readBg">
+            <image class="message" src="{{item.iconPath}}" />
+            <view class="messageTxt">{{item.text}}</view>
+            <view class="msg-tag" wx:if="{{item.msgNum>0?true:false}}">{{item.msgNum}}</view>
+          </view>
+          <image class="jump" src="../image/jump.png" />
+        </navigator>
+      </div>
+
+  </div>
+</template>
+
+<script>
+import wepy from 'wepy';
+import wxRequest from "../../utils/http.js";
+import api from "../../utils/api.js";
+import listItem from './components/list-item';
+import aboutMe from './components/about-me';
+
+export default class myCenter extends wepy.page{
+  config = {
+     "navigationBarTitleText":"个人中心"
+  }
+  data = {
+        people: {
+          name: "Linux",
+          gender: 1,
+          img: "../image/touxiang.png",
+          comment: 20,
+          like: 17
+        },
+        userInfo:{},
+        listData:[{
+            url: '../message/main',
+            text: '我的信息',
+            iconPath: 'https://gcdn.playonwechat.com/mycenter-icon-message.png',
+            msgNum: 0
+         },
+        //  {
+        //    url: '../shop/main',
+        //    text: '积分商城',
+        //    iconPath: 'https://gcdn.playonwechat.com/mycenter-icon-shop.png',
+        //    msgNum: 0
+        //  },{
+        //    url: '../myWallet/main',
+        //    text: '我的钱包',
+        //    iconPath: 'https://gcdn.playonwechat.com/mycenter-icon-wallt.png',
+        //    msgNum: 0
+        //  },
+         {
+           url: '../feedback/main',
+           text: '意见反馈',
+           iconPath: 'https://gcdn.playonwechat.com/mycenter-icon-suggest.png',
+           msgNum: 0
+         }],
+        listNav:[{
+          url:'../likesList/main',
+          num:'0',
+          text:'点赞'
+        },{
+          url:'../commList/main',
+          num:'0',
+          text:'评论'
+        }
+        // ,{
+        //   url:'../following/main',
+        //   num:'0',
+        //   text:'关注'
+        // },{
+        //   url:'../followers/main',
+        //   num:'0',
+        //   text:'粉丝'
+        // }
+        ]
+    }
+  components={
+    listItem,
+    aboutMe
+  }
+  methods={
+    editInfo(){
+      wx.navigateTo({
+        url: '../editUserInfo/main'
+      })
+    }
+  }
+  
+  async onShow(){
+    let info = await wxRequest(api.getUserInfo,{},'POST');
+    if(info.data.code === api.STATUS){
+      this.userInfo = info.data.data;
+      let _info = info.data.data;
+      let listNav = this.listNav;
+      let listData = this.listData;
+      listNav[0].num = _info.likeNum;
+      listNav[1].num = _info.commentNum;
+      // listNav[2].num = _info.attentionNum;
+      // listNav[3].num = _info.followerNum;
+      // console.log('_info.id',_info.id)
+      // listNav[2].url = `../following/main?user_id=${_info.id}`;
+      // listNav[3].url = `../followers/main?user_id=${_info.id}`;
+      listData[0].msgNum = _info.msgNum;
+      this.listNav = listNav;
+      if(_info.msgNum>0){
+        wx.setTabBarBadge({index: 1,text: _info.msgNum.toString()})
+      }else{
+        wx.removeTabBarBadge({index:1})
+      }
+      
+      this.$apply();
+    }
+  }
+
+  onPullDownRefresh(){
+    wx.stopPullDownRefresh()
+  }
+}
+</script>
+
+<style lang="less" scoped>
+  page {
+    background-color: #F3F6F8;
+  }
+  .my-center {
+    background-color: #7C48C6;
+    color: #FFFFFF;
+    padding: 60rpx 60rpx 0 60rpx;
+    display: flex;
+    justify-content: space-between;
+    .info-left{
+      display: flex;
+    }
+    .info{
+      display: flex;
+      flex-direction: column;
+    }
+    .grade{
+      width: 80rpx;
+      height: 28rpx;
+      background-image:url('https://gcdn.playonwechat.com/mycenter-icon-leval.png');
+      background-size: 100%;
+      font-size: 20rpx;
+      padding-left: 30rpx;
+    }
+    .user-tag{
+      font-size: 18rpx;
+      display: inline-block;
+      padding: 2 5rpx;
+      min-width: 50rpx;
+      text-align: center;
+      border:1px solid rgba(255, 255, 255, .4);
+      border-radius: 20rpx;
+      margin-left: 20rpx;
+    }
+    .user-leval{
+       display: flex;
+    }
+  }
+  .myCenterImg {
+    width: 150rpx;
+    height: 150rpx;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .msg-tag{
+    display: inline-block;
+    min-width: 36rpx;
+    min-height: 20rpx;
+    padding: 0 10rpx;
+    background: tomato;
+    color: #fff;
+    font-size: 24rpx;
+    position: absolute;
+    right: 20rpx;
+    text-align: center;
+    border-radius: 20rpx;
+    flex-shrink: 0;
+  }
+
+  .nick-name {
+    font-size: 36rpx;
+    color: #FFFFFF;
+    margin-right: 6rpx;
+    margin-bottom: 30rpx;
+  }
+  .mg_15 {
+    margin-top: 20rpx;
+    flex-shrink: 0;
+  }
+  .d_p {
+    display: flex;
+    justify-content: space-between;
+    display: flex;
+    width: 100%;
+  }
+  .myLike {
+    font-size: 36rpx;
+    color: #FFFFFF;
+    font-weight: bold;
+    text-align: center;
+  }
+  .mysetsys {
+    color: #EEEEEE;
+    font-size: 20rpx;
+  }
+  .m_r_45 {
+    margin-right: 45rpx;
+  }
+
+  .require {
+    width: 32rpx;
+    height: 32rpx;
+    margin-right: 20rpx;
+  }
+ 
+
+ .about-me{
+  background: #7c48c6;
+   .list{
+     display: flex;
+     padding: 0 60rpx 46rpx 60rpx;
+     navigator{
+       min-width: 40rpx;
+       margin-right: 44rpx;
+       justify-content: center;
+       position: relative;
+       align-items: center;
+       view{
+         text-align: left;
+         color: #fff;
+       }
+       .num{
+         font-size: 32rpx;
+         font-weight: bold;
+       }
+       .text{
+         font-size: 20rpx;
+         color: #eee;
+       }
+     }
+    //  navigator:before{
+    //    content:'';
+    //    display: block;
+    //    position: absolute;
+    //    left: -22rpx;
+    //    height: 50rpx;
+    //    top: 50%;
+    //    margin-top: -25rpx;
+    //    border-left: 1px solid rgba(172,115,253,.5);
+    //  }
+     navigator:nth-of-type(1):before{
+       display: none;
+     }
+   }
+}
+
+// 列表
+.messageList {
+  padding: 50rpx 20rpx;
+  background-color: #FFFFFF;
+  border-bottom: 1rpx solid #E5E5E5;
+  flex: 1;
+  .readBg {
+    flex: 1;
+  }
+}
+.message {
+  width: 50rpx;
+  height: 50rpx;
+  margin-right: 20rpx;
+}
+.messageTxt {
+    color: #333333;
+    font-size: 30rpx;
+    flex:1;
+    width: 100%;
+  }
+ .jump {
+    width: 16rpx;
+    height: 25rpx;
+  }
+</style>

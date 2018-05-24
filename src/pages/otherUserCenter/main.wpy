@@ -1,0 +1,520 @@
+<template>
+  <div class="user-center">
+     <!-- 个人信息 -->
+     <view class="info">
+       <view class="user-info">
+        <view class="nick-name">
+           <view class="info-name">{{user_Info.nickName}}</view>
+           <image wx:if="{{user_Info.gender=='2'}}" class="avatar-sex" src="../image/girl.png"/>
+           <image wx:if="{{user_Info.gender=='1'}}" class="avatar-sex" src="../image/boy.png"/>
+        </view>
+           <image class="avatar" src="{{user_Info.avatarUrl}}" alt=""/>
+      </view>
+
+      <!-- 关于他的 -->
+      <view class="about-he">
+          <navigator url="{{'/pages/following/main?user_id='+ user_id +'&nav_title=Ta的关注'}}">
+             <view class="num">{{user_Info.attentionNum}}</view>
+             <view class="tag">关注</view>
+          </navigator>
+          <navigator url="{{'/pages/followers/main?user_id='+ user_id +'&nav_title=Ta的粉丝'}}">
+             <view class="num">{{user_Info.followerNum}}</view>
+             <view class="tag">粉丝</view>
+          </navigator>
+      </view>
+     </view>
+
+     <!-- 列表 -->
+     <view class="tag-nav">
+       <view wx:for="{{nav}}" 
+           wx:for-index="idx"
+           wx:key="{{item.id}}"
+           @tap="changeTag({{idx}})"
+           class="tag-item {{item.active?'active':'leave'}}">{{item.text}}</view>
+     </view>
+
+     <!-- 点赞列表 -->
+     <view class="like-list" wx:if="{{currentTab==='like'?true:false}}">
+        <block wx:for="{{likeList}}" wx:for-index="idx" wx:key="{{idx}}">
+            <!-- <likeItem :itemData="item" @toDetail="toLikeItemDetail"></likeItem> -->
+             <view class="time">{{item.date}}</view>
+              <view class="in-item" wx:for="{{item.list}}" wx:for-item="lis" wx:key="{{lis.article_id}}" @tap="toDetail({{lis.article_id}})">
+                <view class="item-left">
+                  <view class="title">{{lis.title}}</view>
+                  <view class="like-list-info">
+                    <view class="info-icon">转发{{lis.sharetimes}}</view>
+                    <view class="info-icon">评论{{lis.commenttimes}}</view>
+                    <view class="info-icon">喜欢{{lis.liketimes}}</view>
+                  </view>
+                </view>
+                <view class="in-right">
+                  <image src="{{lis.cover}}" mode="widthFix"/>
+                </view>
+              </view>
+        </block>
+     </view>
+
+     <!-- 评论列表 -->
+     <view class="participate-list like-list" wx:else>
+         <div class="comm-item" wx:for="{{commentList}}" wx:key="{{index}}">
+            <view class="time">{{item.date}}</view>
+            <view class="in-item" wx:for="{{item.list}}" wx:for-item="list" wx:key="list.article_id" @tap="toDetail({{list.article_id}})">
+            <view class="comm-item-left">
+                <view class="title">{{list.comment}}</view>
+                <view class="comm-info">
+                #{{list.title}}
+                </view>
+            </view>
+            </view>
+          </div>
+     </view>
+
+     <!-- 底部按钮 -->
+     <view class="attation-bar">
+        <view class="item add-div">
+            <button class="get_user_info" wx:if="{{is_accredit=='0'?true:false}}" open-type="getUserInfo" bindgetuserinfo="getUserInfo" lang="zh_CN"> <view class="icon-plus"></view>关注</button>
+            <view class="add" wx:elif="{{isattention===0?true:false}}" @tap="addFollowing">
+              <view class="icon-plus"></view>关注
+            </view> 
+            <view class="has-add" wx:elif="{{isattention===1?true:false}}" @tap="removeFollower"><view class="has-add-icon"></view>已关注</view>
+            <view class="remove" wx:elif="{{isattention===2}}">相互关注</view>
+        </view>
+        <view class="item chart" @tap="toChart"><view class="icon-chart"></view>私聊</view>
+     </view>
+
+     <!-- 底部按钮 -->
+     <!-- <addAttation :isattention="isattention" @removeFollower="removeFollower" @addFollowing="addFollowing"></addAttation> -->
+  </div>
+</template>
+
+<script>
+import wepy from 'wepy';
+import wxRequest from "../../utils/http.js";
+import api from "../../utils/api.js";
+export default class otherUserCenter extends wepy.page{
+  config = {
+     "navigationBarTitleText":"TA的个人中心"
+  }
+  data = {
+    user_id: null,
+    user_Info: {},
+    likeList: [],                    // 点赞列表
+    commentList: [],                 // 评论列表
+    currentTab: "comment",           // 当前tab所在标签
+    page: 2,
+    isattention: null,                // “我”是否关注这个用户
+    nav:[{
+          id: 2,
+          text: 'Ta参与过的话题',
+          active: true
+        },{
+          id: 1,
+          text: 'Ta点赞过的话题',
+          active: false
+        }],
+    is_accredit:''
+  }
+
+  async onLoad(options){
+    console.log(options.user_id)
+     this.user_id = options.user_id;
+     this.commentList = await this.getLikeList(1,options.user_id,this.currentTab);
+     this.$apply();
+  }
+
+  // 获取最新消息
+  async onShow(){
+     let json = await wxRequest(api.getUserInfo,{user_id: this.user_id},'post')
+     if(json.data.code === api.STATUS){
+        this.user_Info =  json.data.data;
+        console.log('json', json.data.data)
+     }else{
+       console.log('获取用户信息失败', json)
+     }
+
+    //  判断“我”是否已关注这个用户
+    let care = await wxRequest(api.isattention,{attention_id:this.user_id},'post');
+    if(care.data.code===api.STATUS){
+       this.isattention = care.data.data.is_attention;
+    }else{
+      console.warn('请求错误',care)
+    }
+    this.is_accredit = wx.getStorageSync('is_accredit');
+    this.$apply()
+  }
+
+  async onReachBottom(){
+    let oldList = this.likeList;
+    let newList = await this.getLikeList(this.page,this.user_id, this.currentTab);
+    if(newList){
+       this.likeList = [...oldList,...newList];
+       this.$apply();
+    }
+  }
+
+  // 获取列表数据
+    async getLikeList(page=1,user_id='', type='like'){
+      let json = await wxRequest(api.userCommentList,{user_id:this.user_id,page:page, type:type}, 'post');
+      console.log('获取到点赞列表', json)
+      if(json.data.code === api.STATUS && json.data.data.length>0){
+        return json.data.data;
+      }else{
+        console.log('请求错误或者没有数据了', json)
+      }
+    }
+
+  methods={
+    // 去详情页
+    toDetail(id){
+      wx.navigateTo({
+        url: `../details/main?id=${id}`
+      })
+    },
+    // 私聊
+    toChart(){
+      wx.navigateTo({
+        url: `../chartRoom/main?user_id=${this.user_id}`
+      })
+    },
+    // 取消关注用户
+    async removeFollower(){
+      let that = this;
+      wx.showActionSheet({
+        itemList: ['取消关注'],
+        success: function(res) {
+          console.log(res.tapIndex)
+          if(res.tapIndex===0){
+            wxRequest(api.delattention,{attention_id:that.user_id},'post')
+            .then(res=>{
+              if(res.data.code===api.STATUS){
+                that.isattention = 0;
+                that.$apply();
+              }else{
+                console.log('请求出错', res)
+              }
+            })
+            
+          }
+        }
+      })
+       
+    },
+    // 添加关注
+    async addFollowing(){
+      let json = await wxRequest(api.createattention,{attention_id:this.user_id,follower_id:wx.getStorageSync('myid')},'post');
+      if(json.data.code === api.STATUS){
+         this.isattention = 1;
+         this.$apply();
+      }else{
+         console.warn('json', json)
+      }
+    },
+    // 切换导航
+    async changeTag(idx){
+      let nav = this.nav;
+      let _currentTab = ['comment','like'];
+      this.page = 2;
+      this.currentTab = _currentTab[idx]; 
+      this.$apply();
+      nav.map(el=>{
+        el.active = false;
+      })
+      nav[idx].active = true;
+      this.nav = nav;
+      this.$apply();
+
+      if(_currentTab[idx]==='like'){
+        this.likeList = await this.getLikeList(1, this.user_id, this.currentTab);
+        this.$apply();
+      }else if(_currentTab[idx]==='comment'){
+        this.commentList = await this.getLikeList(1, this.user_id, this.currentTab);
+        this.$apply();
+      }
+    },
+    // 获取用户信息
+    async getUserInfo(e){
+       console.log(e)
+       let userInfo = e.detail.userInfo;
+       if(userInfo){
+         userInfo.token = wx.getStorageSync('token');
+         userInfo.is_accredit = 1;
+        let json = await wxRequest(api.saveUserInfo,userInfo);
+        if(json.data.code===api.STATUS){
+           console.log('json',json)
+           this.is_accredit = 1;
+           this.$apply();
+           wx.setStorage({key:'is_accredit',data:'1'})
+        }
+       }
+    }
+  }
+}
+</script>
+
+<style lang="less" scoped>
+.participate-list{
+  padding-bottom: 150rpx;
+}
+
+.get_user_info{
+  width: 375rpx;
+  padding: 0;
+  background: transparent;
+  font-size: 30rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #7c48c6;
+}
+
+.like-list{
+  margin-top: 40rpx;
+  .list-item{
+     width: 100%;
+     box-sizing: border-box;
+   }
+   .comm-info{
+     font-size: 28rpx;
+     color: #999;
+   }
+   .time{
+     height: 50rpx;
+     background: #eee;
+     font-size: 22rpx;
+     line-height: 50rpx;
+     color:#9f9f9f;
+     padding:0 10rpx;
+   }
+   .in-item{
+     display: flex;
+     align-items: center;
+     min-height: 120rpx;
+     padding:20rpx;
+     position: relative;
+   }
+   .in-item::after{
+     content: '';
+     display: block;
+     width: 100%;
+     border-bottom: 1px solid rgba(0, 0, 0, .1);
+     position: absolute;
+     left: 0;
+     bottom: 0;
+     transform: scaleY(.5);
+   }
+   .item-left{
+     flex: 1;
+     padding-right: 14rpx;
+     display: flex;
+     height: 140rpx;
+     flex-direction: column;
+     justify-content: space-around;
+     .title{
+       font-size: 28rpx;
+     }
+     .like-list-info{
+       display: flex;
+       justify-content: space-between;
+       font-size: 24rpx;
+       color: #666;
+       margin-top: 10rpx;
+     }
+     .info-icon{
+       font-size: 24rpx;
+     }
+   }
+   .comm-item-left{
+     min-height: 100rpx;
+     .title{
+       margin-bottom: 10rpx;
+     }
+   }
+   .in-right{
+     width: 252rpx;
+     height: 142rpx;
+     border-radius: 10rpx;
+     overflow: hidden;
+     image{
+       width: 100%;
+       display: block;
+     }
+   }
+}
+
+// 信息
+.info{
+  width: 750rpx;
+  height: 315rpx;
+  background: #7c48c6;
+  padding: 60rpx 60rpx 0 60rpx;
+  box-sizing: border-box;
+  .user-info{
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .nick-name{
+    display: flex;
+    align-items: flex-end;
+  }
+  .info-name{
+    color: #fff;
+    font-size: 36rpx;
+    margin-right: 10rpx;
+    line-height: 1;
+  }
+  .avatar{
+    width: 150rpx;
+    height: 150rpx;
+    border-radius: 50%;
+  }
+  .avatar-sex{
+    width: 24rpx;
+    height: 24rpx;
+    display: block;
+  }
+  .avatar{
+    width: 150rpx;
+    height: 150rpx;
+    display: block;
+    border-radius: 50%;
+  }
+  .about-he{
+    display: flex;
+    text-align: left;
+    navigator{
+      display: block;
+      min-width: 44rpx;
+      color: #fff;
+      margin-right: 44rpx;
+    }
+    .num{
+      font-weight: bold;
+      font-size: 30rpx;
+    }
+    .tag{
+      font-size: 20rpx;
+    }
+  }
+}
+
+// 底部按钮
+.attation-bar{
+   display: flex;
+   width: 750rpx;
+   height: 88rpx;
+   position: fixed;
+   left: 0;
+   bottom: 0;
+   background: #fff;
+   line-height: 88rpx;
+   color: #7c48c6;
+   .item{
+       flex: 1;
+       text-align: center;
+       display: flex;
+       justify-content: center;
+       align-items: center;
+   }
+   .add{
+       flex: 1;
+       width: 375rpx;
+       display: flex;
+       border:1px solid transparent;
+       justify-content: center;
+       align-items: center;
+   }
+   .has-add{
+     display: flex;
+     align-items: center;
+   }
+   .has-add-icon{
+     width: 44rpx;
+     height: 44rpx;
+     margin-right: 6rpx;
+     background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACwAAAAsCAMAAAApWqozAAAAPFBMVEUAAACXl5eZmZmampqZmZmXl5eXl5eZmZmYmJiYmJifn5+ZmZmYmJiZmZmZmZmZmZmZmZmZmZmampqZmZnYeGwTAAAAE3RSTlMAYKAw8EAgb7CQEIDf0L9P4n8/zf5lYAAAAPNJREFUOMvNlNtyxSAIRYmoeNeW///Xtg8ZT8IY7JyZTvdrFgTYIPypHG6CPhb+Vj022MwjO3Td2KKmN0znHwIryaPFl0D7mBuvyUJ9gkO79vpUSLp/DGYNO0630dg13FlEvwvrZew3+P7owAlT9u1mVBbJ0tmAYXVLIxf69NijHaiuPrXBP6qkoUdhG3Lu5PTLK2x2j+9g42FTNJtX1X/BJhvVQU0zRlJbOmnPTmNnmTT2WShKxR8vLCr7ddkpup9PNUsWYpNurlhoGda0sVe7Zqig5fPIDhb0ZAUs6NQEiycs6CpYcOwXtkkWkFe34+Ff6gs5QAiFZqbP0gAAAABJRU5ErkJggg==');
+     background-size: 100% 100%;
+     position: relative;
+     top: 50%;
+   }
+   .icon-plus{
+       width: 34rpx;
+       height: 34rpx;
+       background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACIAAAAiBAMAAADIaRbxAAAAJ1BMVEUAAAB8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZjjFEqAAAADHRSTlMAzMM8M/Qgodiko2OyN2IzAAAANUlEQVQoz2OAgakJDGhAx2BUhIGhUBACYhohtBRDzBlUcJQhxQUCZLZAaLdB54uBECmFpSgAHPQgfxuk6tYAAAAASUVORK5CYII=);
+       background-size: 34rpx 34rpx;
+       margin-right: 12rpx;
+   }
+   .icon-chart{
+       width: 33rpx;
+       height: 34rpx;
+       background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACEAAAAiCAMAAADmrkDzAAAAgVBMVEUAAAB8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMa9aqYxAAAAKnRSTlMA5kkGz/rn7xQOA+S+bvNQNS0b9puQhkRBO7eqdVYl3NbGsq6iln9eYiAIUbv9AAABOElEQVQ4y4WQ2ZaCMBBEG0KAAGHfQdx1pv7/A8fgMghG7gPVcC7pOqEJ7jW3QmefX1P6SNRyPLH6pdRYAG9l47pVfwgBnr87rACM3n29mh1HKCeCCMBLQVOGDujY65cARrzs5SB4Kmf4v7QkMXC+TxWyhD4RZ6jGwcKFPtPDUlHDZhqD+WhukaMkHSWK29NHojUatcZF6GkNAe5RfG9jGoY5C4UDQSZaNRqAsQg1pDfj8DDsWShCCKoQjFts31yEKkljDy019kpz9MYFxVg31Ro7qGUtNvobO7HHSd+JsV0xPBubFeUHTrKinGCvKOwAZ2WRlwNd8v7Jm3dxgGMkaERU5Q7IdqcNmyjpOQOwDY7HYMvxxL/SBFcGGUb4vqg9ErG0gHLWZ6ijqB7+z5YcEX1HwloxmBz+AIkZHesZFU7PAAAAAElFTkSuQmCC);
+       background-size: 33rpx 34rpx;
+       margin-right: 12rpx;
+   }
+   .has-add,.remove{
+       color: #999;
+   }
+}
+.attation-bar::before{
+    content: '';
+    display: block;
+    width: 100%;
+    border-top: 1px solid #dcdcdc;
+    transform: scaleY(.5);
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+.attation-bar::after{
+    content:' ';
+    display: block;
+    height: 60rpx;
+    border-left:1px solid #dcdcdc;
+    position: absolute;
+    left: 50%;
+    transform: scaleX(.5);
+    top: 50%;
+    margin-top: -30rpx;
+}
+
+// 导航
+.tag-nav{
+  display: flex;
+  width: 750rpx;
+  height: 70rpx;
+  .tag-item{
+    flex:1;
+    height: 70rpx;
+    line-height: 70rpx;
+    text-align: center;
+    color: #999;
+    font-size: 28rpx;
+    background: #eeeeee;
+  }
+  .tag-item.active{
+    color: #333;
+    background: #face15;
+    // background: transparent;
+    position: relative;
+  }
+  .tag-item.active:before{
+    content: '';
+    display: block;
+    width: 100%;
+    position: absolute;
+    height: 100%;
+    // background: red;
+    z-index: -1;
+    animation: bgBefore .5s;
+  }
+  // @keyframes bgBefore {
+  //   0%{
+  //     transform: translateX(-100%)
+  //   }
+  //   100%{
+  //     transform: translateX(0%)
+  //   }
+  // }
+}
+</style>

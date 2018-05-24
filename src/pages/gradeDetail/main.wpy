@@ -1,0 +1,400 @@
+<template>
+  <view class="grade-detail">
+    <!-- 顶部资料 -->
+    <view class="grade-info">
+        <image class="logo" mode="widthFix" src="https://gcdn.playonwechat.com/nvzhu/grade-logo.png"/>
+        <view class="level">
+            <text>当前等级:</text> 
+            <view class="grade">Lv.9</view>
+            <text class="user-tag">实习</text>
+        </view>
+        <view class="level-bar"></view>
+        <view class="level-bar-info">
+           <view class="bar-left">Lv.9<text>364经验值</text></view>
+           <view class="bar-right">升级还需999经验值</view>
+        </view>
+    </view>
+
+     <!-- 等级规则 经验经验 -->
+     <view class="list">
+        <navigator class="list-item" @tap="openExprenceList">
+            等级规则
+        </navigator>
+        <navigator class="list-item">
+            经验记录
+        </navigator>   
+     </view>
+
+     <!-- 如何获得经验 -->
+     <view class="get-experience">
+        <view class="get-title">如何获得经验值？</view>
+        <view class="get-item">
+           <view class="item-left">
+             <image class="icon" src="https://gcdn.playonwechat.com/nvzhu/lv-login-icon.png" mode="widthFix"/>登录
+           </view>
+           <view class="score">+2</view>
+           <view class="item-right">每天上限<text>2</text>经验值</view>
+        </view>
+        <view class="get-item">
+           <view class="item-left">
+             <image class="icon" src="https://gcdn.playonwechat.com/nvzhu/lv-like-icon.png" mode="widthFix"/>点赞
+           </view>
+           <view class="score">+1</view>
+           <view class="item-right">每天上限<text>5</text>经验值</view>
+        </view>
+        <view class="get-item">
+           <view class="item-left">
+             <image class="icon" src="https://gcdn.playonwechat.com/nvzhu/lv-share-icon.png" mode="widthFix"/>转发
+           </view>
+           <view class="score">+2</view>
+           <view class="item-right">每天上限<text>10</text>经验值</view>
+        </view>
+        <view class="get-item">
+           <view class="item-left">
+             <image class="icon" src="https://gcdn.playonwechat.com/nvzhu/lv-comment-icon.png" mode="widthFix"/>评论
+           </view>
+           <view class="score">+2</view>
+           <view class="item-right">每天上限<text>10</text>经验值</view>
+        </view>
+        <view class="get-item">
+           <view class="item-left">
+             <image class="icon" src="https://gcdn.playonwechat.com/nvzhu/lv-topcomment-icon.png" mode="widthFix"/>精彩评论
+           </view>
+           <view class="score">+10</view>
+           <view class="item-right">每天上限<text>20</text>经验值</view>
+        </view>
+     </view>
+
+     <!-- 获得经验记录 -->
+     <view class="exprence-list" wx:if="{{exprenceList}}">
+        <view class="main">
+           <view class="list-nav">
+             <view class="nav-item">等级</view>
+             <view class="nav-item">图标</view>
+             <view class="nav-item">所需经验值</view>
+           </view>
+           <view class="list-item">
+              <view class="lv-item">Lv1</view>
+              <view class="lv-item">
+                <image class="lv-icon" mode="widthFix" src="https://nvzhu.zealcdn.cn/public/img/star.png"/>
+              </view>
+              <view class="lv-item">0-10</view>
+           </view>
+           <view class="list-item">
+              <view class="lv-item">Lv2</view>
+              <view class="lv-item">
+                  <image class="lv-icon" mode="widthFix" src="https://nvzhu.zealcdn.cn/public/img/star.png"/>
+                  <image class="lv-icon" mode="widthFix" src="https://nvzhu.zealcdn.cn/public/img/star.png"/>
+                  <image class="lv-icon" mode="widthFix" src="https://nvzhu.zealcdn.cn/public/img/star.png"/>
+              </view>
+              <view class="lv-item">0-10</view>
+           </view>
+           <view class="list-item">
+              <view class="lv-item">Lv1</view>
+              <view class="lv-item"><image class="lv-icon" mode="widthFix" src="http://iph.href.lu/20x20?text=icon"/></view>
+              <view class="lv-item">0-10</view>
+           </view>
+           <view class="list-item">
+              <view class="lv-item">Lv1</view>
+              <view class="lv-item"><image class="lv-icon" mode="widthFix" src="http://iph.href.lu/20x20?text=icon"/></view>
+              <view class="lv-item">0-10</view>
+           </view>
+           <view class="list-item">
+              <view class="lv-item">Lv1</view>
+              <view class="lv-item">
+                <image class="lv-icon" mode="widthFix" src="http://iph.href.lu/20x20?text=icon"/>
+              </view>
+              <view class="lv-item">0-10</view>
+           </view>
+           <view class="list-item">
+              <view class="lv-item">Lv1</view>
+              <view class="lv-item"><image class="lv-icon" mode="widthFix" src="http://iph.href.lu/20x20?text=icon"/></view>
+              <view class="lv-item">0-10</view>
+           </view>
+        </view>
+
+        <view class="lv-close"  @tap="closeExprenceList">
+          <image mode="widthFix"  src="https://gcdn.playonwechat.com/nvzhu/lv-close.png"/>
+        </view>
+
+     </view>
+
+     <!-- 我的经验记录 -->
+     <view class="my-experence">
+         <view class="main">
+            
+         </view>
+         <view class="lv-close"></view>
+     </view>
+
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy';
+export default class gradeDetail extends wepy.page {
+  config={
+    navigationBarTitleText:'等级详情'
+  }
+  data = {
+    exprenceList: false
+  }
+  methods={
+    // 打开等级规则
+    openExprenceList(){
+      this.exprenceList = true;
+      this.$apply();
+    },
+    // 关闭
+    closeExprenceList(){
+      this.exprenceList = false;
+      this.$apply();
+    }
+  }
+}
+</script>
+
+<style lang="less" scoped>
+.grade-detail{
+  .grade-info{
+    width: 750rpx;
+    height: 315rpx;
+    background-color: #ff7905;
+    background-image: url(https://gcdn.playonwechat.com/nvzhu/grade-bg01.png);
+    padding-top: 1rpx;
+    .level{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 20rpx;
+    color: #fff;
+    margin-bottom: 50rpx;
+  }
+  .logo{
+    width: 85rpx;
+    height: 111rpx;
+    margin:30rpx auto 20rpx auto;
+    display: block;
+    background-size: 100% 100%;
+  }
+  .grade{
+      width: 80rpx;
+      height: 28rpx;
+      color: #fff;
+      margin-left: 14rpx;
+      background-image:url('https://gcdn.playonwechat.com/mycenter-icon-leval.png');
+      background-size: 100%;
+      font-size: 20rpx;
+      padding-left: 30rpx;
+    }
+    .user-tag{
+      font-size: 18rpx;
+      display: inline-block;
+      padding: 2 5rpx;
+      min-width: 50rpx;
+      text-align: center;
+      border:1px solid rgba(209, 176, 255, 1);
+      border-radius: 20rpx;
+      margin-left: 20rpx;
+      color: #d1b0ff;
+    }
+    .level-bar{
+      width: 600rpx;
+      height: 6rpx;
+      margin:0 auto 20rpx auto;
+      background-color: #c399ff;
+      border-radius: 6rpx;
+      position: relative;
+    }
+    .level-bar:after{
+      content: '';
+      display: block;
+      position: absolute;
+      width: 300rpx;
+      height: 6rpx;
+      background: #7c48c6;
+      border-radius: 6rpx;
+      left: 0;
+      top: 0;
+    }
+    .level-bar-info{
+      display: flex;
+      width: 600rpx;
+      margin:0 auto;
+      justify-content: space-between;
+      font-size: 20rpx;
+    }
+    .bar-left{
+      color: #7c48c6;
+      font-size: 20rpx;
+      text{
+        display: inline-block;
+        margin-left: 20rpx;
+      }
+    }
+    .bar-right{
+      font-size: 20rpx;
+      color: #fff;
+    }
+  }
+  
+  .list{
+    color: #333333;
+      .list-item{
+        display: block;
+        width: 750rpx;
+        height: 88rpx;
+        line-height: 88rpx;
+        padding:0 20rpx;
+        position: relative;
+        box-sizing: border-box;
+      }
+      .list-item:before{
+        content: '';
+        display: block;
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        border-bottom: 1px solid rgba(0, 0, 0, .1);
+        width: 100%;
+        transform:scaleY(.5);
+      }
+      .list-item:last-child:before{
+        display: none;
+      }
+      .list-item:after{
+        content: '';
+        display: block;
+        width: 16rpx;
+        height: 25rpx;
+        position: absolute;
+        top:50%;
+        margin-top: -12rpx;
+        left: 700rpx;
+        background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAZCAMAAAAPIl6bAAAAZlBMVEUAAADHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zRTRADAAAAIXRSTlMA4BLpxzEb79YgDgfazbQoJhfRqGpj98C7up2JdVBBOSyXj9d+AAAAfklEQVQY03XQSRKFIAxFURRE/Y36G/uW/W9SE6t4UcvM7hlAQClVduowf+d+p97kCegdTSZkuEjJ0goZK5L6AZliEiMk0iwhpAhI3kJsQvL9QEJDklhI7mga3ymfEqTHfvku9rZ3nWvcINrvsGjshHdg6yhGAww3hH8CM2eyV5TRD4XtDXMwAAAAAElFTkSuQmCC');
+        background-size: 100% 100%;
+      }
+    }
+
+    .get-experience{
+      border-top: 20rpx solid #eeeeee;
+      .get-title{
+        color: #7c48c6;
+        height: 70rpx;
+        padding: 0 20rpx;
+        line-height: 70rpx;
+        position: relative;
+      }
+      .get-title::after{
+        content: '';
+        display: block;
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        border-bottom: 1px solid #e5e5e5;
+        transform: scaleY(.5);
+      }
+      .get-item{
+        height: 100rpx;
+        line-height: 100rpx;
+        display: flex;
+        justify-content: space-between;
+        padding: 0 20rpx;
+        position: relative;
+        .item-left{
+          display: flex;
+          align-items: center;
+          flex: 1;
+          font-size: 28rpx;
+        }
+        .icon{
+          width: 66rpx;
+          height: 66rpx;
+          margin-right: 20rpx;
+        }
+        .score{
+          width: 200rpx;
+          flex-shrink: 0;
+          color: #ff7905;
+        }
+        .item-right{
+          font-size: 28rpx;
+          text{
+            color: #ff7905;
+          }
+        }
+      }
+      .get-item:after{
+        content: ' ';
+        display: block;
+        width: 100%;
+        border-bottom: 1px solid #e5e5e5;
+        transform: scaleY(.5);
+        position: absolute;
+        left: 0;
+        bottom: 0;
+      }
+    }
+
+    .exprence-list{
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      left: 0;
+      top: 0;
+      background: rgba(0, 0, 0, .5);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      .main{
+        width: 630rpx;
+        height: 970rpx;
+        background: #fff;
+        border-radius: 20rpx;
+      }
+      .list-nav{
+        display: flex;
+        .nav-item{
+          flex: 1;
+          height: 88rpx;
+          line-height: 88rpx;
+          text-align: center;
+          font-size: 34rpx;
+        }
+      }
+      .list-item{
+        display: flex;
+      }
+      .list-item:nth-of-type(2n){
+        background: #efefef;
+      }
+      .lv-item{
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 88rpx;
+        line-height: 88rpx;
+      }
+      .lv-icon{
+        width: 40rpx;
+        height: 40rpx;
+      }
+    }
+  
+}
+
+.lv-close{
+  width: 68rpx;
+  height: 68rpx;
+  margin-top: 40rpx;
+  image{
+    width: 68rpx;
+    height: 68rpx;
+  }
+}
+</style>
+
+
