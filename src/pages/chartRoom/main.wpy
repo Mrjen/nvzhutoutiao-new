@@ -223,8 +223,8 @@ export default class messageDetail extends wepy.page{
                wx.pageScrollTo({
                   scrollTop: 99999,
                   duration: 800
-               },20)
-            })
+               })
+            },30)
             
         }
       })

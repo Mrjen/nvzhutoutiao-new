@@ -2,25 +2,48 @@
   <view class="grade-detail">
     <!-- 顶部资料 -->
     <view class="grade-info">
-        <image class="logo" mode="widthFix" src="https://gcdn.playonwechat.com/nvzhu/grade-logo.png"/>
+        <image class="logo" mode="widthFix" src="https://gcdn.playonwechat.com/nvzhugrade-logo.png"/>
         <view class="level">
             <text>当前等级:</text> 
-            <view class="grade">Lv.9</view>
-            <text class="user-tag">实习</text>
+            <view class="grade">Lv.{{myData.empiric_level}}</view>
+            <view class="user-tag">
+               <image mode="widthFix" 
+                      wx:for="{{myData.curIconArr}}" 
+                      wx:key="{{index}}" 
+                      src="{{item}}" style="width:28rpx;height:28rpx"/>
+            </view>
         </view>
-        <view class="level-bar"></view>
+        <view class="level-bar">
+          <view class="bar-inner" style="width:{{(myData.maxnum/600)*myData.empiric+'rpx'}}"></view>
+        </view>
+
         <view class="level-bar-info">
-           <view class="bar-left">Lv.9<text>364经验值</text></view>
-           <view class="bar-right">升级还需999经验值</view>
+           <view class="bar-left">
+              <view class="icon">
+                <image mode="widthFix" 
+                       wx:for="{{myData.curIconArr}}" 
+                       wx:key="{{index}}" 
+                       src="{{item}}" style="width:28rpx;height:28rpx"/>
+              </view>
+              <view class="my-lv">{{myData.empiric}}经验值</view>
+           </view>
+           <view class="bar-right">
+             <view class="icon">
+               <image mode="widthFix" 
+                      wx:for="{{myData.nextIconArr}}"
+                      wx:key="{{index}}"
+                      src="{{item}}" style="width:28rpx;height:28rpx"/></view>
+             <view class="next-lv">还需{{myData.short}}经验值</view>
+           </view>
         </view>
     </view>
 
      <!-- 等级规则 经验经验 -->
      <view class="list">
-        <navigator class="list-item" @tap="openExprenceList">
+        <navigator class="list-item" @tap="openLvRule">
             等级规则
         </navigator>
-        <navigator class="list-item">
+        <navigator class="list-item" @tap="openExprenceList">
             经验记录
         </navigator>   
      </view>
@@ -30,14 +53,15 @@
         <view class="get-title">如何获得经验值？</view>
         <view class="get-item">
            <view class="item-left">
-             <image class="icon" src="https://gcdn.playonwechat.com/nvzhu/lv-login-icon.png" mode="widthFix"/>登录
+             <image class="icon" 
+             src="https://gcdn.playonwechat.com/nvzhu/lv-login-icon.png" mode="widthFix"/>登录
            </view>
            <view class="score">+2</view>
            <view class="item-right">每天上限<text>2</text>经验值</view>
         </view>
         <view class="get-item">
            <view class="item-left">
-             <image class="icon" src="https://gcdn.playonwechat.com/nvzhu/lv-like-icon.png" mode="widthFix"/>点赞
+             <image class="icon" src="https://gcdn.playonwechat.com/nvzhu/lv-like-icon.png" mode="widthFix"/>点亮
            </view>
            <view class="score">+1</view>
            <view class="item-right">每天上限<text>5</text>经验值</view>
@@ -65,7 +89,7 @@
         </view>
      </view>
 
-     <!-- 获得经验记录 -->
+     <!-- 等级规则 -->
      <view class="exprence-list" wx:if="{{exprenceList}}">
         <view class="main">
            <view class="list-nav">
@@ -76,55 +100,115 @@
            <view class="list-item">
               <view class="lv-item">Lv1</view>
               <view class="lv-item">
-                <image class="lv-icon" mode="widthFix" src="https://nvzhu.zealcdn.cn/public/img/star.png"/>
+                <image class="lv-icon" mode="widthFix" src="https://nvzhu.zealcdn.cn/public/img/star.png" style="width:28rpx;height:28rpx"/>
               </view>
               <view class="lv-item">0-10</view>
            </view>
            <view class="list-item">
               <view class="lv-item">Lv2</view>
               <view class="lv-item">
-                  <image class="lv-icon" mode="widthFix" src="https://nvzhu.zealcdn.cn/public/img/star.png"/>
-                  <image class="lv-icon" mode="widthFix" src="https://nvzhu.zealcdn.cn/public/img/star.png"/>
-                  <image class="lv-icon" mode="widthFix" src="https://nvzhu.zealcdn.cn/public/img/star.png"/>
+                  <image class="lv-icon" mode="widthFix" src="https://nvzhu.zealcdn.cn/public/img/star.png" style="width:28rpx;height:28rpx"/>
+                  <image class="lv-icon" mode="widthFix" src="https://nvzhu.zealcdn.cn/public/img/star.png" style="width:28rpx;height:28rpx"/>
               </view>
-              <view class="lv-item">0-10</view>
+              <view class="lv-item">11-50</view>
            </view>
            <view class="list-item">
-              <view class="lv-item">Lv1</view>
-              <view class="lv-item"><image class="lv-icon" mode="widthFix" src="http://iph.href.lu/20x20?text=icon"/></view>
-              <view class="lv-item">0-10</view>
-           </view>
-           <view class="list-item">
-              <view class="lv-item">Lv1</view>
-              <view class="lv-item"><image class="lv-icon" mode="widthFix" src="http://iph.href.lu/20x20?text=icon"/></view>
-              <view class="lv-item">0-10</view>
-           </view>
-           <view class="list-item">
-              <view class="lv-item">Lv1</view>
+              <view class="lv-item">Lv3</view>
               <view class="lv-item">
-                <image class="lv-icon" mode="widthFix" src="http://iph.href.lu/20x20?text=icon"/>
+                <image class="lv-icon" mode="widthFix" src="https://nvzhu.zealcdn.cn/public/img/star.png" style="width:28rpx;height:28rpx"/>
+                <image class="lv-icon" mode="widthFix" src="https://nvzhu.zealcdn.cn/public/img/star.png" style="width:28rpx;height:28rpx"/>
+                <image class="lv-icon" mode="widthFix" src="https://nvzhu.zealcdn.cn/public/img/star.png" style="width:28rpx;height:28rpx"/>
               </view>
-              <view class="lv-item">0-10</view>
+              <view class="lv-item">51-100</view>
            </view>
            <view class="list-item">
-              <view class="lv-item">Lv1</view>
-              <view class="lv-item"><image class="lv-icon" mode="widthFix" src="http://iph.href.lu/20x20?text=icon"/></view>
-              <view class="lv-item">0-10</view>
+              <view class="lv-item">Lv4</view>
+              <view class="lv-item">
+                <image class="lv-icon" mode="widthFix" src="https://nvzhu.zealcdn.cn/public/img/moon.png" style="width:28rpx;height:28rpx"/>
+              </view>
+              <view class="lv-item">101-200</view>
+           </view>
+           <view class="list-item">
+              <view class="lv-item">Lv5</view>
+              <view class="lv-item">
+                <image class="lv-icon" mode="widthFix" src="https://nvzhu.zealcdn.cn/public/img/moon.png" style="width:28rpx;height:28rpx"/>
+                <image class="lv-icon" mode="widthFix" src="https://nvzhu.zealcdn.cn/public/img/moon.png" style="width:28rpx;height:28rpx"/>
+              </view>
+              <view class="lv-item">201-500</view>
+           </view>
+           <view class="list-item">
+              <view class="lv-item">Lv6</view>
+              <view class="lv-item">
+                <image class="lv-icon" mode="widthFix" src="https://nvzhu.zealcdn.cn/public/img/moon.png" style="width:28rpx;height:28rpx"/>
+                <image class="lv-icon" mode="widthFix" src="https://nvzhu.zealcdn.cn/public/img/moon.png" style="width:28rpx;height:28rpx"/>
+                <image class="lv-icon" mode="widthFix" src="https://nvzhu.zealcdn.cn/public/img/moon.png" style="width:28rpx;height:28rpx"/>
+              </view>
+              <view class="lv-item">501-1000</view>
+           </view>
+           <view class="list-item">
+              <view class="lv-item">Lv7</view>
+              <view class="lv-item">
+                <image class="lv-icon" mode="widthFix" src="https://nvzhu.zealcdn.cn/public/img/sun.png" style="width:28rpx;height:28rpx"/>
+              </view>
+              <view class="lv-item">1000-2000</view>
+           </view>
+           <view class="list-item">
+              <view class="lv-item">Lv8</view>
+              <view class="lv-item">
+                <image class="lv-icon" mode="widthFix" src="https://nvzhu.zealcdn.cn/public/img/sun.png" style="width:28rpx;height:28rpx"/>
+                <image class="lv-icon" mode="widthFix" src="https://nvzhu.zealcdn.cn/public/img/sun.png" style="width:28rpx;height:28rpx"/>
+              </view>
+              <view class="lv-item">2000-5000</view>
+           </view>
+           <view class="list-item">
+              <view class="lv-item">Lv9</view>
+              <view class="lv-item">
+                <image class="lv-icon" mode="widthFix" src="https://nvzhu.zealcdn.cn/public/img/sun.png" style="width:28rpx;height:28rpx"/>
+                <image class="lv-icon" mode="widthFix" src="https://nvzhu.zealcdn.cn/public/img/sun.png" style="width:28rpx;height:28rpx"/>
+                <image class="lv-icon" mode="widthFix" src="https://nvzhu.zealcdn.cn/public/img/sun.png" style="width:28rpx;height:28rpx"/>
+              </view>
+              <view class="lv-item">5000-10000</view>
+           </view>
+           <view class="list-item">
+              <view class="lv-item">Lv10</view>
+              <view class="lv-item">
+                <image class="lv-icon" mode="widthFix" src="https://nvzhu.zealcdn.cn/public/img/crown.png" style="width:28rpx;height:28rpx"/>
+              </view>
+              <view class="lv-item">10000+</view>
            </view>
         </view>
 
-        <view class="lv-close"  @tap="closeExprenceList">
+        <view class="lv-close"  @tap="openLvRule">
           <image mode="widthFix"  src="https://gcdn.playonwechat.com/nvzhu/lv-close.png"/>
         </view>
 
      </view>
 
-     <!-- 我的经验记录 -->
-     <view class="my-experence">
+     <!-- 我的经验记录 myExperence -->
+     <view class="my-experence" wx:if="{{myExperence}}">
          <view class="main">
-            
+            <view class="header">
+               <view class="title">经验值记录</view>
+               <view class="today">
+                 今天已获得<text>{{dodayGetExperence}}</text>
+                 经验值,累计<text>{{allExperence}}</text>经验值
+               </view>
+            </view>
+            <scroll-view class="scroll" scroll-y lower-threshold="100" bindscrolltolower="loadMore">
+              <view class="scroll-inner">
+                <view wx:for="{{gradeList}}" wx:key="{{index}}" class="scroll-item">
+                  <view class="item-left">
+                    <view class="desc">{{item.desc}}</view>
+                    <view class="date">{{item.create_time}}</view>
+                 </view>
+                 <view class="item-center">+{{item.empiric}}</view>
+                 <view class="item-right">累计<text>{{item.history_empiric}}</text>经验值</view>
+                </view>
+              </view>
+            </scroll-view>
          </view>
-         <view class="lv-close"></view>
+         <view class="lv-close"  @tap="openExprenceList">
+           <image mode="widthFix"  src="https://gcdn.playonwechat.com/nvzhu/lv-close.png"/></view>
      </view>
 
   </view>
@@ -132,24 +216,92 @@
 
 <script>
 import wepy from 'wepy';
+import wxRequest from '../../utils/http.js';
+import api from '../../utils/api.js';
 export default class gradeDetail extends wepy.page {
   config={
     navigationBarTitleText:'等级详情'
   }
   data = {
-    exprenceList: false
+    exprenceList: false,                // 等级规则
+    myExperence: false,                  // 经验记录
+    myData: {},
+    gradeList:[],                       // 经验记录数据
+    dodayGetExperence:'',               // 今天获得积分值
+    allExperence:'',                     // 累计经验值
+    page: 2
   }
   methods={
     // 打开等级规则
-    openExprenceList(){
-      this.exprenceList = true;
+    openLvRule(){
+      this.exprenceList = !this.exprenceList;
       this.$apply();
     },
-    // 关闭
-    closeExprenceList(){
-      this.exprenceList = false;
+    // 打开经验
+    openExprenceList(){
+      this.myExperence = !this.myExperence;
       this.$apply();
     }
+  }
+
+  async onPullDownRefresh(){
+     wx.stopPullDownRefresh()
+  }
+
+  async onShow(){
+
+    // 请求我的积分相关
+     let that = this;
+     let json = await wxRequest(api.empiricstatus,{},'POST');
+     if(json.data.code===api.STATUS){
+       console.log(json.data.data);
+       let myData = json.data.data;
+       let lv = myData.icon_num;
+       let curIconArr = [];
+       let nextIconArr = [];
+       for(let i=0;i<lv;i++){
+          curIconArr.push(myData.icon_url)
+       } 
+       for(let j=0;j<myData.last_icon_num;j++){
+           nextIconArr.push(myData.last_icon_url)
+       }
+       myData.curIconArr = curIconArr;
+       myData.nextIconArr = nextIconArr;
+       this.myData =  myData;
+       this.$apply();
+     }
+     
+    //  获取经验值记录
+    this.gradeDetail(1).then(res=>{
+       console.log(res)
+       that.gradeList = res.list;
+       that.dodayGetExperence = res.today_empiric;
+       that.allExperence = res.total_empiric;
+       that.$apply();
+    })
+    
+  
+  }
+
+   // 经验窗口加载更多
+    async loadMore(){
+      console.log('加载更多经验')
+       let that = this;
+       let page = this.page;
+       let oldList = that.gradeList;
+       this.gradeDetail(page).then(res=>{
+          that.gradeList = [...oldList,...res.list];
+          that.page++;
+          that.$apply();
+       })
+    }
+
+
+  async gradeDetail(page){
+     let res = await wxRequest(api.empiricdetail,{page:page},'POST');
+     if(res.data.code === api.STATUS){
+        return res.data.data;
+     }
   }
 }
 </script>
@@ -158,18 +310,28 @@ export default class gradeDetail extends wepy.page {
 .grade-detail{
   .grade-info{
     width: 750rpx;
-    height: 315rpx;
+    height: 375rpx;
     background-color: #ff7905;
     background-image: url(https://gcdn.playonwechat.com/nvzhu/grade-bg01.png);
     padding-top: 1rpx;
     .level{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 20rpx;
-    color: #fff;
-    margin-bottom: 50rpx;
-  }
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 28rpx;
+      color: #fff;
+      margin-bottom: 50rpx;
+    }
+    .grade{
+      margin:0 10rpx;
+    }
+    .user-tag{
+      image{
+        display: inline-block;
+        width: 28rpx;
+        margin:0 2rpx;
+      }
+    }
   .logo{
     width: 85rpx;
     height: 111rpx;
@@ -177,45 +339,52 @@ export default class gradeDetail extends wepy.page {
     display: block;
     background-size: 100% 100%;
   }
-  .grade{
-      width: 80rpx;
-      height: 28rpx;
-      color: #fff;
-      margin-left: 14rpx;
-      background-image:url('https://gcdn.playonwechat.com/mycenter-icon-leval.png');
-      background-size: 100%;
-      font-size: 20rpx;
-      padding-left: 30rpx;
-    }
-    .user-tag{
-      font-size: 18rpx;
-      display: inline-block;
-      padding: 2 5rpx;
-      min-width: 50rpx;
-      text-align: center;
-      border:1px solid rgba(209, 176, 255, 1);
-      border-radius: 20rpx;
-      margin-left: 20rpx;
-      color: #d1b0ff;
-    }
     .level-bar{
       width: 600rpx;
-      height: 6rpx;
+      height: 8rpx;
       margin:0 auto 20rpx auto;
       background-color: #c399ff;
       border-radius: 6rpx;
       position: relative;
+      display: flex;
+      align-items: center;
     }
-    .level-bar:after{
-      content: '';
+    .level-bar::before{
+      content:'';
+      display: block;
+      width: 10rpx;
+      height: 10rpx;
+      background: #7c48c6;
+      border:4rpx solid #c399ff;
+      border-radius: 50%;
+      position: absolute;
+      left: 30%;
+      top:50%;
+      transform: translateY(-50%);
+    }
+    .level-bar::after{
+      content:'';
+      display: block;
+      width: 10rpx;
+      height: 10rpx;
+      background: #7c48c6;
+      border:4rpx solid #c399ff;
+      border-radius: 50%;
+      position: absolute;
+      left: 70%;
+      top:50%;
+      transform: translateY(-50%);
+    }
+    .bar-inner{
       display: block;
       position: absolute;
-      width: 300rpx;
-      height: 6rpx;
+      // width: 300rpx;
+      height: 8rpx;
       background: #7c48c6;
       border-radius: 6rpx;
       left: 0;
       top: 0;
+      border-radius: 10rpx;
     }
     .level-bar-info{
       display: flex;
@@ -225,16 +394,34 @@ export default class gradeDetail extends wepy.page {
       font-size: 20rpx;
     }
     .bar-left{
-      color: #7c48c6;
+      color: #fff;
       font-size: 20rpx;
-      text{
-        display: inline-block;
-        margin-left: 20rpx;
+      .icon{
+        image{
+          display: inline-block;
+          width: 28rpx;
+        }
+      }
+      .my-lv{
+        font-size: 20rpx;
       }
     }
     .bar-right{
       font-size: 20rpx;
       color: #fff;
+      .icon{
+        height: 40rpx;
+        display: flex;
+        justify-content: center;
+        image{
+          display: inline-block;
+          width: 28rpx;
+        }
+      }
+      .next-lv{
+        font-size: 20rpx;
+        color: #fff;
+      }
     }
   }
   
@@ -379,8 +566,9 @@ export default class gradeDetail extends wepy.page {
         line-height: 88rpx;
       }
       .lv-icon{
-        width: 40rpx;
-        height: 40rpx;
+        width: 34rpx;
+        margin:0 8rpx;
+        display: inline-block;
       }
     }
   
@@ -390,9 +578,82 @@ export default class gradeDetail extends wepy.page {
   width: 68rpx;
   height: 68rpx;
   margin-top: 40rpx;
+  position: relative;
+  z-index: 100;
   image{
     width: 68rpx;
     height: 68rpx;
+  }
+}
+
+.my-experence{
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  background: rgba(0, 0, 0, .5);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+  .main{
+    width:630rpx;
+    height:970rpx;
+    background:#fff;
+    border-radius:20rpx;
+    padding: 20rpx 40rpx;
+  }
+  .title{
+    text-align: center;
+    font-size: 36rpx;
+    text-align: center;
+    margin-bottom: 10rpx;
+  }
+  .today{
+    font-size: 28rpx;
+    text-align: center;
+    margin-bottom: 20rpx;
+    text{
+      color: #ff7905
+    }
+  }
+  .scroll{
+    height: 800rpx;
+     .scroll-item{
+       display: flex;
+       justify-content: space-between;
+       align-items: center;
+       position: relative;
+       padding: 10rpx 0;
+     }
+     .scroll-item:after{
+       content:' ';
+       display: block;
+       width: 100%;
+       border-bottom: 1px solid rgba(0, 0, 0, .1);
+       position: absolute;
+       left: 0;
+       bottom: 0;
+       transform: scaleY(.5);
+     }
+     .desc{
+       font-size: 30rpx;
+       margin-bottom: 10rpx;
+     }
+     .date{
+       font-size: 24rpx;
+       color: #999;
+     }
+     .item-center{
+       color: #ff7905;
+     }
+     .item-right{
+       text{
+         color: #ff7905;
+       }
+     }
   }
 }
 </style>

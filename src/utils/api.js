@@ -19,7 +19,7 @@ const getArticleList = `${domainUrl}/article/articlelist`;
 // 文章详情
 const getArticleDetail = `${domainUrl}/article/articledesc`;
 
-// 文章点赞
+// 文章点亮
 const likeArticle = `${domainUrl}/article/likearticle`
 
 // 评论列表
@@ -31,7 +31,7 @@ const addComment = `${domainUrl}/comment/createcomment`;
 // 发表跟评
 const followComment = `${domainUrl}/followcomment/createfollowcomment`;
 
-// 评论点赞
+// 评论点亮
 const likeComment = `${domainUrl}/comment/likecomment`;
 
 // 跟评列表
@@ -64,7 +64,7 @@ const clearSearchHistory = `${domainUrl}/search/deletehistorysearch`;
 // 增加文章分享次数
 const addArticleShareTime = `${domainUrl}/article/addsharetimes`;
 
-// 点赞或评论列表
+// 点亮或评论列表
 const userCommentList = `${domainUrl}/user/usercommentlist`;
 
 // 获取七牛Token
@@ -73,7 +73,7 @@ const getQiNiuToken = `${domainUrl}/user/uploadtoken`;
 // 消息详情
 const systemMsgDetail = `${domainUrl}/sysmessage/sysmsgdesc`;
 
-// 跟评点赞
+// 跟评点亮
 const likefollowcomment = `${domainUrl}/followcomment/likefollowcomment`;
 
 // 获取文章二维码
@@ -111,6 +111,24 @@ const articletype = `${domainUrl}/article/articletype`
 
 // 合成海报
 const poster = `${domainUrl}/image/poster`
+
+// 经验值状态
+const empiricstatus = `${domainUrl}/empiric/empiricstatus`
+
+// 经验值明细
+const empiricdetail = `${domainUrl}/empiric/empiricdetail`
+
+// 签到状态
+const signstatus = `${domainUrl}/sign/signstatus`
+
+// 签到
+const chunk = `${domainUrl}/sign/signin`
+
+// 积分明细
+const integraldetail = `${domainUrl}/integral/integraldetail`
+
+// 评论列表删除评论
+const delcomment = `${domainUrl}/comment/delcomment`
 
 export default {
   STATUS,
@@ -150,5 +168,11 @@ export default {
   getAccessToken,
   articleindex,
   articletype,
-  poster
+  poster,
+  empiricstatus,
+  empiricdetail,
+  signstatus,
+  chunk,
+  integraldetail,
+  delcomment
 };

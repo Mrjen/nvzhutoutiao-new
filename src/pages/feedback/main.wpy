@@ -21,6 +21,11 @@ export default class Detail extends wepy.page {
   data = {
     message:''
   }
+  
+  async onPullDownRefresh(){
+    wx.stopPullDownRefresh()
+  }
+
   methods = {
     async sendFeedBack(){
         let send = await wxRequest(api.feedBackMsg, { message:this.message })

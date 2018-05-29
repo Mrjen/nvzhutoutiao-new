@@ -1,18 +1,716 @@
 <template>
-<view class="shop"></view>
+<view class="shop">
+  <view class="header header1">
+      <view class="sharp">
+        <view class="title">我的积分</view>
+        <view class="score">{{integral}}</view>
+        <view class="score_detail" @tap="openMyExperence">积分明细</view>
+      </view>
+
+      <!-- 签到领积分 -->
+      <block>
+        <view class="sign-btn" wx:if="{{is_sign=='0'?true:false}}" @tap="signChunk">签到领积分</view>
+        <view class="sign-btn" wx:else>今天已签到</view>
+      </block>
+  </view>
+
+  <!-- 商城主体 -->
+<block> 
+  <view class="qidai">积分商城敬请期待</view>
+</block>
+
+  <!-- 积分规则 -->
+  <view class="rules" @tap="closeExperience">
+     积分规则>
+  </view>
+  
+  <!-- 积分弹出层 -->
+  <view class="jifen-popup" wx:if="{{jiFenPop}}">
+    <view class="sign-header"></view>
+    <view class="main">
+       <view class="main-in">
+         <view class="jf-title">
+         连续签到<text>{{continue_sign}}</text>天，累计签到<text>{{total_sign}}</text>天
+        </view>
+        <view class="sign-list">
+           <view wx:for="{{signList}}" 
+                 wx:key="{{index}}" 
+                 class="sign-item {{item.active?'sign-active':''}}">
+              <view class="sign-icon">{{item.count}}</view>
+              <view class="text">{{item.text}}</view>
+           </view>
+        </view>
+        <view class="success-btn" @tap="toIndex">签到成功</view>
+        <view class="sign-tip">
+           <view class="tip-item">签到积分说明：</view>
+           <view class="tip-item">1、第7天后连续签到将持续获得100积分</view>
+           <view class="tip-item">2、如果中断签到，将重新开始计算积分</view>
+        </view>
+       </view>
+    </view>
+
+      <view class="lv-close"  @tap="openLvRule">
+        <image mode="widthFix"  src="https://gcdn.playonwechat.com/nvzhu/lv-close.png"/>
+      </view>
+  </view>
+
+  <!-- 如何获得经验 -->
+  <view class="experience-out" wx:if="{{showExperience}}">
+    <view class="get-experience">
+      <view class="get-title">如何获得积分？</view>
+      <view class="get-item">
+          <view class="item-left">
+            <image class="icon" src="https://gcdn.playonwechat.com/nvzhu/lv-login-icon.png" mode="widthFix"/>登录
+          </view>
+          <view class="score">+20积分</view>
+          <view class="item-right">每天上限<text>20</text>积分</view>
+      </view>
+      <view class="get-item">
+          <view class="item-left">
+            <image class="icon" src="https://gcdn.playonwechat.com/nvzhu/lv-like-icon.png" mode="widthFix"/>点亮
+          </view>
+          <view class="score">+10积分</view>
+          <view class="item-right">每天上限<text>50</text>积分</view>
+      </view>
+      <view class="get-item">
+          <view class="item-left">
+            <image class="icon" src="https://gcdn.playonwechat.com/nvzhu/lv-share-icon.png" mode="widthFix"/>转发
+          </view>
+          <view class="score">+20积分</view>
+          <view class="item-right">每天上限<text>100</text>积分</view>
+      </view>
+      <view class="get-item">
+          <view class="item-left">
+            <image class="icon" src="https://gcdn.playonwechat.com/nvzhu/lv-comment-icon.png" mode="widthFix"/>评论
+          </view>
+          <view class="score">+20积分</view>
+          <view class="item-right">每天上限<text>100</text>积分</view>
+      </view>
+      <view class="get-item">
+          <view class="item-left">
+            <image class="icon" src="https://gcdn.playonwechat.com/nvzhu/lv-topcomment-icon.png" mode="widthFix"/>精彩评论
+          </view>
+          <view class="score">+100积分</view>
+          <view class="item-right">每天上限<text>200</text>积分</view>
+      </view>
+      <view class="get-item">
+          <view class="item-left">
+            <image class="icon" src="http://p766oymet.bkt.clouddn.com/nvzhu/lv-sign-icon.png" mode="widthFix"/>签到
+          </view>
+          <view class="score">+20积分</view>
+          <view class="item-right">每天上限<text>100</text>积分</view>
+      </view>
+      <view class="colse-experience" @tap="closeExperience">
+        <image src="http://p766oymet.bkt.clouddn.com/close-icon.png"/>
+      </view>
+    </view>
+  </view>
+
+  <!-- 我的积分记录 myExperence -->
+     <view class="my-experence" wx:if="{{myExperence}}">
+         <view class="main">
+            <view class="header">
+               <view class="title">积分记录</view>
+               <view class="today">
+                 今天已获得<text>{{today_integral}}</text>
+                 积分,累计<text>{{total_integral}}</text>积分
+               </view>
+            </view>
+            <scroll-view class="scroll" scroll-y lower-threshold="100" bindscrolltolower="loadMore">
+              <view class="scroll-inner">
+                <view wx:for="{{signDetail}}" wx:key="{{index}}" class="scroll-item">
+                  <view class="item-left">
+                    <view class="desc">{{item.desc}}</view>
+                    <view class="date">{{item.create_time}}</view>
+                 </view>
+                 <view class="item-center">+{{item.integral}}</view>
+                 <view class="item-right">累计<text>{{item.history_integral}}</text>积分</view>
+                </view>
+              </view>
+            </scroll-view>
+         </view>
+         <view class="lv-close"  @tap="openMyExperence">
+           <image mode="widthFix"  src="https://gcdn.playonwechat.com/nvzhu/lv-close.png"/></view>
+     </view>
+
+  
+</view>
 </template>
 
 <script>
 import wepy from 'wepy';
+import wxRequest from '../../utils/http.js';
+import api from '../../utils/api.js';
 export default class shop extends wepy.page {
   config={
     navigationBarTitleText:'积分商城'
   }
-  data = {}
-  methos={}
+  data = {
+     signList:[{
+       icon:'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-bg.png',
+       text: "第1天",
+       activebg: 'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-active-bg.png',
+       active: false,
+       count: 20
+     },{
+       icon:'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-bg.png',
+       text: "第2天",
+       activebg: 'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-active-bg.png',
+       active: false,
+       count: 30
+     },{
+       icon:'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-bg.png',
+       text: "第3天",
+       activebg: 'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-active-bg.png',
+       active: false,
+       count: 40
+     },{
+       icon:'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-bg.png',
+       text: "第4天",
+       activebg: 'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-active-bg.png',
+       active: false,
+       count: 50
+     },{
+       icon:'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-bg.png',
+       text: "第5天",
+       activebg: 'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-active-bg.png',
+       active: false,
+       count: 60
+     },{
+       icon:'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-bg.png',
+       text: "第6天",
+       activebg: 'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-active-bg.png',
+       active: false,
+       count: 80
+     },{
+       icon:'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-bg.png',
+       text: "第7天及以上",
+       activebg: 'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-active-bg.png',
+       active: false,
+       count: 100
+     }],
+     jiFenPop: false,           // 积分弹层
+     is_sign: false,            // 今日是否签到
+     total_sign: 0,             // 总签到天数
+     continue_sign: 0,          // 连续签到天数
+     showExperience: false,     // 规则弹层
+     integral: 0,               // 当前持有积分
+     myExperence: false,         // 积分明细
+     today_integral: 0,         // 今日获得积分
+     total_integral: 0,         // 总积分
+     signDetail:[],             // 积分记录
+     page: 2,                   // 数据分页
+     loadEnd: true              // 防止重复加载数据
+  }
+  methods={
+    // 打卡弹层
+    openLvRule(){
+        this.jiFenPop = !this.jiFenPop;
+        this.$apply();
+    },
+
+    // 去首页
+    toIndex(){
+      wx.switchTab({
+        url: '../index/main'
+      })
+    },
+    
+    // 签到
+    async signChunk(){
+    let chunk = await wxRequest(api.chunk,{},'POST');
+    if(chunk.data.code===api.STATUS){
+      console.log('chunk', chunk)
+      let signList = this.signList;
+      for(let i=0;i<chunk.data.data.continue_sign;i++){
+        if(signList[i]){
+          signList[i].active = true;
+        }
+      }
+      this.jiFenPop = !this.jiFenPop;
+      this.signList = signList;
+      this.is_sign = 1;
+      this.continue_sign = chunk.data.data.continue_sign;
+      this.total_sign = chunk.data.data.total_sign;
+      this.$apply();
+    }
+  },
+  
+  // 关闭/打开规则
+  closeExperience(){
+     this.showExperience = !this.showExperience;
+     this.$apply();
+  },
+
+  // 关闭/打开积分明细
+  async openMyExperence(){
+    this.myExperence = !this.myExperence;
+    this.$apply();
+
+    let signData = await this.getSignDetail(1);
+    this.today_integral = signData.today_integral;
+    this.total_integral = signData.total_integral;
+    this.signDetail = signData.list;
+    this.$apply();
+  },
+
+  async loadMore(){
+     if(this.loadEnd){
+       this.loadEnd = false;
+       this.$apply();
+
+      let signData = await this.getSignDetail(this.page);
+      let oldList = this.signDetail;
+      this.page++;
+      this.loadEnd = true;
+      this.today_integral = signData.today_integral;
+      this.total_integral = signData.total_integral;
+      this.signDetail = [...oldList,...signData.list];
+     }
+  }
+   
+  }
+
+  async onShow(){
+    let json = await wxRequest(api.signstatus, {}, 'POST');
+    // console.log('json', json);
+    if(json.data.code === api.STATUS){
+      this.is_sign = json.data.data.is_signin;
+      this.integral = json.data.data.integral;
+      this.$apply();
+    }
+
+    
+  }
+
+  // 获取积分数据
+  async getSignDetail(page){
+    let signin = await wxRequest(api.integraldetail,{page:page,page_size:15},'POST');
+    if(signin.data.code === api.STATUS){
+       return signin.data.data;
+    } 
+  }
+
+  
+
+  async onPullDownRefresh(){
+     wx.stopPullDownRefresh()
+  }
 }
 </script>
 
 <style lang="less" scoped>
+.header1{
+  width: 750rpx;
+  height: 430rpx;
+  background: url(http://p766oymet.bkt.clouddn.com/nvzhu/shop-bg.png);
+  background-size: 100% 100%;
+  padding-top: 1px;
+  .sharp{
+    width: 252rpx;
+    height: 291rpx;
+    background-image: url(http://p766oymet.bkt.clouddn.com/nvzhu/shop-sharp.png);
+    background-size: 100% 100%;
+    margin:10rpx auto;
+    .score{
+      height: 80rpx;
+    }
+  }
+  .title{
+    text-align: center;
+    padding: 74rpx 0 20rpx 0;
+    color: #3c3e53;
+    font-size: 30rpx;
+    
+  }
+  .score{
+    font-size: 60rpx;
+    color: #fff;
+    line-height: 1;
+    text-align: center;
+    padding-bottom: 20rpx;
+  }
+  .score_detail{
+    text-align: center;
+    color: #3c3e53;
+    font-size: 20rpx;
+    line-height: 1;
+  }
+}
 
+.rules{
+   width: 168rpx;
+   height: 50rpx;
+   border-radius: 40rpx 0 0 40rpx;
+   background: rgba(255, 255, 255, .5);
+   color: #7c48c6;
+   position: absolute;
+   top: 30rpx;
+   right: 0;
+   text-align: center;
+   line-height: 50rpx;
+}
+
+.sign-btn{
+   width: 250rpx;
+   height: 70rpx;
+   background: #deb887;
+   color: #fff;
+   text-align: center;
+   line-height: 70rpx;
+   border-radius: 10rpx;
+   margin: 20rpx auto;
+}
+
+.jifen-popup{
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, .3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  .main{
+    width: 600rpx;
+    height: 800rpx;
+    margin-top: -90rpx;
+    background: #fff;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    z-index: 1;
+    color: #333;
+    border-radius: 20rpx;
+  }
+  .main-in{
+    height: 100%;
+    padding-top: 100rpx;
+  }
+  .sign-header{
+    content: '';
+    display: block;
+    width: 739rpx;
+    height: 138rpx;
+    background-image:url(http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign.png);
+    background-size: 100% 100%;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 2;
+  }
+  .jf-title{
+    text-align: center;
+    display: flex;
+    align-items: center;
+    height: 28rpx;
+    font-size: 28rpx;
+    margin: 0 auto 40rpx auto;
+    justify-content: center;
+    text{
+      color: #ff7905;
+    }
+  }
+  .jf-title:before,.jf-title:after{
+    content: '';
+    display: block;
+    width: 74rpx;
+    height: 1px;
+    margin:0 10rpx;
+    background: #999;
+  }
+  .sign-list{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    .sign-item{
+      // margin-left: 40rpx;
+      justify-content: space-around;
+      margin:0 18rpx;
+      position: relative;
+    }
+    .sign-active{
+      .sign-icon{
+        border:1px solid red;
+      }
+    }
+    .sign-active::before{
+      content:'';
+      display: block;
+      width: 28rpx;
+      height: 28rpx;
+      position: absolute;
+      right: -4rpx;
+      top: 76rpx;
+      background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAkFBMVEUAAAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD//////f3/CQn/+Pj/6+v/dHT/a2v/8vL/zc3/uLj/ZGT/Vlb/5ub/3d3/09P/w8P/v7//sbH/q6v/p6f/m5v/l5f/jo7/ior/hYX/Xl7/Tk7/PT3/ODj/ICD/FRXyAWBsAAAAEHRSTlMA+QLpPtzLxGLziUgniyFAyWntVAAAAORJREFUKM+Fk+mawiAMRaFAabE6ubV1GWffx/X9306sFLHYev6ej3zJTWAeabTgXGgjWYckU+RRWRK6SUpXpJOLexDUQfjaI04RfHR2RU43yIuml5Rukp66yqiHzErVJ5WdnXqRzFDMT/VHFsN07L6ABVk0i+affgKYNUkwF8Dv4t+5j9YRb2WFcte4R6Cck5Ou7Dew7DgSbUOHGljR9N26FTm0H2UO1Ps369bUYi4hLIFn657CEHx82xJAFTiVBMHPXl/qTRj84MqGlj18Js7m0TvvbOXuaRb3jjrUcnz+DmPp1RFhqie55DwYXwAAAABJRU5ErkJggg==');
+      background-size: 100% 100%;
+    }
+    .sign-icon{
+      width: 100rpx;
+      height: 100rpx;
+      border-radius: 12rpx;
+      font-size: 38rpx;
+      text-align: center;
+      line-height: 100rpx;
+      margin:0 auto;
+      // border:1px solid red;
+      background-image: url(http://p766oymet.bkt.clouddn.com/shop-sign-bg.png);
+      background-size: 100% 100%;
+      color: #ffeebe;
+    }
+    .text{
+      font-size: 20rpx;
+      color: #ff7905;
+      text-align: center;
+      margin: 14rpx 0 40rpx 0;
+    }
+  }
+  .success-btn{
+    width: 518rpx;
+    height: 88rpx;
+    background-color: #ff7905;
+    border-radius: 10rpx;
+    font-size: 36rpx;
+    text-align: center;
+    line-height: 88rpx;
+    color: #fff;
+    margin:0 auto;
+  }
+  .sign-tip{
+    margin-top: 50rpx;
+  }
+  .tip-item{
+    font-size: 22rpx;
+    line-height: 36rpx;
+    color: #999999;
+    padding-left: 42rpx;
+  }
+}
+
+.lv-close{
+  width: 68rpx;
+  height: 68rpx;
+  margin-top: 40rpx;
+  position: relative;
+  z-index: 100;
+  image{
+    width: 68rpx;
+    height: 68rpx;
+  }
+}
+
+.experience-out{
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, .3);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.get-experience{
+      // border-top: 20rpx solid #eeeeee;
+      background-color: #fff;
+      .get-title{
+        color: #7c48c6;
+        height: 70rpx;
+        padding: 0 20rpx;
+        line-height: 70rpx;
+        position: relative;
+      }
+      .get-title::after{
+        content: '';
+        display: block;
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        border-bottom: 1px solid #e5e5e5;
+        transform: scaleY(.5);
+      }
+      .get-item{
+        height: 100rpx;
+        line-height: 100rpx;
+        display: flex;
+        justify-content: space-between;
+        padding: 0 20rpx;
+        position: relative;
+        .item-left{
+          display: flex;
+          align-items: center;
+          flex: 1;
+          font-size: 28rpx;
+        }
+        .icon{
+          width: 66rpx;
+          height: 66rpx;
+          margin-right: 20rpx;
+        }
+        .score{
+          width: 200rpx;
+          flex-shrink: 0;
+          color: #ff7905;
+        }
+        .item-right{
+          font-size: 28rpx;
+          text{
+            color: #ff7905;
+          }
+        }
+      }
+      .get-item:after{
+        content: ' ';
+        display: block;
+        width: 100%;
+        border-bottom: 1px solid #e5e5e5;
+        transform: scaleY(.5);
+        position: absolute;
+        left: 0;
+        bottom: 0;
+      }
+    }
+
+    .exprence-list{
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      left: 0;
+      top: 0;
+      background: rgba(0, 0, 0, .5);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      .main{
+        width: 630rpx;
+        height: 970rpx;
+        background: #fff;
+        border-radius: 20rpx;
+      }
+      .list-nav{
+        display: flex;
+        .nav-item{
+          flex: 1;
+          height: 88rpx;
+          line-height: 88rpx;
+          text-align: center;
+          font-size: 34rpx;
+        }
+      }
+      .list-item{
+        display: flex;
+      }
+      .list-item:nth-of-type(2n){
+        background: #efefef;
+      }
+      .lv-item{
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 88rpx;
+        line-height: 88rpx;
+      }
+      .lv-icon{
+        width: 34rpx;
+        margin:0 8rpx;
+        display: inline-block;
+      }
+    }
+.colse-experience{
+  width: 100%;
+  height: 112rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  image{
+    width: 68rpx;
+    height: 68rpx;
+    margin:0 auto;
+  }
+}
+
+.my-experence{
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  background: rgba(0, 0, 0, .5);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+  .main{
+    width:630rpx;
+    height:970rpx;
+    background:#fff;
+    border-radius:20rpx;
+    padding: 20rpx 40rpx;
+  }
+  .title{
+    text-align: center;
+    font-size: 36rpx;
+    text-align: center;
+    margin-bottom: 10rpx;
+  }
+  .today{
+    font-size: 28rpx;
+    text-align: center;
+    margin-bottom: 20rpx;
+    text{
+      color: #ff7905
+    }
+  }
+  .scroll{
+    height: 800rpx;
+     .scroll-item{
+       display: flex;
+       justify-content: space-between;
+       align-items: center;
+       position: relative;
+       padding: 10rpx 0;
+     }
+     .scroll-item:after{
+       content:' ';
+       display: block;
+       width: 100%;
+       border-bottom: 1px solid rgba(0, 0, 0, .1);
+       position: absolute;
+       left: 0;
+       bottom: 0;
+       transform: scaleY(.5);
+     }
+     .desc{
+       font-size: 30rpx;
+       margin-bottom: 10rpx;
+     }
+     .date{
+       font-size: 24rpx;
+       color: #999;
+     }
+     .item-center{
+       color: #ff7905;
+     }
+     .item-right{
+       text{
+         color: #ff7905;
+       }
+     }
+  }
+}
+
+// 商城
+.qidai{
+  width: 100%;
+  height: 500rpx;
+  text-align: center;
+  line-height: 500rpx;
+  color: #757582;
+}
 </style>

@@ -20,9 +20,11 @@
                     src="../image/boy.png"/>
           </block>
           </view>
-          <view class="user-leval">
-             <!-- <view class="grade">Lv9</view>
-             <text class="user-tag">实习</text> -->
+          <view class="user-leval" @tap="toGrade">
+             <view class="grade">Lv.{{userInfo.empiric_level}}</view>
+             <view class="grade-icon">
+               <image wx:for="{{lvIconArr}}" wx:key="{{index}}" src="{{item}}"/>
+             </view>
           </view>
           
         </view>
@@ -83,7 +85,8 @@ import aboutMe from './components/about-me';
 
 export default class myCenter extends wepy.page{
   config = {
-     "navigationBarTitleText":"个人中心"
+     "navigationBarTitleText":"个人中心",
+     disableScroll: true
   }
   data = {
         people: {
@@ -100,12 +103,13 @@ export default class myCenter extends wepy.page{
             iconPath: 'https://gcdn.playonwechat.com/mycenter-icon-message.png',
             msgNum: 0
          },
+         {
+           url: '../shop/main',
+           text: '积分商城',
+           iconPath: 'https://gcdn.playonwechat.com/mycenter-icon-shop.png',
+           msgNum: 0
+         },
         //  {
-        //    url: '../shop/main',
-        //    text: '积分商城',
-        //    iconPath: 'https://gcdn.playonwechat.com/mycenter-icon-shop.png',
-        //    msgNum: 0
-        //  },{
         //    url: '../myWallet/main',
         //    text: '我的钱包',
         //    iconPath: 'https://gcdn.playonwechat.com/mycenter-icon-wallt.png',
@@ -120,22 +124,23 @@ export default class myCenter extends wepy.page{
         listNav:[{
           url:'../likesList/main',
           num:'0',
-          text:'点赞'
+          text:'点亮'
         },{
           url:'../commList/main',
           num:'0',
           text:'评论'
         }
-        // ,{
-        //   url:'../following/main',
-        //   num:'0',
-        //   text:'关注'
-        // },{
-        //   url:'../followers/main',
-        //   num:'0',
-        //   text:'粉丝'
-        // }
-        ]
+        ,{
+          url:'../following/main',
+          num:'0',
+          text:'关注'
+        },{
+          url:'../followers/main',
+          num:'0',
+          text:'粉丝'
+        }
+        ],
+        lvIconArr: []    // 等级图标数组
     }
   components={
     listItem,
@@ -145,6 +150,12 @@ export default class myCenter extends wepy.page{
     editInfo(){
       wx.navigateTo({
         url: '../editUserInfo/main'
+      })
+    },
+    // 查看等级
+    toGrade(){
+      wx.navigateTo({
+        url:'../gradeDetail/main'
       })
     }
   }
@@ -158,11 +169,11 @@ export default class myCenter extends wepy.page{
       let listData = this.listData;
       listNav[0].num = _info.likeNum;
       listNav[1].num = _info.commentNum;
-      // listNav[2].num = _info.attentionNum;
-      // listNav[3].num = _info.followerNum;
-      // console.log('_info.id',_info.id)
-      // listNav[2].url = `../following/main?user_id=${_info.id}`;
-      // listNav[3].url = `../followers/main?user_id=${_info.id}`;
+      listNav[2].num = _info.attentionNum;
+      listNav[3].num = _info.followerNum;
+      console.log('_info.id',_info.id)
+      listNav[2].url = `../following/main?user_id=${_info.id}`;
+      listNav[3].url = `../followers/main?user_id=${_info.id}`;
       listData[0].msgNum = _info.msgNum;
       this.listNav = listNav;
       if(_info.msgNum>0){
@@ -170,7 +181,12 @@ export default class myCenter extends wepy.page{
       }else{
         wx.removeTabBarBadge({index:1})
       }
-      
+
+      let lvIconArr = [];
+      for(let i=0;i<_info.icon_num;i++){
+        lvIconArr.push(_info.icon_url)
+      }
+      this.lvIconArr = lvIconArr;
       this.$apply();
     }
   }
@@ -199,12 +215,19 @@ export default class myCenter extends wepy.page{
       flex-direction: column;
     }
     .grade{
-      width: 80rpx;
       height: 28rpx;
-      background-image:url('https://gcdn.playonwechat.com/mycenter-icon-leval.png');
       background-size: 100%;
-      font-size: 20rpx;
-      padding-left: 30rpx;
+      font-size: 26rpx;
+      margin-right: 10rpx;
+      color: #ffd767;
+    }
+    .grade-icon{
+      display: flex;
+      image{
+        display: block;
+        width: 28rpx;
+        height: 28rpx;
+      }
     }
     .user-tag{
       font-size: 18rpx;
@@ -284,15 +307,16 @@ export default class myCenter extends wepy.page{
   background: #7c48c6;
    .list{
      display: flex;
-     padding: 0 60rpx 46rpx 60rpx;
+     padding: 30rpx 0 46rpx 0;
      navigator{
+       flex: 1;
        min-width: 40rpx;
        margin-right: 44rpx;
        justify-content: center;
        position: relative;
        align-items: center;
        view{
-         text-align: left;
+         text-align: center;
          color: #fff;
        }
        .num{
@@ -304,16 +328,16 @@ export default class myCenter extends wepy.page{
          color: #eee;
        }
      }
-    //  navigator:before{
-    //    content:'';
-    //    display: block;
-    //    position: absolute;
-    //    left: -22rpx;
-    //    height: 50rpx;
-    //    top: 50%;
-    //    margin-top: -25rpx;
-    //    border-left: 1px solid rgba(172,115,253,.5);
-    //  }
+     navigator:before{
+       content:'';
+       display: block;
+       position: absolute;
+       left: -22rpx;
+       height: 30rpx;
+       top: 50%;
+       margin-top: -15rpx;
+       border-left: 1px solid rgba(172,115,253,.5);
+     }
      navigator:nth-of-type(1):before{
        display: none;
      }

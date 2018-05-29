@@ -3,7 +3,8 @@
      <view class="header">
         <view class="title-nav">
           <view class="title">
-            <image mode="widthFix" src="http://p766oymet.bkt.clouddn.com/nvzhu/nz-index-logo-text.png"/></view>
+            <image mode="widthFix" 
+            src="http://p766oymet.bkt.clouddn.com/nvzhu/nz-index-logo-text.png" style="height:38rpx"/></view>
           <navigator class="search" url="../search/main">
              <view class="search-icon"></view>
              搜索相关话题
@@ -13,21 +14,25 @@
      <!-- swiper -->
      <view class="swiper-out">
         <swiper class="swiper" 
-                autoplay="true" 
+                autoplay="true"
                 interval="5000" 
                 next-margin="84rpx"
                 circular="true"
                 duration="1000">
-          <block wx:for="{{bannerData}}" wx:key="{{index}}">
-            <swiper-item class="swiper-item" 
-                         data-id="{{item.article_id}}" 
-                         @tap="toThemeDeatil">
-              <view class="banner">
-                <image mode="aspectFill" src="{{item.article_cover}}" class="slide-image"/>
-                <view class="title">{{item.title}}</view>
-              </view>
+          <form wx:for="{{bannerData}}" 
+                wx:key="{{index}}" 
+                report-submit="true" 
+                data-id="{{item.article_id}}"
+                bindsubmit="toThemeDeatil">
+            <swiper-item class="swiper-item">
+              <button formType="submit" class="form-btn">
+                <view class="banner">
+                  <image mode="aspectFill" src="{{item.article_cover}}" class="slide-image"/>
+                  <view class="title">{{item.title}}</view>
+                </view>
+              </button>
             </swiper-item>
-          </block>
+          </form>
         </swiper>
       </view>
 
@@ -60,7 +65,7 @@
                 bindsubmit="toThemeDeatil">
               <button class="form-view" formType="submit">
                 <view class="article-item">
-                    <view class="tag">#情感</view>
+                    <view class="tag">#{{item.type}}</view>
                     <view class="article-main">
                       <view class="main-left">
                         <view class="title">{{item.title}}</view>
@@ -79,6 +84,11 @@
           </form>
       </view>
 
+      <!-- 提示弹层 -->
+      <myToast :title.sync="toastTitle" 
+               :jifen.sync="toastJiFen" 
+               :Experence.sync="toastJingyan" :toastShow.sync="toastShow"></myToast>
+
   </view>
 </template>
 
@@ -88,6 +98,7 @@ import wxRequest from "../../utils/http.js";
 import api from "../../utils/api.js";
 import utils from '../../utils/utils';
 import userAuth from '../../utils/userMethod/userAuth.js';
+import myToast from '../../components/myToast';
 
 export default class Index extends wepy.page{
   config = {
@@ -102,7 +113,18 @@ export default class Index extends wepy.page{
       typeNav:[],              // 类型标签
       currentTypeId: '',       // 当前所在标签id
       article_list:[],         // 文章列表
-      loadCount: 1
+      loadCount: 1,
+
+      //  myToast
+      toastTitle: '',
+      toastJiFen: '',
+      toastJingyan: '',
+      toastShow: false
+
+    }
+
+    components = {
+      myToast
     }
     // 获取首页数据
     async getHomeData(data={}){
@@ -122,14 +144,14 @@ export default class Index extends wepy.page{
       const code = await utils.getToken();
       wx.setStorage({ key: 'token', data: code.data.data.token});
       
-      userAuth.global.kid = '110';
-      userAuth.fromPageData({ 
-        kid:'110', 
-        app:'nvzhushuo',
-        scene:'735a42e66988eb9e271b1a0e193ea751', 
-        token:'VoXF2TkTM22CKyJp51NQ',
-        project_secret:'saaaaaaaaaaaaadsafsdf'
-      })
+      // userAuth.global.kid = '110';
+      // userAuth.fromPageData({ 
+      //   kid:'110', 
+      //   app:'nvzhushuo',
+      //   scene:'735a42e66988eb9e271b1a0e193ea751', 
+      //   token:'VoXF2TkTM22CKyJp51NQ',
+      //   project_secret:'saaaaaaaaaaaaadsafsdf'
+      // })
 
       // 获取文章标签
       let tag = await wxRequest(api.articletype,{},'POST');
@@ -146,15 +168,6 @@ export default class Index extends wepy.page{
          this.$apply();
       }
 
-      // 下载海报测试
-      // const ctx = wx.createCanvasContext('mycanvas');
-      //   utils.userDownloadPoster({
-      //     ctx:ctx,
-      //     title:'五四青年节，你觉得青春是什么你觉得青春是什么',
-      //     that:this,
-      //     qrcodePath: 'https://nvzhu.zealcdn.cn/public/qrcode/943b3fda-be61-723e-e4f9-97b9fd09910c.jpg'
-      // })
-
     }
 
     onHide(){
@@ -162,9 +175,9 @@ export default class Index extends wepy.page{
     }
 
     async onShow(){
-      
+      let that = this;
       // 获取用户是否有未读信息
-      let msg = await wxRequest(api.getUserInfo,{},'POST')
+      let msg = await wxRequest(api.getUserInfo,{},'POST');
       if(msg.data.code === api.STATUS){
         // console.log('msg',msg.data.data.msgNum)
         if(msg.data.data.msgNum){
@@ -174,19 +187,43 @@ export default class Index extends wepy.page{
           }else{
             wx.removeTabBarBadge({index:1})
           }
-          
         } 
-        
+
+        // 每日首次登录加经验加积分
+        if(msg.data.data.getintegral){
+           let toastData = msg.data.data.getintegral;
+           this.toastTitle = '今日登录';
+           this.toastJiFen = toastData.integral;
+           this.toastJingyan = toastData.empiric;
+           this.toastShow = !this.toastShow;
+           setTimeout(()=>{
+             that.toastShow = !that.toastShow;
+             that.$apply();
+           },2000)
+           this.$apply();
+        }
       }
     }
 
     // 分享
     onShareAppMessage(res){
         let that = this;
+        return {
+          title: '热门的女性话题都在这里',
+          path: '/pages/index/main'
+        }
     }
 
     async onPullDownRefresh(){
-
+      let that = this;
+       this.getHomeData({page:1, slide_view:0, type_id:this.currentTypeId})
+           .then(res=>{
+             console.log('切换导航数据', res)
+             that.article_list = res.article_list;
+             that.loadCount = 0;
+             that.$apply();
+           })
+       wx.stopPullDownRefresh()
     }
 
     async onReachBottom() {
@@ -250,6 +287,7 @@ export default class Index extends wepy.page{
 
       // 去详情
       async toThemeDeatil(e){
+        console.log(e)
          console.log('去详情 formid',e.detail.formId)
          let dataset = e.currentTarget.dataset;
          if(e.detail.formId){
@@ -314,12 +352,14 @@ page{
     align-items: center;
     padding: 0 30rpx;
     width: 750rpx;
+    margin-bottom: 20rpx;
   }
   .title{
     font-size: 48rpx;
-    height: 58rpx;
+    height: 50rpx;
     image{
       width: 189rpx;
+      height: 38rpx;
     }
   }
 }
@@ -330,33 +370,44 @@ page{
   margin-bottom: 40rpx;
 }
 .swiper{
-  height: 440rpx;
+  height: 384rpx;
   background: transparent;
   margin-top: -20rpx;
-  .swiper-item{
-    display: block;
+  swiper-item{
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .form-btn{
     background: transparent;
     box-sizing: border-box;
     display: flex;
-    padding-left: 30rpx;
+    // padding-left: 30rpx;
     justify-content: center;
     flex-direction: column;
+    width: 620rpx;
+    border-radius: 20rpx;
+    box-shadow: 0 10rpx 20rpx rgba(0, 0, 0, .25);
     .banner{
       width: 620rpx;
-      height: 100%;
+      height: 354rpx;
       overflow: hidden;
       border-radius: 20rpx;
       position: relative;
+      display: flex;
+      align-items: center;
+      
     }
     .slide-image{
       width: 100%;
-      min-height: 100%;
+      min-height: 354rpx;
+      
     }
      .title{
        width: 620rpx;
-       font-size: 36rpx;
-       height: 440rpx;
-       padding:0 20rpx;
+       font-size: 32rpx;
+       height: 354rpx;
        position: absolute;
        left: 0;
        top: 0;
@@ -369,12 +420,11 @@ page{
        text-align: justify;
       -webkit-box-orient: vertical;
       -webkit-line-clamp: 2;
-      overflow: hidden;
+      // overflow: hidden;
        line-height: 1.4;
        padding: 20rpx;
        background: rgba(0, 0, 0, .05);
        border-radius: 0 0 20rpx 20rpx;
-       box-shadow: 0 0 30rpx 0rpx rgba(0, 0, 0, .3);
      }
   }
 }
@@ -385,6 +435,7 @@ page{
   height: 88rpx;
   background: #fff;
   line-height: 88rpx;
+  margin-top: -30rpx;
   .nav-main{
     display: flex;
   }
@@ -503,5 +554,5 @@ page{
   bottom: 0;
 }
 
-</style>
 
+</style>

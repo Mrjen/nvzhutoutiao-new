@@ -44,7 +44,7 @@ function saveUserInfo(url, data = {}) {
 
 // 获取sign
 function getSign(kid){
-  judge(global)
+
   return new Promise((resolve,reject)=>{
     wx.login({
        success(res){
@@ -61,7 +61,6 @@ function getSign(kid){
   }) 
 }
 
-getSign('110')
 
 // 渠道统计 统计用户来源
 function fromPageData( 

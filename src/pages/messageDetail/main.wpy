@@ -112,6 +112,10 @@ export default class messageDetail extends wepy.page {
     }
   }
 
+  async onPullDownRefresh(){
+     wx.stopPullDownRefresh()
+  }
+
   methods = {
     async addComment() {
       let that = this;

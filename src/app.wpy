@@ -66,7 +66,8 @@ export default class extends wepy.app {
   }
 
   globalData = {
-    userInfo: null
+    userInfo: null,
+    systemInfo:{}
   }
 
   constructor () {
@@ -83,8 +84,17 @@ export default class extends wepy.app {
           //  console.log('获取token', res)
           wx.setStorage({ key:'myid',data:res.data.data.id });
           wx.setStorage({ key:'token',data: res.data.data.token});
-          that.getWxToken();
         })
+      }
+    })
+
+    // 获取设备
+    wx.getSystemInfo({
+      success: function(res) {
+        console.log('model',res)
+        if(res.model.indexOf('iphone X')){
+          wx.setStorage({key:'systemInfo',data:'iPhone X'});
+        }
       }
     })
   }
@@ -93,15 +103,6 @@ export default class extends wepy.app {
     wx.switchTab({
       url: './pages/index/main'
     })
-  }
-
-  async getWxToken(){
-      // 获取微信access_token
-      let wx_token = await wxRequest(api.getAccessToken,{},'post');
-      // console.log('wx_token', wx_token);
-      if(wx_token.data.code===200){
-        wx.setStorage({key:'wx_token', data:wx_token.data.data})
-      }
   }
 
   getUserInfo(cb) {
@@ -124,6 +125,13 @@ export default class extends wepy.app {
 view{
   font-size: 30rpx;
   box-sizing: border-box;
+}
+
+.form-btn{
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border-radius: 0;
 }
 
 .space_b{

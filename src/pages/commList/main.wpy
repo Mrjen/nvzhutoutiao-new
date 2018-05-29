@@ -1,17 +1,36 @@
 <template>
    <div class="like-list">
     <view wx:if="{{commentList.length?true:false}}">
-        <div class="comm-item" wx:for="{{commentList}}" wx:key="{{index}}">
-            <view class="time">{{item.date}}</view>
-            <view class="in-item" wx:for="{{item.list}}" wx:for-item="list" wx:key="list.article_id" @tap="toDetail({{list.article_id}})">
-            <view class="item-left">
-                <view class="title">{{list.comment}}</view>
-                <view class="info">
-                #{{list.title}}
-                </view>
-            </view>
-            </view>
-        </div>
+        <view class="comm-item" wx:for="{{commentList}}" wx:key="{{index}}" wx:for-index="idx">
+            <view class="item-main">
+              <view class="time">{{item.date}}</view>
+              <view class="in-item" 
+                    wx:for="{{item.list}}" 
+                    wx:for-item="list" 
+                    wx:for-index="indx"
+                    wx:key="list.article_id" 
+                    >
+              <view class="item-left" 
+                    @tap="toDetail({{list.article_id}})"
+                    bindtouchstart="touchS" 
+                    bindtouchmove="touchM" 
+                    bindtouchend="touchE" 
+                    data-inidx="{{indx}}"
+                    data-outidx="{{idx}}"
+                    style="{{list.txtStyle}}">
+                  <view class="title">{{list.comment}}</view>
+                  <view class="info">
+                  #{{list.title}}
+                  </view>
+              </view>
+              <view class="item-delete" 
+                    bindtap="delItem" 
+                    data-id="{{list.comment_id}}"
+                    data-outidx="{{idx}}"
+                    data-inidx="{{indx}}">删除</view>
+              </view>
+           </view>
+        </view>
     </view>
     <view wx:else class="none-more">
        暂无数据
@@ -31,7 +50,8 @@ export default class commentList extends wepy.page {
   }
    data = {
      commentList:[],
-     page: 2
+     page: 2,
+     delBtnWidth: 100
    }
    components = {
     commItem
@@ -47,16 +67,113 @@ export default class commentList extends wepy.page {
      
   }
   methods = {
+    // 删除
+    async delItem(e){
+      let dataset = e.currentTarget.dataset;
+      console.log('dataset', dataset)
+      let json = await wxRequest(api.delcomment,{comment_id:dataset.id},'POST');
+      if(json.data.code === api.STATUS){
+         let commentList = this.commentList;
+         let comm = commentList[dataset.outidx].list;
+         comm.splice(dataset.inidx,1);
+         commentList[dataset.outidx].list = comm;
+         this.commentList = commentList;
+         this.$apply();
+      }
+    },
+
+    // 去详情页
     toDetail(id){
       wx.navigateTo({
         url: '../details/main?id=' + id
       })
+    },
+
+     //手指刚放到屏幕触发
+    touchS(e){
+    //判断是否只有一个触摸点
+      if(e.touches.length==1){
+        this.startX = e.touches[0].clientX
+      }
+    },
+
+     //触摸时触发，手指在屏幕上每移动一次，触发一次
+  touchM(e){
+      // console.log("touchM:",e);
+    var that = this
+    if(e.touches.length==1){
+     //记录触摸点位置的X坐标
+      var moveX = e.touches[0].clientX;
+      //计算手指起始点的X坐标与当前触摸点的X坐标的差值
+      var disX = this.startX - moveX;
+     //delBtnWidth 为右侧按钮区域的宽度
+      var delBtnWidth = this.delBtnWidth;
+      var txtStyle = "";
+      if(disX == 0 || disX < 0){//如果移动距离小于等于0，文本层位置不变
+        txtStyle = "left:0px";
+      }else if(disX > 0 ){//移动距离大于0，文本层left值等于手指移动距离
+        txtStyle = "left:-"+disX+"rpx";
+        if(disX>=delBtnWidth){
+          //控制手指移动距离最大值为删除按钮的宽度
+          txtStyle = "left:-"+delBtnWidth+"rpx";
+        }
+      }
+      //获取手指触摸的是哪一个item
+      let dataset = e.currentTarget.dataset;
+      var inidx = dataset.inidx;
+      var commentList = this.commentList;
+      // console.log('commentList', commentList[dataset.outidx].list)
+
+      let comm = commentList[dataset.outidx].list;
+       comm.map(el=>{
+          el.txtStyle = 'left:0'
+        })
+       comm[inidx].txtStyle = txtStyle;
+       console.log('comm', comm)
+       commentList[dataset.outidx].list = comm;
+       this.commentList = commentList;
+       this.$apply();
     }
+  },
+
+  touchE(e){
+    // console.log("touchE", e);
+    var that = this
+    if(e.changedTouches.length==1){
+      //手指移动结束后触摸点位置的X坐标
+      var endX = e.changedTouches[0].clientX;
+      //触摸开始与结束，手指移动的距离
+      var disX = this.startX - endX;
+      var delBtnWidth = this.delBtnWidth;
+      //如果距离小于删除按钮的1/2，不显示删除按钮
+      var txtStyle = disX > delBtnWidth/2 ? "left:-"+delBtnWidth+"rpx":"left:0px";
+      //获取手指触摸的是哪一项
+      
+      let dataset = e.currentTarget.dataset;
+      var inidx = dataset.inidx;
+      var commentList = this.commentList;
+      // console.log('commentList', commentList[dataset.outidx].list)
+
+      let comm = commentList[dataset.outidx].list;
+       comm.map(el=>{
+          el.txtStyle = 'left:0'
+        })
+       comm[inidx].txtStyle = txtStyle;
+       commentList[dataset.outidx].list = comm;
+       this.commentList = commentList;
+       this.$apply();
+    }
+  }
+
   }
 
   async getList(page,type='comment'){
      let list =  wxRequest(api.userCommentList,{ page: page, type: type },'POST')
      return list;
+  }
+
+  async onPullDownRefresh(){
+     wx.stopPullDownRefresh()
   }
 
   async onReachBottom(){
@@ -92,8 +209,10 @@ export default class commentList extends wepy.page {
      display: flex;
      align-items: center;
      min-height: 120rpx;
-     padding:20rpx;
      position: relative;
+     z-index: 2;
+     width: 750rpx;
+    //  border:1px solid red;
    }
    .in-item::after{
      content: '';
@@ -104,6 +223,7 @@ export default class commentList extends wepy.page {
      left: 0;
      bottom: 0;
      transform: scaleY(.5);
+     z-index: 5;
    }
    .item-left{
      flex: 1;
@@ -111,6 +231,12 @@ export default class commentList extends wepy.page {
      display: flex;
      flex-direction: column;
      justify-content: space-around;
+     position: absolute;
+     z-index: 2;
+     padding: 20rpx;
+     width: 100%;
+     height: 100%;
+     background: #fff;
      .title{
        font-size: 28rpx;
      }
@@ -120,9 +246,21 @@ export default class commentList extends wepy.page {
        font-size: 24rpx;
        color: #666;
        margin-top: 10rpx;
-     }
-    
+     }    
    }
+   .item-delete{
+       width: 100rpx;
+       height: 100%;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       background: red;
+       color: #fff;
+       position: absolute;
+       right: 0;
+       top: 0;
+       z-index: 1;
+     }
 }
 </style>
 

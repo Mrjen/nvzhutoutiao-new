@@ -45,7 +45,7 @@
                    <view class="content" wx:elif="{{item.type=='comment'?true:false}}">
                      {{item.nickName}}回复了你的评论：{{item.msg}}</view>
                    <view class="content" wx:elif="{{item.type=='commentlike'?true:false}}">
-                     {{item.nickName}}{{item.msg>2?'等':''}}{{item.msg}}人给你点赞</view>
+                     {{item.nickName}}{{item.msg>2?'等':''}}{{item.msg}}人给你点亮</view>
                 </view>
              </view>
              <view class="delete" 
@@ -100,6 +100,7 @@
          暂无数据
        </view>
       </block>
+
     </view>
 
      
@@ -137,7 +138,7 @@ export default class Message extends wepy.page{
       msgNum: ''
     }],
     currentList: 'sys',  // 当前导航所在标签 sys chat
-    chartList: [],
+    chartList: [{}],
     noticeList: []
   }
   async onShow(e){
@@ -162,6 +163,10 @@ export default class Message extends wepy.page{
         this.$apply();
      }
     
+  }
+
+  async onPullDownRefresh(){
+     wx.stopPullDownRefresh()
   }
 
   methods = {

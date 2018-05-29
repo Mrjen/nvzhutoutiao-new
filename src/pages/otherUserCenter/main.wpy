@@ -1,13 +1,25 @@
 <template>
-  <div class="user-center">
+  <view class="user-center">
      <!-- 个人信息 -->
      <view class="info">
        <view class="user-info">
-        <view class="nick-name">
-           <view class="info-name">{{user_Info.nickName}}</view>
-           <image wx:if="{{user_Info.gender=='2'}}" class="avatar-sex" src="../image/girl.png"/>
-           <image wx:if="{{user_Info.gender=='1'}}" class="avatar-sex" src="../image/boy.png"/>
+        <view class="info-left">
+          <view class="nick-name">
+            <view class="info-name">{{user_Info.nickName}}</view>
+            <image wx:if="{{user_Info.gender=='2'}}" class="avatar-sex" src="../image/girl.png"/>
+            <image wx:if="{{user_Info.gender=='1'}}" class="avatar-sex" src="../image/boy.png"/>
+          </view>
+          <view class="grade">
+            <view>Lv.{{empiric_level}}</view>
+            <view class="lv-icon">
+              <image wx:for="{{icon_url_arr}}" mode="widthFix" wx:key="{{index}}" src="{{item}}"/>
+            </view>
+          </view>
+          
         </view>
+
+        
+
            <image class="avatar" src="{{user_Info.avatarUrl}}" alt=""/>
       </view>
 
@@ -33,7 +45,7 @@
            class="tag-item {{item.active?'active':'leave'}}">{{item.text}}</view>
      </view>
 
-     <!-- 点赞列表 -->
+     <!-- 点亮列表 -->
      <view class="like-list" wx:if="{{currentTab==='like'?true:false}}">
         <block wx:for="{{likeList}}" wx:for-index="idx" wx:key="{{idx}}">
             <!-- <likeItem :itemData="item" @toDetail="toLikeItemDetail"></likeItem> -->
@@ -82,9 +94,10 @@
         <view class="item chart" @tap="toChart"><view class="icon-chart"></view>私聊</view>
      </view>
 
+
      <!-- 底部按钮 -->
      <!-- <addAttation :isattention="isattention" @removeFollower="removeFollower" @addFollowing="addFollowing"></addAttation> -->
-  </div>
+  </view>
 </template>
 
 <script>
@@ -98,7 +111,7 @@ export default class otherUserCenter extends wepy.page{
   data = {
     user_id: null,
     user_Info: {},
-    likeList: [],                    // 点赞列表
+    likeList: [],                    // 点亮列表
     commentList: [],                 // 评论列表
     currentTab: "comment",           // 当前tab所在标签
     page: 2,
@@ -109,10 +122,12 @@ export default class otherUserCenter extends wepy.page{
           active: true
         },{
           id: 1,
-          text: 'Ta点赞过的话题',
+          text: 'Ta点亮过的话题',
           active: false
         }],
-    is_accredit:''
+    is_accredit:'',                    // 是否授权
+    icon_url_arr: [],                  // 等级图标数组
+    empiric_level: 0                   // 我的等级
   }
 
   async onLoad(options){
@@ -122,12 +137,24 @@ export default class otherUserCenter extends wepy.page{
      this.$apply();
   }
 
+  async onPullDownRefresh(){
+     wx.stopPullDownRefresh()
+  }
+
   // 获取最新消息
   async onShow(){
      let json = await wxRequest(api.getUserInfo,{user_id: this.user_id},'post')
      if(json.data.code === api.STATUS){
         this.user_Info =  json.data.data;
-        console.log('json', json.data.data)
+
+        let icon_url_arr = [];
+        let icon_num = json.data.data.icon_num;
+        let icon_url = json.data.data.icon_url;
+        for(let i=0;i<icon_num;i++){
+          icon_url_arr.push(icon_url)
+        }
+        this.icon_url_arr = icon_url_arr;
+        this.empiric_level = json.data.data.empiric_level;
      }else{
        console.log('获取用户信息失败', json)
      }
@@ -155,7 +182,7 @@ export default class otherUserCenter extends wepy.page{
   // 获取列表数据
     async getLikeList(page=1,user_id='', type='like'){
       let json = await wxRequest(api.userCommentList,{user_id:this.user_id,page:page, type:type}, 'post');
-      console.log('获取到点赞列表', json)
+      console.log('获取到点亮列表', json)
       if(json.data.code === api.STATUS && json.data.data.length>0){
         return json.data.data;
       }else{
@@ -356,6 +383,12 @@ export default class otherUserCenter extends wepy.page{
   .nick-name{
     display: flex;
     align-items: flex-end;
+    margin-bottom: 30rpx;
+  }
+  .grade{
+    display: flex;
+    color: #fff;
+    align-items: center;
   }
   .info-name{
     color: #fff;
@@ -367,6 +400,7 @@ export default class otherUserCenter extends wepy.page{
     width: 150rpx;
     height: 150rpx;
     border-radius: 50%;
+    flex-shrink: 0;
   }
   .avatar-sex{
     width: 24rpx;
@@ -395,6 +429,17 @@ export default class otherUserCenter extends wepy.page{
     .tag{
       font-size: 20rpx;
     }
+  }
+}
+
+.lv-icon{
+  margin-left: 10rpx;
+  display: flex;
+  align-items: flex-end;
+  image{
+    width: 28rpx;
+    height: 28rpx;
+    margin:0 2rpx;
   }
 }
 

@@ -8,6 +8,9 @@
           <!-- <wxParse :content="ArticleContent"/> -->
           <view class="author" @tap="goHomego">
               <text class="applet">萤火虫亮了</text><text class="create_time">{{Article_createtime}}</text></view>
+
+        <form bindsubmit="saveFormId" report-submit="true">
+          <button formType="submit" class="form-btn">
           <view class="content" @tap="inputBlur">
               <block wx:if="{{article_Show_type=='rich_text'?true:false}}">
                   <rich-text class="richtext" nodes="{{ArticleContent}}"></rich-text>
@@ -16,6 +19,9 @@
                   <html2wxml :parserContent.sync="ArticleContent" :parserName="name"></html2wxml>
               </block>
           </view>
+          </button>
+        </form>
+
           <view class="share">
               <view class="lighten" @tap="likeArticle">
                  <view class="lighten-in" style="background:{{Article_likestatus==1?'transparent':'#fff'}}">
@@ -28,10 +34,10 @@
                     <view class="lighten-text lighten-text1" style="color:{{Article_likestatus==1?'#fff':'#7c48c6'}}">{{Article_liketimes}}人点亮</view>
                  </view>
               </view>
-              <view class="share-tip">分享到</view>
-              <view class="share-options">
+              <view wx:if="{{comment_view=='1'}}" class="share-tip">分享到</view>
+              <view class="share-options"  wx:if="{{comment_view=='1'}}">
                   <view class="share-item friend-circle" @tap="downloadPoster"></view>
-                  <view class="share-item wechat"></view>
+                  <button class="share-item wechat" open-type="share" @tap="shareWechat"></button>
               </view>
           </view>
 
@@ -60,15 +66,18 @@
                 wx:for-index="cidx"
                 wx:for-item="comm"
                 wx:key="{{comm.id}}">
-            <view class="display_flex space_b">
+            <view class="display_flex space_b" style="align-items:flex-start;">
               <view class="display_flex">
                 <image src="{{comm.avatarUrl}}" class="head_img" @tap="toUserCenter({{comm.user_id}})"/>
                 <view class="flex_end">
 
-                  <view class="display_flex">
+                  <view class="display_flex flex_warp">
                     <view class="comment_name">{{comm.nickName}}</view>
                     <image wx:if="{{comm.gender==='1'}}" src="../image/boy.png" class="gender" />
                     <image wx:if="{{comm.gender==='2'}}" src="../image/girl.png" class="gender" />
+                    <view class="lv-icon">
+                        <image wx:for="{{comm.icon_url_arr}}" wx:for-item="icon" wx:key="{{index}}" src="{{icon}}"/>
+                    </view>
                   </view>
 
                   <view class="floor display_flex">
@@ -83,12 +92,12 @@
                 <view class="nice {{comm.likestatus=='1'?'active_text':''}}">
                   <image class="niceImg" 
                         mode="widthFix" 
-                        @tap="likeCommentZan({{cidx}}, {{comm.id}}, {{comm.likestatus}}, '精彩评论点赞')" 
+                        @tap="likeCommentZan({{cidx}}, {{comm.id}}, {{comm.likestatus}}, '精彩评论点亮')" 
                         wx:if="{{comm.likestatus=='0'?true:false}}"
                         src="../image/nice.png"/> 
                   <image class="niceImg" 
                         mode="widthFix" 
-                        @tap="likeCommentZan({{cidx}}, {{comm.id}}, {{comm.likestatus}}, '精彩评论点赞')" 
+                        @tap="likeCommentZan({{cidx}}, {{comm.id}}, {{comm.likestatus}}, '精彩评论点亮')" 
                         wx:else
                         src="../image/h_nice.png"/> 
                         {{comm.liketimes}}
@@ -111,12 +120,10 @@
               <button class="commentsTxt" open-type="getUserInfo" 
                       @getuserinfo="getUserInfo" 
                       lang="zh_CN"
-                      wx:if="{{is_accredit=='0'?true:false}}">
-                        {{comm.comment}}
-                      </button>
-              <view class="commentsTxt" wx:else @tap="followCommentComment({{comm.id}}, {{cidx}}, {{comm.user_id}}, '最新评论一级', {{comm.nickName}})">
-                  {{comm.comment}}
-              </view>
+                      wx:if="{{is_accredit=='0'?true:false}}">{{comm.comment}}</button>
+              <view class="commentsTxt" 
+                    wx:else 
+                    @tap="followCommentComment({{comm.id}}, {{cidx}}, {{comm.user_id}}, '最新评论一级', {{comm.nickName}})">{{comm.comment}}</view>
             </block>
             
 
@@ -168,7 +175,7 @@
               <button class="talker" open-type="getUserInfo"  lang="zh_CN" 
                           @getuserinfo="getUserInfo" wx:if="{{is_accredit=='0'?true:false}}">
                     <text>@{{follow.renickName}}：</text>{{follow.follow_comment}}
-                </button>
+              </button>
 
                 <view class="talker" 
                       wx:else
@@ -201,14 +208,17 @@
                 wx:for-item="comm"
                 wx:for-index="cidx"
                 wx:key="{{comm.id}}">
-            <view class="display_flex space_b">
-              <view class="display_flex">
+            <view class="display_flex space_b" style="align-items:flex-start;">
+              <view class="display_flex"  >
                 <image src="{{comm.avatarUrl}}" class="head_img" @tap="toUserCenter({{comm.user_id}},{{comm.is_self}})"/>
                 <view class="flex_end">
-                  <view class="display_flex">
+                  <view class="display_flex flex_wrap">
                     <view class="comment_name">{{comm.nickName}}</view>
                     <image wx:if="{{comm.gender==='1'}}" src="../image/boy.png" class="gender" />
-                    <image wx:if="{{comm.gender==='2'}}" src="../image/girl.png" class="gender" />
+                    <image wx:if="{{comm.gender==='2'}}" src="../image/girl.png" class="gender"/>
+                    <view class="lv-icon">
+                        <image wx:for="{{comm.icon_url_arr}}" wx:for-item="icon" wx:key="{{index}}" src="{{icon}}"/>
+                    </view>
                   </view>
                   <view class="floor display_flex">
                     <view>{{comm.create_time}}</view>
@@ -221,11 +231,11 @@
                 <view class="nice {{comm.likestatus=='1'?'active_text':''}}">
                   <image class="niceImg" 
                         mode="widthFix"
-                        @tap="likeCommentZan({{cidx}}, {{comm.id}}, {{comm.likestatus}}, '最新评论点赞')" 
+                        @tap="likeCommentZan({{cidx}}, {{comm.id}}, {{comm.likestatus}}, '最新评论点亮')" 
                         wx:if="{{comm.likestatus=='0'}}"
                         src="../image/nice.png"/> 
                   <image class="niceImg" mode="widthFix"
-                        @tap="likeCommentZan({{cidx}}, {{comm.id}}, {{comm.likestatus}},'最新评论点赞')" 
+                        @tap="likeCommentZan({{cidx}}, {{comm.id}}, {{comm.likestatus}},'最新评论点亮')" 
                         wx:else
                         src="../image/h_nice.png"/> 
                         {{comm.liketimes}}
@@ -250,12 +260,8 @@
               <button class="commentsTxt" open-type="getUserInfo" 
                       @getuserinfo="getUserInfo" 
                       lang="zh_CN"
-                      wx:if="{{is_accredit=='0'?true:false}}">
-                        {{comm.comment}}
-                      </button>
-              <view class="commentsTxt" wx:else  @tap="followCommentComment({{comm.id}}, {{cidx}}, {{comm.user_id}}, '最新评论一级', {{comm.nickName}})">
-                  {{comm.comment}}
-              </view>
+                      wx:if="{{is_accredit=='0'?true:false}}">{{comm.comment}}</button>
+              <view class="commentsTxt" wx:else  @tap="followCommentComment({{comm.id}}, {{cidx}}, {{comm.user_id}}, '最新评论一级', {{comm.nickName}})">{{comm.comment}}</view>
             </block>
 
 
@@ -330,9 +336,9 @@
       </block>
       <!-- 评论结束 -->
 
-   <block>
+   <block wx:if="{{comment_view=='1'}}">
       <!-- @focus="inputGetFocus" -->
-      <view class="input-view" wx:if="{{inputShow}}">
+      <view class="input-view" wx:if="{{inputShow}}" style="{{systemInfo==='iPhone X'?'min-height:138rpx;':'bottom:0'}}">
         <textarea   placeholder="{{inputPlaceholder}}"
                     auto-height="true"
                     maxlength="-1"
@@ -368,6 +374,9 @@
       <image mode="widthFix" style="width:100rpx;" src="http://p766oymet.bkt.clouddn.com/nvzhu/more.png"/>
   </view>
   <view class="zhanwei" style="width:500rpx;height:150rpx;"></view>
+
+  <!-- toast -->
+  <myToast :title.sync="toastTitle" :jifen.sync="toastJiFen" :Experence.sync="toastJingyan" :toastShow.sync="toastShow"></myToast>
 </div>
 </template>
 
@@ -380,6 +389,7 @@ import tips from '../../utils/tips.js';
 import sharPop from '../../components/shareItem';
 import utils from '../../utils/utils';
 import html2wxml from '../../components/html2wxml';
+import myToast from '../../components/myToast';
 export default class Detail extends wepy.page {
 config = {
      "navigationBarTitleText":"话题详情"
@@ -405,7 +415,7 @@ config = {
     comment_id:null,            // 评论id
     comment_type:null,          // 评论类型  -> 最新评论 \ 精彩评论 
     inputPlaceholder: '发表你的观点',
-    Article_likestatus: '',     // 文章点赞状态
+    Article_likestatus: '',     // 文章点亮状态
     Article_liketimes: '',      // 文章喜欢次数
     Article_readtimes: 0,       // 文章阅读次数
     Article_createtime: '',     // 文章发布时间
@@ -420,16 +430,22 @@ config = {
     inputShow: false,           // 输入框是否显示
     shareQrcode: null,          // 分享二维码
     requestOver: true,          // 防止重复提交
-    inputArr: [],
     currentInputShow: 0,         // 当前显示的input的index
     pageLoad: true,              // 当前页面加载完成
-    wx_token:'',
     article_Show_type:'',         // 文章显示类型，'wxparse' 'rich_text'
-    iszan: false
+    comment_view: false,           // 是否显示文章评论 
+    systemInfo:'',                 // 兼容iphone X    
+    
+    // myToast
+    toastTitle: '',
+    toastJiFen: '',
+    toastJingyan: '',
+    toastShow: false
   }
   
   components= {
-    html2wxml:html2wxml
+    html2wxml:html2wxml,
+    myToast:myToast
   }
 
   async onLoad(options){
@@ -453,21 +469,24 @@ config = {
       }
       const detail = await wxRequest(api.getArticleDetail,{ id: _article_id, page: 1 })
       // 这里数据字节过大，把数据拆分分次传递
+      let _page_data = detail.data.data;
       this.id = _article_id;
       this.ArticleId = _article_id;
-      this.ArticleContent = detail.data.data.content;
-      this.topComment = detail.data.data.topcomment;
-      this.comment = detail.data.data.comment;
-      this.Article_liketimes = detail.data.data.liketimes;
-      this.ArticleTtictle = detail.data.data.title;
-      this.Article_readtimes = detail.data.data.readtimes;
-      this.Article_createtime = detail.data.data.create_time;
-      this.Article_sharetimes = detail.data.data.sharetimes;
-      this.Article_comments = detail.data.data.commenttimes;
-      this.Article_likestatus = detail.data.data.likestatus;
-      this.article_Show_type = detail.data.data.article_type;
+      this.ArticleContent = _page_data.content;
+      this.topComment = _page_data.topcomment;
+      this.comment = _page_data.comment;
+      this.Article_liketimes = _page_data.liketimes;
+      this.ArticleTtictle = _page_data.title;
+      this.Article_readtimes = _page_data.readtimes;
+      this.Article_createtime = _page_data.create_time;
+      this.Article_sharetimes = _page_data.sharetimes;
+      this.Article_comments = _page_data.commenttimes;
+      this.Article_likestatus = _page_data.likestatus;
+      this.article_Show_type = _page_data.article_type;
+      this.comment_view = _page_data.comment_view;
+      this.systemInfo = wx.getStorageSync('systemInfo');
       wx.downloadFile({
-          url: detail.data.data.sharcover,
+          url: _page_data.sharcover,
           success(res){
               that.Article_cover = res.tempFilePath
           }
@@ -492,7 +511,6 @@ config = {
         this.nickName = userInfo.data.data.nickName;
         wx.setStorage({key:'is_accredit',data:userInfo.data.data.is_accredit})
       }
-      this.wx_token = wx.getStorageSync('wx_token');
       this.$apply();
   }
 
@@ -523,19 +541,21 @@ config = {
     this.inputFcus = false;
     console.log('this.inputFcus',this.inputFcus)
     const detail = await wxRequest(api.getArticleDetail,{ id:  this.ArticleId, page: 1 })
-    this.ArticleContent = detail.data.data.content;
-    this.topComment = detail.data.data.topcomment;
-    this.comment = detail.data.data.comment;
-    this.Article_liketimes = detail.data.data.liketimes;
-    this.ArticleTtictle = detail.data.data.title;
-    this.Article_readtimes = detail.data.data.readtimes;
-    this.Article_createtime = detail.data.data.create_time;
-    this.Article_sharetimes = detail.data.data.sharetimes;
-    this.Article_comments = detail.data.data.commenttimes;
-    this.Article_likestatus = detail.data.data.likestatus;
+    let _page_data = detail.data.data;
+    this.ArticleContent = _page_data.content;
+    this.topComment = _page_data.topcomment;
+    this.comment = _page_data.comment;
+    this.Article_liketimes = _page_data.liketimes;
+    this.ArticleTtictle = _page_data.title;
+    this.Article_readtimes = _page_data.readtimes;
+    this.Article_createtime = _page_data.create_time;
+    this.Article_sharetimes = _page_data.sharetimes;
+    this.Article_comments = _page_data.commenttimes;
+    this.Article_likestatus = _page_data.likestatus;
+    this.comment_view = _page_data.comment_view;
     this.page = 2;
     this.$apply();
-     wx.stopPullDownRefresh();
+    wx.stopPullDownRefresh();
     //  tips.success('刷新成功')
   }
 
@@ -574,18 +594,35 @@ config = {
 
     //   评论文章
     async commentArticle(){
+        let that = this;
         this.inputPlaceholder = '发表你的观点';
-        console.log('评论文章')
        if(this.requestOver){
            this.requestOver = false;
            let comm = await wxRequest(api.addComment,{ article_id: this.id, comment: this.commContent });
            this.requestOver = true;
+           console.log('评论完成', comm);
          if(comm.data.code === api.STATUS){
            this.commContent = '';
-           tips.success('评论成功')
+           //tips.success('评论成功');
            this.inputFcus = false;
            this.comment = comm.data.data.list;
            this.$apply();
+
+        //   评论文章加经验加积分
+        console.log('评论反回数据',comm.data.data.getintegral)
+       
+        if(comm.data.data.getintegral){
+           let toastData = comm.data.data.getintegral;
+           this.toastTitle = '评论奖励';
+           this.toastJiFen = toastData.integral;
+           this.toastJingyan = toastData.empiric;
+           this.toastShow = !this.toastShow;
+           setTimeout(()=>{
+             that.toastShow = !that.toastShow;
+             that.$apply();
+           },2000)
+           this.$apply();
+         }
         }
       }
        this.$apply();
@@ -593,7 +630,8 @@ config = {
 
     // 创建追评
     async commentFollow(user_id, comment_id, fidx, cidx, comment_type){
-        console.log('提交评论', user_id, comment_id, fidx, cidx, comment_type)
+        console.log('提交评论', user_id, comment_id, fidx, cidx, comment_type);
+        let that = this;
          if(this.requestOver) {
             this.requestOver = false;
             this.$apply();
@@ -622,9 +660,9 @@ config = {
         //  console.log('comment', comment)
 
          if(follow.data.code === api.STATUS){
-             tips.success('评论成功')
+            //  tips.success('评论成功')
              this.inputFcus = false;
-             console.log('评论成功', follow.data.data)
+             console.log('评论奖励', follow.data.data)
              if(comment_type=='精彩评论一级'){
                  console.log('精彩评论一级')
                  comment[this.commentIdx].follow_comment = follow.data.data;
@@ -642,6 +680,20 @@ config = {
                   comment[this.commentIdx].follow_comment = follow.data.data;
                   this.comment = comment;
              }
+            
+            // 追评加经验加积分
+            if(follow.data.data[0].getintegral){
+                let toastData = follow.data.data[0].getintegral;
+                this.toastTitle = '评论奖励';
+                this.toastJiFen = toastData.integral;
+                this.toastJingyan = toastData.empiric;
+                this.toastShow = !this.toastShow;
+                setTimeout(()=>{
+                    that.toastShow = !that.toastShow;
+                    that.$apply();
+                },2000)
+                this.$apply();
+            }
          }
          this.inputFcus = false;
          this.commContent = '';
@@ -660,9 +712,20 @@ config = {
     }
 
   methods={
+    // 保存formid
+    saveFormId(e){
+       let formid = e.detail.formId;
+       console.log('formid',formid)
+    },
+
     // 下载分享海报
     downloadPoster(){
        utils.getPoster(this.ArticleId)
+    },
+
+    // 分享好友
+    shareWechat(){
+
     },
    
     //   输入评论
@@ -706,6 +769,7 @@ config = {
     },
     // 喜欢文章
     async likeArticle(){
+      let that = this;
       const status = this.Article_likestatus == 0 ?'inc':'dec'
       const like = await wxRequest(api.likeArticle, { id: this.ArticleId, status: status })
       if(like.data.code === api.STATUS){
@@ -717,11 +781,22 @@ config = {
           }
           this.$apply();
       }
+
+     //  点亮文章加经验加积分
+     if(like.data.data.getintegral){
+           let toastData = like.data.data.getintegral;
+           this.toastTitle = '点亮奖励';
+           this.toastJiFen = toastData.integral;
+           this.toastJingyan = toastData.empiric;
+           this.toastShow = !this.toastShow;
+           setTimeout(()=>{
+             that.toastShow = !that.toastShow;
+             that.$apply();
+           },2000)
+           this.$apply();
+        } 
     },
-    // 文章喜欢
-    // ArticleZan(){
-      
-    // },
+
     // 收起评论
     collapseComment(idx,text){
        let _comment = [];
@@ -765,14 +840,13 @@ config = {
         this.comment_type = type;
         this.inputPlaceholder = `回复${nickName}`;
         this.$apply();
+
     },
     // 提交评论
     async addComment(){
         console.log('评论发送了', this.commContent)
        if(!this.commContent) return;
        let _data = JSON.stringify({content:this.commContent})
-    // 内容检测
-
        if(this.commentDom === 'article'){
             console.log('评论文章')
             this.commentArticle()
@@ -785,22 +859,39 @@ config = {
        this.$apply();
     },
 
-    // 点赞
+    // 点亮
     async likeCommentZan(cidx, id, likestatus, type){
-      console.log('点赞')
+      console.log('点亮')
       console.log(cidx, id, likestatus, type)
+      let that = this;
       this.inputFcus = false;
       let _status = (likestatus=='0'?'inc':'dec');
       console.log('_status', _status)
       let like = await wxRequest(api.likeComment, { comment_id: id, status: _status });
-      console.log('点赞结果', like)
+      console.log('点亮结果', like)
       if(like.data.code === api.STATUS){
           let comment = null;
-          if(type==='最新评论点赞'){
+          if(type==='最新评论点亮'){
              comment = this.comment;
-          }else if(type==='精彩评论点赞'){
+          }else if(type==='精彩评论点亮'){
              comment = this.topComment;
           }
+          
+        //   点亮加经验加积分
+        console.log('点亮数据',like.data.data.getintegral)
+        if(like.data.data.getintegral){
+           let toastData = like.data.data.getintegral;
+           this.toastTitle = '点亮奖励';
+           this.toastJiFen = toastData.integral;
+           this.toastJingyan = toastData.empiric;
+           this.toastShow = !this.toastShow;
+           setTimeout(()=>{
+             that.toastShow = !that.toastShow;
+             that.$apply();
+           },2000)
+           this.$apply();
+        }
+
         //   console.log('comment', comment[cidx])
           if(likestatus){
               comment[cidx].liketimes--;
@@ -809,9 +900,9 @@ config = {
               comment[cidx].liketimes++;
               comment[cidx].likestatus = 1;
           }
-          if(type==='最新评论点赞'){
+          if(type==='最新评论点亮'){
              this.comment = comment ;
-          }else if(type==='精彩评论点赞'){
+          }else if(type==='精彩评论点亮'){
              this.topComment = comment ;
           }
       }
@@ -853,16 +944,16 @@ config = {
       }
       this.$apply();
     },
-    // 追加评论点赞
+    // 追加评论点亮
     async addFollowZan(status, id, fidx, cidx, type){
-        let that = this;
-        this.inputFcus = false;
-        this.$apply();
-       console.log(status, id, fidx)
-       let _status = (status=='0'?'inc':'dec');
+      console.log('追加评论点亮', status, id, fidx, cidx, cidx, type)
+      let that = this;
+      this.inputFcus = false;
+      this.$apply();
+      let _status = (status=='0'?'inc':'dec');
       let zan = await wxRequest(api.likefollowcomment, { follow_comment_id: id, status: _status })
       if(zan.data.code === api.STATUS){
-           let _comment = (type==='精彩评论')?that.topComment:that.comment
+           let _comment = (type==='精彩评论')?that.topComment:that.comment;
              if(status=='0'){
                 _comment[cidx].follow_comment[fidx].liketimes++;
                 _comment[cidx].follow_comment[fidx].likestatus = 1;
@@ -870,11 +961,26 @@ config = {
                 _comment[cidx].follow_comment[fidx].liketimes--;
                 _comment[cidx].follow_comment[fidx].likestatus = 0;
             }
+
            if(type==='精彩评论'){
                that.topComment = _comment;
            }else if(type==='最新评论'){
                that.comment = _comment;
            }
+
+        //    追评点亮加积分加经验
+         if(zan.data.data.getintegral){
+            let toastData = zan.data.data.getintegral;
+            this.toastTitle = '点亮奖励';
+            this.toastJiFen = toastData.integral;
+            this.toastJingyan = toastData.empiric;
+            this.toastShow = !this.toastShow;
+            setTimeout(()=>{
+                that.toastShow = !that.toastShow;
+                that.$apply();
+            },2000)
+            this.$apply();
+         }
       }
       this.$apply();
     },
@@ -997,6 +1103,7 @@ page{
     height: 80rpx;
     margin-right: 20rpx;
     border-radius: 50%;
+    flex-shrink: 0;
 }
 
 .display_flex{
@@ -1037,6 +1144,18 @@ page{
     color: #333333;
     font-size: 28rpx;
 }
+
+.lv-icon{
+    margin-left: 10rpx;
+    display: inline-block;
+    image{
+        display: inline-block;
+        width: 28rpx;
+        height: 28rpx;
+        margin:0 2rpx;
+    }
+}
+
 .flex_end{
     align-self:flex-end;
 
@@ -1047,7 +1166,8 @@ page{
     margin: 30rpx 13rpx 30rpx 97rpx;
     padding: 0;
     background: transparent;
-    text-align: left;
+    text-align: justify;
+    text-indent: 0;
     line-height: 40rpx;
 }
 
@@ -1136,12 +1256,11 @@ page{
     display: flex;
     justify-content: center;
     align-items: center;
-    // background: rgba(0, 0, 0, .2);
     border-radius: 50%;
     position: fixed;
-    z-index: 100;
+    z-index: 80;
     bottom: 250rpx;
-    right: 30rpx;
+    left: 30rpx;
     image{
         display: block;
         width: 100%;
@@ -1264,9 +1383,9 @@ page{
     background: #fff;
     display: flex;
     justify-content: center;
-    align-items: center;
     box-sizing: border-box;
     padding: 10rpx 20rpx;
+    box-shadow: 0 -5rpx 20rpx rgba(0, 0, 0, .1);
     .inputRedict{
         min-width: 80rpx;
     }
@@ -1393,5 +1512,9 @@ page{
         background-position: -68rpx -8rpx;
       }
   }
+
+.flex_wrap{
+    flex-wrap: wrap;
+}
 </style>
 

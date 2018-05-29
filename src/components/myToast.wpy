@@ -1,0 +1,94 @@
+<template>
+   <view class="toast {{toastShow?'active':''}}" wx:if="{{toastShow}}">
+        <view class="title">{{title}}</view>
+        <view class="jifen"><text>+{{jifen}}</text>积分</view>
+        <view class="experence"><text>+{{Experence}}</text>经验值</view>
+    </view> 
+</template>
+
+<script>
+import wepy from 'wepy'
+export default class myToast extends wepy.component {
+  data = {
+  }
+  watcher = {
+  }
+  props = {
+     toastShow:{
+       type: Boolean,
+       default: false
+     },
+     title:{
+       type: String,
+       default: '默认标题'
+     },
+     jifen:{
+       type: String,
+       default: '33'
+     },
+     Experence:{
+       type: String,
+       default: '00'
+     }
+  }
+}
+</script>
+
+<style lang="less" scoped>
+// my-toast
+.toast{
+  width: 200rpx;
+  // height: 117rpx;
+  background-color: rgba(51, 51, 51, 0.7);
+  position: fixed;
+  left: 50%;
+  top:50%;
+  font-size: 24rpx;
+  transform:translate(-50%);
+  margin-top: -100rpx;
+  color: #fff;
+  border-radius: 10rpx;
+  padding-top: 12rpx;
+  // padding: 12rpx;
+  // text-align: justify;
+  .title{
+    text-align: center;
+    color:#fff;
+    font-size: 24rpx;
+    position: relative;
+    // margin:10rpx 0;
+    padding-bottom: 10rpx;
+  }
+  .title::after{
+    content:'';
+    display: block;
+    width: 100%;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    border-bottom: 1px solid rgba(255,255,255,.1);
+    transform: scaleY(.5);
+  }
+  text{
+      color: #ff7905;
+      display: inline-block;
+      margin-right: 10rpx;
+  }
+  .jifen{
+    text-align: left;
+    // margin: 10rpx 0;
+    font-size: 28rpx;
+    text-indent: 20rpx;
+  }
+  .experence{
+    text-align: left;
+    font-size: 28rpx;
+    text-indent: 20rpx;
+    padding-bottom: 10rpx;
+  }
+}
+
+// .active{
+  
+// }
+</style>

@@ -63,6 +63,10 @@ export default class follower extends wepy.page {
     this.$apply();
   }
 
+  async onPullDownRefresh(){
+    wx.stopPullDownRefresh()
+  }
+
   async onShow(){
     
   }

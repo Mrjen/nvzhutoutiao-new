@@ -156,6 +156,10 @@ export default class search extends wepy.page {
     
   }
 
+  async onPullDownRefresh(){
+     wx.stopPullDownRefresh()
+  }
+
   async onReachBottom() {
       if(!this.searchWord) return;
       let result = await this.searchHot({ page: this.page });
@@ -241,7 +245,7 @@ export default class search extends wepy.page {
            }
            this.articleList = _articleList;
            this.$apply();
-            // tips.success('点赞')
+            // tips.success('点亮')
          }
       },
 

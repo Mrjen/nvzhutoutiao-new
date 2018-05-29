@@ -10,6 +10,10 @@ export default class shop extends wepy.page {
   methods={
       
   }
+
+  async onPullDownRefresh(){
+     wx.stopPullDownRefresh()
+  }
 }
 </script>
 

@@ -10,9 +10,9 @@
           <view class="item-left">
             <view class="title">{{lis.title}}</view>
             <view class="info">
-              <view class="info-icon">转发{{lis.sharetimes}}</view>
-              <view class="info-icon">评论{{lis.commenttimes}}</view>
-              <view class="info-icon">喜欢{{lis.liketimes}}</view>
+              <view class="info-icon info-icon1">{{lis.sharetimes}}</view>
+              <view class="info-icon info-icon2">{{lis.commenttimes}}</view>
+              <view class="info-icon info-icon3">{{lis.liketimes}}</view>
             </view>
           </view>
           <view class="in-right">
@@ -37,7 +37,7 @@ import wxRequest from "../../utils/http.js";
 import api from "../../utils/api.js";
 export default class likesList extends wepy.page{
   config = {
-     "navigationBarTitleText":"点赞列表"
+     "navigationBarTitleText":"点亮列表"
   }
   data ={
     likeList:[],
@@ -50,6 +50,10 @@ export default class likesList extends wepy.page{
        this.likeList = list.data.data;
        this.$apply();
      }
+  }
+
+  async onPullDownRefresh(){
+     wx.stopPullDownRefresh()
   }
 
   async getList(page,type='like'){
@@ -124,24 +128,44 @@ export default class likesList extends wepy.page{
      }
      .info{
        display: flex;
-       justify-content: space-between;
        font-size: 24rpx;
        color: #666;
        margin-top: 10rpx;
      }
      .info-icon{
        display: flex;
-       align-items: center;
        font-size: 24rpx;
+       position: relative;
+       min-width: 120rpx;
      }
-     .info-icon:before{
+     .info-icon1::before{
        content: '';
        display: block;
-       width: 10rpx;
-       height: 10rpx;
-       margin-right: 10rpx;
-       border-radius: 50%;
-       background-color: #e5e5e5;
+       width: 38rpx;
+       height: 34rpx;
+       margin-right: 6rpx;
+       position: relative;
+       background-color: aqua;
+       background: url('http://p766oymet.bkt.clouddn.com/nvzhu/nz-index-sprites.png') -10rpx -10rpx;
+       background-size:116rpx 108rpx;
+     }
+     .info-icon2::before{
+       content: '';
+       display: block;
+       width: 38rpx;
+       height: 34rpx;
+       margin-right: 6rpx;
+      background: url('http://p766oymet.bkt.clouddn.com/nvzhu/nz-index-sprites.png') -68rpx -10rpx;
+      background-size: 116rpx 108rpx;
+     }
+     .info-icon3::before{
+       content: '';
+       display: block;
+       width: 38rpx;
+       height: 34rpx;
+       margin-right: 6rpx;
+       background: url('http://p766oymet.bkt.clouddn.com/nvzhu/nz-index-sprites.png') -10rpx -64rpx;
+       background-size: 115rpx 108rpx;
      }
    }
    .in-right{

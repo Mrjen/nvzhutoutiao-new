@@ -152,12 +152,14 @@ async function shareTime(id){
 async function getPoster(id){
    let url = await wxRequest(api.poster,{article_id: id},'POST');
    if(url.data.code===api.STATUS){
-      console.log('000000000000000000',url)
+      // console.log('000000000000000000',url)
+      wx.showLoading({ title: "生成中" });
       let image = await getImage(url.data.data);
       console.log('image', image)
       wx.saveImageToPhotosAlbum({
         filePath:image,
         success(res) {
+          wx.hideLoading();
           wx.showModal({
             title: "海报已保存到系统相册",
             content: "快去分享给朋友，叫伙伴们来围观吧！",

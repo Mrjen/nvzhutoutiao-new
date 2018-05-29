@@ -62,6 +62,10 @@ export default class Detail extends wepy.page {
      this.$apply();
   }
 
+  async onPullDownRefresh(){
+    wx.stopPullDownRefresh()
+  }
+
   async onShow(){
      
   }
