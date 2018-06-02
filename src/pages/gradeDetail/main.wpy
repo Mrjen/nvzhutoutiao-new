@@ -14,7 +14,7 @@
             </view>
         </view>
         <view class="level-bar">
-          <view class="bar-inner" style="width:{{(myData.maxnum/600)*myData.empiric+'rpx'}}"></view>
+          <view class="bar-inner" style="width:{{(600/myData.maxnum)*myData.empiric+'rpx'}}"></view>
         </view>
 
         <view class="level-bar-info">
@@ -82,10 +82,10 @@
         </view>
         <view class="get-item">
            <view class="item-left">
-             <image class="icon" src="https://gcdn.playonwechat.com/nvzhu/lv-topcomment-icon.png" mode="widthFix"/>精彩评论
+             <image class="icon" src="https://gcdn.playonwechat.com/nvzhu/lv-topcomment-icon.png" mode="widthFix"/>热门评论
            </view>
-           <view class="score">+10</view>
-           <view class="item-right">每天上限<text>20</text>经验值</view>
+           <view class="score">+5</view>
+           <view class="item-right">每天上限<text>10</text>经验值</view>
         </view>
      </view>
 

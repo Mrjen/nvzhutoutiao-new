@@ -1,0 +1,261 @@
+<template>
+<view class="news">
+  <!-- 导航 -->
+      <view class="nav">
+         <scroll-view scroll-x="true">
+            <view class="nav-main">
+              <form report-submit="true" 
+                    wx:for="{{typeNav}}"
+                    wx:key="{{item.type_id}}"
+                    data-idx="{{index}}"
+                    data-id="{{item.type_id}}"
+                    bindsubmit="changeNav">
+                <button formType="submit"
+                        class="text-item {{item.active?'active':''}}">
+                  {{item.type}}
+                </button>
+              </form>
+               
+            </view>
+         </scroll-view>
+      </view>
+  
+  <!-- 文章列表 -->
+  <view class="article">
+      <view class="out-item" 
+            wx:for="{{arcitleList}}"
+            wx:key="{{index}}">
+          <!-- 标题 无图 -->
+          <view wx:if="{{item.type=='0'}}" class="a-type a-type1">
+              <view class="title">{{item.title}}</view>
+              <view class="a-hot">{{item.hot}}热度</view>
+          </view>
+
+          <!-- 标题 + 一张图 -->
+          <view wx:if="{{item.type=='1'}}" class="a-type a-type2">
+              <view class="main">
+                  <view class="title">{{item.title}}</view>
+                  <view class="cover"><image src="{{item.cover}}" mode="widthFix"/></view>
+              </view>
+              <view class="a-hot">{{item.hot}}热度</view>
+          </view>
+
+          <!-- 标题 + 三张图 -->
+          <view wx:if="{{item.type=='3'}}" class="a-type a-type3">
+               <view class="title">{{item.title}}</view>
+               <view class="cover">
+                   <view class="cover-item" 
+                         wx:for="{{item.cover}}"
+                         wx:key="{{index}}"
+                         wx:item="cover">
+                           <image src="{{item}}" mode="widthFix"/>
+                         </view>
+               </view>
+               <view class="a-hot">{{item.hot}}热度</view>
+          </view>
+      </view>
+  </view>
+
+</view>
+</template>
+
+<script>
+import wepy from 'wepy';
+import wxRequest from '../../utils/http.js';
+import api from '../../utils/api.js';
+export default class News extends wepy.page {
+  data = {
+    typeNav:[{
+    type:"最新",
+    type_id: 0,	
+    create_time: 0,
+	active:	true
+    },{
+    type:"最新",
+    type_id: 0,	
+    create_time: 0,
+	active:	false
+    },{
+    type:"最新",
+    type_id: 0,	
+    create_time: 0,
+	active:	false
+    },{
+    type:"最新",
+    type_id: 0,	
+    create_time: 0,
+	active:	false
+    },{
+    type:"最新",
+    type_id: 0,	
+    create_time: 0,
+	active:	false
+    },{
+    type:"最新",
+    type_id: 0,	
+    create_time: 0,
+	active:	false
+    },{
+    type:"最新",
+    type_id: 0,	
+    create_time: 0,
+	active:	false
+    },{
+    type:"最新",
+    type_id: 0,	
+    create_time: 0,
+	active:	false
+    },{
+    type:"最新",
+    type_id: 0,	
+    create_time: 0,
+	active:	false
+    }],
+    arcitleList:[{
+      title: '了不起的新时代：世界竞争中的中国奇迹',
+      cover: ['http://iph.href.lu/230x146','http://iph.href.lu/230x146','http://iph.href.lu/230x146'],
+      type: 3,
+      hot: '789万'
+    },{
+      title: '为什么中国普遍不支持高中生早恋',
+      cover: ['http://iph.href.lu/230x146'],
+      type: 1,
+      hot: '89万'
+    },{
+      title: '抑郁高发的群体，是否具有一些共同特质',
+      cover: ['http://iph.href.lu/230x146','http://iph.href.lu/230x146','http://iph.href.lu/230x146'],
+      type: 3,
+      hot: '789万'
+    },{
+      title: '深圳妈妈做花艺早餐800天不重样，网友直呼：果然是别人家的妈妈从没让我失望过!知乎上有一个话题很火，你有多久没好好坐下来吃一顿早餐了？',
+      cover: [],
+      type: 0,
+      hot: '789万'
+    },{
+      title: '了不起的新时代：世界竞争中的中国奇迹',
+      cover: ['http://iph.href.lu/230x146','http://iph.href.lu/230x146','http://iph.href.lu/230x146'],
+      type: 3,
+      hot: '789万'
+    },{
+      title: '了不起的新时代：世界竞争中的中国奇迹',
+      cover: ['http://iph.href.lu/230x146','http://iph.href.lu/230x146','http://iph.href.lu/230x146'],
+      type: 3,
+      hot: '789万'
+    }]
+  }
+  methods = {}
+
+  async onPullDownRefresh() {
+
+    wx.stopPullDownRefresh();
+  }
+}
+</script>
+
+<style lang="less" scoped>
+// nav
+.nav {
+  width: 750rpx;
+  height: 88rpx;
+  background: #fff;
+  line-height: 88rpx;
+  position: relative;
+  .nav-main {
+    display: flex;
+  }
+  .text-item {
+    min-width: 105rpx;
+    height: 88rpx;
+    line-height: 88rpx;
+    text-align: center;
+    padding: 0;
+    margin: 0;
+    font-size: 30rpx;
+    background: transparent;
+  }
+  .active {
+    color: #7c48c6;
+    font-size: 34rpx;
+  }
+}
+.nav::after{
+    content: '';
+    display: block;
+    width: 100%;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    border-bottom: 1px solid rgba(0, 0, 0, .1);
+    transform: scaleY(.5);
+}
+
+.article{
+  .a-type{
+    // padding: 20rpx;
+  }
+  .title{
+      font-size: 30rpx;
+      color: #333;
+      line-height: 42rpx;
+  }
+  .a-hot{
+    font-size: 20rpx;
+    color: #999;
+    padding: 0 20rpx 20rpx 20rpx;
+    position: relative;
+  }
+  .a-hot::after{
+    content: '';
+    display: block;
+    width: 100%;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    border-bottom: 1px solid rgba(0, 0, 0, .1);
+    transform: scaleY(.5);
+  }
+  .a-type1 .title{
+      padding: 20rpx;
+  }
+  .a-type2{
+     .main{
+        display: flex;
+        justify-content: space-between;
+        padding: 20rpx 20rpx 0 20rpx;
+     }
+     .cover{
+         width: 230rpx;
+         height: 146rpx;
+         display: flex;
+         align-items: center;
+         overflow: hidden;
+         image{
+           display: block;
+           width: 100%;  
+         }
+     }
+  }
+  .a-type3{
+    .title{
+      padding:20rpx;
+      font-size: 30rpx;
+    }
+    .cover{
+      display: flex;
+      justify-content: space-between;
+      padding: 0 20rpx 20rpx 20rpx;
+    }
+    .cover-item{
+       width: 230rpx;
+       height: 146rpx;
+       display: flex;
+       overflow: hidden;
+       image{
+        display: block;
+        width: 100%;
+       } 
+    }
+  }
+}
+
+</style>

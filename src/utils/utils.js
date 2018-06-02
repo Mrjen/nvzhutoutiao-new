@@ -50,6 +50,30 @@ async function getUserInfo() {
   })
 }
 
+/**
+ * 格式化现在距${endTime}的剩余时间
+ */
+function formatRemainTime(endTime) {
+  var startDate = new Date(); //开始时间
+  var endDate = new Date(endTime); //结束时间
+  var t = endDate.getTime() - startDate.getTime(); //时间差
+  var d = 0,
+      h = 0,
+      m = 0,
+      s = 0;
+  if (t >= 0) {
+      d = Math.floor(t / 1000 / 3600 / 24);
+      // if(d<10){ d = '0'+d }
+      h = Math.floor(t / 1000 / 60 / 60 % 24);
+      if(h<10){ h = '0'+ h }
+      m = Math.floor(t / 1000 / 60 % 60);
+      if(m<10){ m = '0'+ m }
+      s = Math.floor(t / 1000 % 60);
+      if(s<10){ s = '0'+s }
+  }
+  return d + "天 " + h + ": " + m + ": " + s;
+}
+
 // 获取token 
 function getToken() {
   return new Promise((reslove, reject) => {
@@ -159,7 +183,6 @@ async function getPoster(id){
       wx.saveImageToPhotosAlbum({
         filePath:image,
         success(res) {
-          wx.hideLoading();
           wx.showModal({
             title: "海报已保存到系统相册",
             content: "快去分享给朋友，叫伙伴们来围观吧！",
@@ -186,6 +209,9 @@ async function getPoster(id){
           }).catch(res=>{
             console.log('用户点击取消')
           })
+        },
+        complete(){
+          wx.hideLoading();
         }
       })
    }
@@ -302,6 +328,14 @@ async function updateFormId(form_id=''){
    return form;
 }
 
+// 获取url参数
+
+function getQueryString(name, url) {
+  var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+  var r = url.match(reg);
+  if (r != null) return unescape(r[2]); return null;
+}
+
 export default {
   formatTime,
   getUserInfo,
@@ -314,5 +348,7 @@ export default {
   shareTime,
   userDownloadPoster,
   updateFormId,
-  getPoster
+  getPoster,
+  getQueryString,
+  formatRemainTime
 };

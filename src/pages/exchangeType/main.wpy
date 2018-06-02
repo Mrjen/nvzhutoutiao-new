@@ -1,0 +1,178 @@
+<template>
+  <view class="exchange-main">
+      <!-- 输入账号 -->
+      <view class="f-input" wx:if="{{typeAccount}}">
+          <input type="text" placeholder="在此输入手机号/账号"/>
+      </view>
+      
+      <addressItem :arrow.sync="addressItemClass"></addressItem>
+
+      <Pinfo>
+        <view slot="bar">订单号</view>
+        <view slot="contact">订单号</view>
+      </Pinfo>
+
+      <view class="all-scroe">总计：兑换此商品将扣除1999积分</view>
+
+      <view class="nav-bar">
+          <view class="exchange">兑换</view>
+      </view>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy';
+import wxRequest from '../../utils/http.js';
+import api from '../../utils/api.js';
+import addressItem from '../addressManage/components/address-item';
+import Pinfo from '../addressManage/components/product-item';
+export default class exchange extends wepy.page {
+  config={
+    "navigationBarTitleText":"填写账号"
+  }
+  data = {
+    typeAccount: false,
+    addressItemClass: 1
+  }
+  components={
+    addressItem,
+    Pinfo
+  }
+  
+}
+</script>
+
+<style lang="less" scoped>
+.exchange-main{
+   position: relative;
+   padding: 68rpx 0 34rpx 0;
+}
+
+.exchange-main::before{
+   content: '';
+    width: 750rpx;
+    height: 16rpx;
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAukAAAAPCAMAAABumKGPAAAAclBMVEUAAACaR/D4gUqaR/DKZaL4gUqaR/D4gUqaR/D4gUqaR/D4gUqaR/D4gUqaR/D4gUqaR/D4gUqaR/D4gUqaR/D4gUqaR/D4gUqaR/D4gUqaR/D4gUqaR/D4gUqaR/D4gUqaR/D4gUqaR/D4gUr4gUr4gUoE4NJtAAAAJnRSTlMAzMwMA8nDw7y8tLSqqp2dj4+BgXNzZmZYWEtLPT0vLyIiGBgQCRpukPsAAAEHSURBVGje7c43DsNADETR0UrOOWcr3/+KLswF5gAsCJBTDl7x8V+daDvIvgVti7BK1k6CP3tg+sl0z/SNsErWToI727LcZNmwXANhdaydBH/2xPSV6ZHpE2GVrJ0Ed7afkFxVIjuWywphlayZBH/2kmgPyM5M70BYHWsnwZ0dZiQXo8hySnJeIqySNZPgz94S7QbZtaBdgbA61k6COzsuSM4GkeWc5LREWCVrJsGffSTaBbJ7QTsDYXWsnQR3tlqRnPSQd8m0Q1glaybBn30l2gmyJ8sjEFbH2knwZzdM20zXTBuEVbJ2EtzZD8tDlm+WeyCsjrWT4M/umNaZbpl+EVbJ2klwZ382LYEZZaeY9gAAAABJRU5ErkJggg==');
+    background-size: 100% 100%;
+    position: absolute;
+    left: 0;
+    top: 20rpx;
+}
+
+.f-input{
+  width: 750rpx;
+  height: 190rpx;
+  position: relative;
+  padding: 68rpx 40rpx 34rpx 40rpx;
+  input{
+    width: 670rpx;
+	height: 88rpx;
+	background-color: #e5e5e5;
+    border-radius: 10rpx;
+    padding: 0 20rpx;
+    box-sizing: border-box;
+  }
+}
+
+.p-info{
+  display: flex;
+  border-top: 20rpx solid #eee;
+  padding: 20rpx;
+  position: relative;
+  .cover{
+    width: 168rpx;
+    height: 168rpx;
+    margin-right: 40rpx;
+    image{
+      display: block;
+      width: 100%
+    }
+  }
+  .info{
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+    padding:20rpx 0;
+    .score{
+      color: #d44143;
+    }
+  }
+}
+
+.p-info::before{
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  border-bottom: 1px solid rgba(0, 0, 0, .1);
+}
+
+.all-scroe{
+  padding: 20rpx;
+}
+
+.nav-bar{
+  width: 750rpx;
+  height: 100rpx;
+  background-color: #eeeeee;
+  display: flex;
+  justify-content: flex-end;
+  left: 0;
+  bottom: 0;
+  position: fixed;
+  .exchange{
+    width: 300rpx;
+    height: 100rpx;
+    font-size: 36rpx;
+    text-align: center;
+    line-height: 100rpx;
+    color: #fff;
+	background-color: #f8814a;
+  }
+}
+
+.address{
+  display: flex;
+  padding: 10rpx;
+  height: 190rpx;
+  position: relative;
+  padding: 68rpx 40rpx 34rpx 40rpx;
+
+  .name{
+    font-size: 28rpx;
+  }
+  .tag{
+    font-size: 20rpx;
+    color: #f8814a;
+    padding: 0 6rpx;
+    border:1px solid #f8814a;
+    border-radius: 5rpx;
+  }
+  .address-info{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    flex: 1;
+  }
+  .address-info::after{
+    content: '';
+    position: absolute;
+    right: 1px;
+    top: 50%;
+    width: 10px;
+    height: 10px;
+    margin-top: -5rpx;
+    border-top: solid 1px currentColor;
+    border-right: solid 1px currentColor;
+    -webkit-transform: rotate(45deg);
+            transform: rotate(45deg);
+  }
+  .address-desc{
+    font-size: 28rpx;
+    color: #999;
+  }
+}
+
+</style>

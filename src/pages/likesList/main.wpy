@@ -10,7 +10,7 @@
           <view class="item-left">
             <view class="title">{{lis.title}}</view>
             <view class="info">
-              <view class="info-icon info-icon1">{{lis.sharetimes}}</view>
+              <view class="info-icon info-icon1">{{lis.readtimes}}</view>
               <view class="info-icon info-icon2">{{lis.commenttimes}}</view>
               <view class="info-icon info-icon3">{{lis.liketimes}}</view>
             </view>

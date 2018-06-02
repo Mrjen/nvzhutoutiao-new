@@ -15,8 +15,8 @@
 
     <!-- 信息列表 -->
     <view class="msg-list">
-      <block>
-       <view wx:if="{{currentList=='sys'?true:false}}" class="notice">
+      <block wx:if="{{currentList=='sys'?true:false}}" >
+       <view class="notice">
           <view class="item-block" 
                 wx:for="{{noticeList}}" 
                 wx:key="{{item.id}}">
@@ -60,8 +60,8 @@
        </view>
       </block>
 
-      <block>
-       <view wx:if="{{currentList=='chat'?true:false}}" class="notice">
+      <block wx:if="{{currentList=='chat'?true:false}}">
+       <view class="notice">
           <view wx:for="{{chartList}}" 
                 wx:key="{{item.id}}"
                 class="item-block">
@@ -103,9 +103,6 @@
 
     </view>
 
-     
-    
-    
   </div>
 </template>
 
@@ -138,7 +135,7 @@ export default class Message extends wepy.page{
       msgNum: ''
     }],
     currentList: 'sys',  // 当前导航所在标签 sys chat
-    chartList: [{}],
+    chartList: [],
     noticeList: []
   }
   async onShow(e){
@@ -246,7 +243,7 @@ export default class Message extends wepy.page{
       let msg = await wxRequest(api.deleteSystemMsg,{ inform_id: dataset.infoid }, 'POST')
       if(msg.data.code === api.STATUS){
         let msgList = [];
-        if(dataset.type==="comment"||dataset.type==="sys"){
+        if(dataset.type==="comment"||dataset.type==="sys"||dataset.type==="commentlike"){
            msgList = this.noticeList;
            msgList.splice(dataset.idx,1);
            this.noticeList = msgList;

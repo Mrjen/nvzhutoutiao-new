@@ -19,6 +19,7 @@ export default class extends wepy.app {
   config = {
     pages: [
       'pages/index/main',
+      'pages/news/main',
       'pages/commList/main',
       'pages/details/main',
       'pages/editUserInfo/main',
@@ -35,7 +36,9 @@ export default class extends wepy.app {
       'pages/myWallet/main',
       'pages/shop/main',
       'pages/gradeDetail/main',
-      'pages/wxCropper/wxCropper'
+      'pages/wxCropper/wxCropper',
+      'pages/exchangeType/main',
+      'pages/addressManage/main'
     ],
     window: {
       backgroundTextStyle: "light",
@@ -51,16 +54,23 @@ export default class extends wepy.app {
       selectedColor: "#793292",
       backgroundColor: "#F5F4F1",
       borderStyle: "black",
-      list: [{
+      list: [
+        // {
+        //   pagePath: "pages/news/main",
+        //   text: "资讯",
+        //   iconPath: "pages/image/tabbar-icon-news.png",
+        //   selectedIconPath: "pages/image/tabbar-icon-news-active.png"
+        // },
+        {
           pagePath: "pages/index/main",
           text: "话题",
-          iconPath: "pages/image/index.png",
-          selectedIconPath: "pages/image/h_index.png"
+          iconPath: "pages/image/tabbar-icon-topic.png",
+          selectedIconPath: "pages/image/tabbar-icon-topic-active.png"
         },{
           pagePath: "pages/mycenter/main",
           text: "我的",
-          iconPath: "pages/image/myCenter.png",
-          selectedIconPath: "pages/image/h_myCenter.png"
+          iconPath: "pages/image/tabbar-icon-mine.png",
+          selectedIconPath: "pages/image/tabbar-icon-mine-active.png"
         }]
     }
   }
@@ -189,7 +199,7 @@ view{
 }
 .topic_top{
   background-color: #FFFFFF;
-  padding: 30rpx 40rpx 20rpx 40rpx;
+  padding: 30rpx 40rpx 40rpx 40rpx;
 }
 .button_flex{
   display: flex;
@@ -312,19 +322,6 @@ button::after{
 button::after{
   display: none;
 }
-
-/* 假的评论按钮 */
-page .same-comm{
-  background-color: transparent;
-  width: 32rpx;
-  height: 32rpx;
-  line-height: 1;
-  padding: 0 !important;
-  margin:0 !important;
-  overflow: inherit !important;
-}
-
-/* this rule will be remove */
 
 </style>
 

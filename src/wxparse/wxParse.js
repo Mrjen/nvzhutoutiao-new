@@ -166,6 +166,6 @@ module.exports = {
   wxParse: wxParse,
   wxParseImgTap: wxParseImgTap,
   wxParseTemArray: wxParseTemArray,
-  emojisInit: emojisInit
+  emojisInit: emojisInit,
+  wxParseImgLoad: wxParseImgLoad,
 }
-

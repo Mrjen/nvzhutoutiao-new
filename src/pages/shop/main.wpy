@@ -3,20 +3,44 @@
   <view class="header header1">
       <view class="sharp">
         <view class="title">我的积分</view>
-        <view class="score">{{integral}}</view>
+        <view class="score"  @tap="openMyExperence">{{integral}}</view>
         <view class="score_detail" @tap="openMyExperence">积分明细</view>
       </view>
 
       <!-- 签到领积分 -->
-      <block>
-        <view class="sign-btn" wx:if="{{is_sign=='0'?true:false}}" @tap="signChunk">签到领积分</view>
+      <form report-submit="true" bindsubmit="signChunk">
+        <button class="sign-btn" formType="submit" wx:if="{{is_sign=='0'?true:false}}">签到领积分</button>
         <view class="sign-btn" wx:else>今天已签到</view>
-      </block>
+      </form>
   </view>
 
   <!-- 商城主体 -->
 <block> 
-  <view class="qidai">积分商城敬请期待</view>
+  <view class="shop-main">
+    <!-- <view class="shop-nav">
+       <navigator class="my-gift" url=""></navigator>
+       <navigator class="my-address" url=""></navigator>
+    </view> -->
+    
+    <view class="shop-bar"></view>
+
+    <view class="shop-list">
+       <view class="p-item" 
+             wx:for="{{shopList}}" 
+             wx:key="{{index}}">
+         <view class="p-cover">
+           <image src="{{item.cover}}" mode="widthFix"/>
+         </view>
+         <view class="p-name">{{item.title}}</view>
+         <view class="p-score">{{item.score}}积分</view>
+         <view class="p-info">
+            <view class="p-lave">剩余{{item.lave}}</view>
+            <view class="p-exchange" @tap="Exchange">立即兑换</view>
+         </view>
+       </view>
+       <view class="more" style="width:750rpx;height:200rpx;line-height:200rpx;color:#999;text-align:center">更多礼品敬请期待</view>
+    </view>
+  </view>
 </block>
 
   <!-- 积分规则 -->
@@ -88,10 +112,10 @@
       </view>
       <view class="get-item">
           <view class="item-left">
-            <image class="icon" src="https://gcdn.playonwechat.com/nvzhu/lv-topcomment-icon.png" mode="widthFix"/>精彩评论
+            <image class="icon" src="https://gcdn.playonwechat.com/nvzhu/lv-topcomment-icon.png" mode="widthFix"/>热门评论
           </view>
-          <view class="score">+100积分</view>
-          <view class="item-right">每天上限<text>200</text>积分</view>
+          <view class="score">+50积分</view>
+          <view class="item-right">每天上限<text>100</text>积分</view>
       </view>
       <view class="get-item">
           <view class="item-left">
@@ -107,32 +131,31 @@
   </view>
 
   <!-- 我的积分记录 myExperence -->
-     <view class="my-experence" wx:if="{{myExperence}}">
-         <view class="main">
-            <view class="header">
-               <view class="title">积分记录</view>
-               <view class="today">
-                 今天已获得<text>{{today_integral}}</text>
-                 积分,累计<text>{{total_integral}}</text>积分
-               </view>
+  <view class="my-experence" wx:if="{{myExperence}}">
+      <view class="main">
+        <view class="header">
+            <view class="title">积分记录</view>
+            <view class="today">
+              今天已获得<text>{{today_integral}}</text>
+              积分,累计<text>{{total_integral}}</text>积分
             </view>
-            <scroll-view class="scroll" scroll-y lower-threshold="100" bindscrolltolower="loadMore">
-              <view class="scroll-inner">
-                <view wx:for="{{signDetail}}" wx:key="{{index}}" class="scroll-item">
-                  <view class="item-left">
-                    <view class="desc">{{item.desc}}</view>
-                    <view class="date">{{item.create_time}}</view>
-                 </view>
-                 <view class="item-center">+{{item.integral}}</view>
-                 <view class="item-right">累计<text>{{item.history_integral}}</text>积分</view>
-                </view>
+        </view>
+        <scroll-view class="scroll" scroll-y lower-threshold="100" bindscrolltolower="loadMore">
+          <view class="scroll-inner">
+            <view wx:for="{{signDetail}}" wx:key="{{index}}" class="scroll-item">
+              <view class="item-left">
+                <view class="desc">{{item.desc}}</view>
+                <view class="date">{{item.create_time}}</view>
               </view>
-            </scroll-view>
-         </view>
-         <view class="lv-close"  @tap="openMyExperence">
-           <image mode="widthFix"  src="https://gcdn.playonwechat.com/nvzhu/lv-close.png"/></view>
-     </view>
-
+              <view class="item-center">+{{item.integral}}</view>
+              <view class="item-right">累计<text>{{item.history_integral}}</text>积分</view>
+            </view>
+          </view>
+        </scroll-view>
+      </view>
+      <view class="lv-close"  @tap="openMyExperence">
+        <image mode="widthFix"  src="https://gcdn.playonwechat.com/nvzhu/lv-close.png"/></view>
+  </view>
   
 </view>
 </template>
@@ -200,9 +223,75 @@ export default class shop extends wepy.page {
      total_integral: 0,         // 总积分
      signDetail:[],             // 积分记录
      page: 2,                   // 数据分页
-     loadEnd: true              // 防止重复加载数据
+     loadEnd: true,              // 防止重复加载数据
+     shopList: [
+    //    {
+    //    id: 1,
+    //    title: '全国通用10元手机话费',
+    //    score: '1999',
+    //    lave: '200',
+    //    cover: 'http://p766oymet.bkt.clouddn.com/nvzhu/productp01.png'
+    //  },{
+    //    id: 2,
+    //    title: '超Q眯眼可妮兔钥匙扣',
+    //    score: '2999',
+    //    lave: '200',
+    //    cover: 'http://p766oymet.bkt.clouddn.com/nvzhu/productp02.png'
+    //  },{
+    //    id: 3,
+    //    title: '爱奇艺1个月黄金会员',
+    //    score: '3999',
+    //    lave: '200',
+    //    cover: 'http://p766oymet.bkt.clouddn.com/nvzhu/productp03.png'
+    //  },{
+    //    id: 4,
+    //    title: '15分钟精美水晶沙漏',
+    //    score: '5999',
+    //    lave: '200',
+    //    cover: 'http://p766oymet.bkt.clouddn.com/nvzhu/productp04.png'
+    //  },{
+    //    id: 5,
+    //    title: 'USB可充电精准体重秤',
+    //    score: ' 6999',
+    //    lave: '200',
+    //    cover: 'http://p766oymet.bkt.clouddn.com/nvzhu/productp05.png'
+    //  },{
+    //    id: 6,
+    //    title: '抖音同款迷你喷雾风扇',
+    //    score: '7999',
+    //    lave: '200',
+    //    cover: 'http://p766oymet.bkt.clouddn.com/nvzhu/productp06.png'
+    //  },{
+    //    id: 7,
+    //    title: '可爱卡通U型护颈枕头',
+    //    score: '8999',
+    //    lave: '200',
+    //    cover: 'http://p766oymet.bkt.clouddn.com/nvzhu/productp07.png'
+    //  },{
+    //    id: 8,
+    //    title: '便携式空调喷雾小风扇',
+    //    score: '9999',
+    //    lave: '200',
+    //    cover: 'http://p766oymet.bkt.clouddn.com/nvzhu/productp08.png'
+    //  }
+     ]
   }
   methods={
+    // 兑换商品
+    Exchange(){
+       wx.showModal({
+          title: '您的积分还不够兑换',
+          content: '评论/转发/点赞/签到都可以赚取哦~',
+          showCancel: false,
+          success: function(res) {
+            if (res.confirm) {
+              console.log('用户点击确定')
+            } else if (res.cancel) {
+              console.log('用户点击取消')
+            }
+          }
+        })
+    },
     // 打卡弹层
     openLvRule(){
         this.jiFenPop = !this.jiFenPop;
@@ -211,13 +300,14 @@ export default class shop extends wepy.page {
 
     // 去首页
     toIndex(){
-      wx.switchTab({
-        url: '../index/main'
-      })
+      // wx.switchTab({
+      //   url: '../index/main'
+      // })
     },
     
     // 签到
-    async signChunk(){
+    async signChunk(e){
+    let formId = e.detail.formId;
     let chunk = await wxRequest(api.chunk,{},'POST');
     if(chunk.data.code===api.STATUS){
       console.log('chunk', chunk)
@@ -234,6 +324,9 @@ export default class shop extends wepy.page {
       this.total_sign = chunk.data.data.total_sign;
       this.$apply();
     }
+
+    // 保存formId
+    wxRequest(api.saveFormId,{formid:formId},'POST')
   },
   
   // 关闭/打开规则
@@ -280,7 +373,11 @@ export default class shop extends wepy.page {
       this.$apply();
     }
 
-    
+    // 获取商品列表
+    let shopList = await wxRequest('https://nvzhu.zealcdn.cn/public/index.php/api/user/data',{},'post');
+    console.log('shopList', shopList);
+    this.shopList = shopList.data.data;
+    this.$apply();
   }
 
   // 获取积分数据
@@ -291,7 +388,6 @@ export default class shop extends wepy.page {
     } 
   }
 
-  
 
   async onPullDownRefresh(){
      wx.stopPullDownRefresh()
@@ -706,11 +802,80 @@ export default class shop extends wepy.page {
 }
 
 // 商城
-.qidai{
-  width: 100%;
-  height: 500rpx;
-  text-align: center;
-  line-height: 500rpx;
-  color: #757582;
+.shop-main{
+  .shop-nav{
+    display: flex;
+    justify-content: space-between;
+    padding:20rpx;
+    navigator{
+      display: block;
+      width: 345rpx;
+      height: 200rpx;
+    }
+    .my-gift{
+      background-image: url('http://p766oymet.bkt.clouddn.com/nvzhu/shop-my-gift.png');
+      background-size: 100% 100%;
+    }
+    .my-address{
+      background-image: url('http://p766oymet.bkt.clouddn.com/nvzhu/shop-my-address.png');
+      background-size: 100% 100%;
+    }
+  }
+  .shop-bar{
+    width: 707rpx;
+    height: 59rpx;
+    background-image: url('http://p766oymet.bkt.clouddn.com/nvzhu/shop-my-bar-icon.png');
+    background-size: 100% 100%;
+    margin:40rpx auto 50rpx auto;
+  }
+  .shop-list{
+    padding: 0 20rpx;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    .p-item{
+      width: 345rpx;
+      padding-bottom: 40rpx;
+    }
+    .p-cover{
+      width: 345rpx;
+      height: 360rpx;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      image{
+        display: flex;
+        width: 100%;
+      }
+    }
+    .p-name{
+      font-size: 28rpx;
+      color: #333;
+      padding:20rpx 0;
+    }
+    .p-score{
+      font-size: 24rpx;
+      color: #d44143;
+    }
+    .p-info{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .p-lave{
+      font-size: 20rpx;
+      color: #999;
+    }
+    .p-exchange{
+      width: 120rpx;
+      height: 40rpx;
+      font-size: 20rpx;
+      color: #fff;
+      text-align: center;
+      line-height: 40rpx;
+      background: #f8814a;
+      border-radius: 10rpx;
+    }
+  }
 }
 </style>

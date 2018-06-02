@@ -44,7 +44,6 @@ function saveUserInfo(url, data = {}) {
 
 // 获取sign
 function getSign(kid){
-
   return new Promise((resolve,reject)=>{
     wx.login({
        success(res){

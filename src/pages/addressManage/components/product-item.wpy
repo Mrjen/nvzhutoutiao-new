@@ -1,0 +1,59 @@
+<template>
+<view class="prouct">
+    <slot name="bar"></slot>
+    <view class="p-info">
+        <view class="cover">
+            <image src="http://iph.href.lu/168x168" mode="widthFix"/>
+        </view>
+        <view class="info">
+            <view class="title">全网通用10元手机话费</view>
+            <view class="score">1999积分</view>
+        </view>
+    </view>
+    <slot name="contact"></slot>
+</view>
+</template>
+
+<script>
+import wepy from 'wepy';
+export default class Pinfo extends wepy.component {
+  data = {};
+}
+</script>
+
+<style lang="less" scoped>
+.p-info{
+  display: flex;
+  border-top: 20rpx solid #eee;
+  padding: 20rpx;
+  position: relative;
+  .cover{
+    width: 168rpx;
+    height: 168rpx;
+    margin-right: 40rpx;
+    image{
+      display: block;
+      width: 100%
+    }
+  }
+  .info{
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+    padding:20rpx 0;
+    .score{
+      color: #d44143;
+    }
+  }
+}
+
+.p-info::before{
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  border-bottom: 1px solid rgba(0, 0, 0, .1);
+}
+
+</style>

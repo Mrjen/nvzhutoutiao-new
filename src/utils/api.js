@@ -130,6 +130,18 @@ const integraldetail = `${domainUrl}/integral/integraldetail`
 // 评论列表删除评论
 const delcomment = `${domainUrl}/comment/delcomment`
 
+// 邀请好友进入小程序获取积分、经验
+const getintegralshare = `${domainUrl}/article/getintegralshare`
+
+// 用户点击统计
+const clickbutton = `${domainUrl}/user/clickbutton`
+
+// 关闭签到弹层
+const closesign = `${domainUrl}/user/closesign`
+
+// 投票
+const vote = `${domainUrl}/article/voteing`
+
 export default {
   STATUS,
   domainUrl,
@@ -174,5 +186,9 @@ export default {
   signstatus,
   chunk,
   integraldetail,
-  delcomment
+  delcomment,
+  getintegralshare,
+  clickbutton,
+  closesign,
+  vote
 };

@@ -1,6 +1,9 @@
 export default function wxRequest(url, params = {}, method = "GET") {
+
                  if(typeof(params)==='object'){
-                   params.token = wx.getStorageSync("token") || "";
+                    if(!params.token){
+                      params.token = wx.getStorageSync("token") || "";
+                    }                  
                  }
                 //  console.log(params);
                  return new Promise(function(resolve, reject) {

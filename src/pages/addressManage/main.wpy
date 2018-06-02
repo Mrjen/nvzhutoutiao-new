@@ -1,0 +1,205 @@
+<template>
+<view class="address-manage">
+    <addressItem>
+        <view slot="edit" class="edit-adress"></view>
+    </addressItem>
+
+    <view class="add-address"><view class="plus"></view>新建地址</view>
+    
+    <!-- 新建地址 -->
+    <view class="new-address">
+        <view class="u-item"><input type="text"  placeholder="姓名"/></view>
+        <view class="u-item"><input type="text"  placeholder="手机号"/></view>
+        <view class="u-item">
+            <picker class="picker" mode="region" bindchange="bindRegionChange" value="{{region}}" custom-item="{{customItem}}">
+                <view class="picker-in {{pickerActive?'picker-active':''}}">{{region[0]}}{{region[1]}}{{region[2]}}</view>
+            </picker>
+        </view>
+        <view class="u-item"><input type="text"  placeholder="详细地址：如街道、楼盘号等"/></view>
+        <view class="set-default" @tap="setDefaultOption">
+            <radio-group bindchange="radioChange">
+               <radio value="设为默认地址" checked="{{setDefault}}" color="#f8814a"/>设为默认地址 
+            </radio-group>
+            </view>
+        <view class="save-btn">保存</view>
+    </view>
+</view>
+</template>
+
+<script>
+import wepy from 'wepy';
+import wxRequest from '../../utils/http.js';
+import api from '../../utils/api.js';
+import addressItem from './components/address-item';
+export default class addressManage extends wepy.page  {
+  config={
+    "navigationBarTitleText":"地址管理"
+  }
+  data = {
+    region: ['省份', '城市', '区县'],
+    pickerActive: false,
+    setDefault: false
+  }
+  components = {
+    addressItem
+  }
+
+  methods = {
+    setDefaultOption(){
+      this.setDefault = !this.setDefault;
+      this.$apply();
+    },
+
+    radioChange(e){
+      console.log(e)
+    }
+  }
+}
+</script>
+
+<style lang="less" scoped>
+.address-manage{
+    position: relative;
+    width: 750rpx;
+    padding: 68rpx 20rpx 0 20rpx;
+}
+
+.address-manage::before{
+  content: '';
+  display: block;
+  width: 750rpx;
+  height: 16rpx;
+  background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAukAAAAPCAMAAABumKGPAAAAclBMVEUAAACaR/D4gUqaR/DKZaL4gUqaR/D4gUqaR/D4gUqaR/D4gUqaR/D4gUqaR/D4gUqaR/D4gUqaR/D4gUqaR/D4gUqaR/D4gUqaR/D4gUqaR/D4gUqaR/D4gUqaR/D4gUqaR/D4gUqaR/D4gUr4gUr4gUoE4NJtAAAAJnRSTlMAzMwMA8nDw7y8tLSqqp2dj4+BgXNzZmZYWEtLPT0vLyIiGBgQCRpukPsAAAEHSURBVGje7c43DsNADETR0UrOOWcr3/+KLswF5gAsCJBTDl7x8V+daDvIvgVti7BK1k6CP3tg+sl0z/SNsErWToI727LcZNmwXANhdaydBH/2xPSV6ZHpE2GVrJ0Ed7afkFxVIjuWywphlayZBH/2kmgPyM5M70BYHWsnwZ0dZiQXo8hySnJeIqySNZPgz94S7QbZtaBdgbA61k6COzsuSM4GkeWc5LREWCVrJsGffSTaBbJ7QTsDYXWsnQR3tlqRnPSQd8m0Q1glaybBn30l2gmyJ8sjEFbH2knwZzdM20zXTBuEVbJ2EtzZD8tDlm+WeyCsjrWT4M/umNaZbpl+EVbJ2klwZ382LYEZZaeY9gAAAABJRU5ErkJggg==');
+  position: absolute;
+  left: 0;
+  top: 20rpx;
+}
+
+.edit-adress{
+  width: 44rpx;
+  height: 44rpx;
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAfCAMAAACxiD++AAAAh1BMVEUAAABkw/9kw/9kw/9kw/9kw/9kw/9kw/9kw/9kw/9kw/9kw/9kw/9kw/9kw/9kw/9kw/9kw/9kw/9kw/9kw/9kw/9kw/9kw/9kw/9kw/9kw/9kw/9kw/9kw/9kw/9kw/9kw/9kw/9kw/9kw/9kw/9kw/9kw/9kw/9kw/9kw/9kw/9kw/9kw//oGitQAAAALHRSTlMAsdsGEQzLVaN8tZaId2FaQ0A7J/jr58+om2dFNy8hCe7Yw7uPgeNvUqAY8RAqI40AAAF2SURBVCjPdZPZeoIwEIVJULYKoqCIoIJ79X//56tJ1ITanhu+nMPsM57FuDmJSkY772+MYolCNX4Ss0nm6tkZZB3mxehJXEoQ1nsEQegaXOG7R/jm5R8o176rTyH2RgEnwyYsZ94vex4OC86Feh5Z6K9rX8HUq9nfVLqQD/QQ6l1Nd4C5SqDia6DPS53cCtB5NyxHA71jZQIz1RWumLj6pjPlT8DUnS9oHX12N/YnZa8RI53utx2Jtle6QYRw/N/Zq4RSuLw4wfdb3/ZGX0NsiPXcS5i8dUmg9AxSwxxJHA+FROxcexPf5rCHjdFTGz+yVWxLCHzl//TSd5LU9uGKEIgQp/Ety7nt5NcjwAGr626sxo9Wmln4PVnaD/TbAr0mgSY3KPSv+Mbn3owP9WNbdsmldefa6HWwG7W5eQMUC47qa3dyiHypx/bfVvsXOFjm4y7CAKKx93lZ13y7baa1hHP2cZup5A2Z2nLc645FFQSViBvH+w+QzSwKDRn6hwAAAABJRU5ErkJggg==');
+  background-size: 32rpx;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: absolute;
+  top: 50%;
+  margin-top: -22rpx;
+  right: 20rpx;
+}
+
+.add-address{
+    width: 670rpx;
+    height: 100rpx;
+    border-radius: 10rpx;
+    border: 1px solid #f8814a;
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 50rpx;
+    text-align: center;
+    line-height: 100rpx;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #f8814a;
+}
+
+.plus{
+    position: relative;
+    margin-right: 20rpx;
+    color: #f8814a;
+}
+
+.plus::before{
+    content: '';
+    display: block;
+    width: 15px;
+    height: 1px;
+    background-color: currentColor;
+}
+
+.plus::after{
+    content: '';
+    display: block;
+    width: 15px;
+    height: 1px;
+    background-color: currentColor;
+    -webkit-transform: rotate(90deg);
+            transform: rotate(90deg);
+}
+
+
+// 新建地址
+.new-address{
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  background: #fff;
+  z-index: 5;
+  padding: 68rpx 0 0 0;
+  .u-item{
+    width: 100%;
+    height: 90rpx;
+    position: relative;
+    input{
+      display: block;
+      width: 100%;
+      height: 90rpx;
+      font-size: 28rpx;
+      padding: 0 20rpx;
+    }
+    .picker{
+      display: block;
+      width: 100%;
+      padding-left: 20rpx;
+    }
+    .picker-in{
+       line-height: 90rpx;
+       color: #999;
+    }
+  }
+  .u-item:after{
+    content: '';
+    display: block;
+    width: 100%;
+    border-bottom: 1px solid rgba(0, 0, 0, .1);
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    transform: scaleY(.5)
+  }
+  .set-default{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20rpx 0;
+  }
+  .save-btn{
+     width: 750rpx;
+     height: 100rpx;
+     background: #7c48c6;
+     position: absolute;
+     left: 0;
+     bottom: 0;
+     text-align: center;
+     line-height: 100rpx;
+     color: #fff;
+  }
+}
+
+.new-address::before{
+  content: '';
+  display: block;
+  width: 750rpx;
+  height: 16rpx;
+  background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAukAAAAPCAMAAABumKGPAAAAclBMVEUAAACaR/D4gUqaR/DKZaL4gUqaR/D4gUqaR/D4gUqaR/D4gUqaR/D4gUqaR/D4gUqaR/D4gUqaR/D4gUqaR/D4gUqaR/D4gUqaR/D4gUqaR/D4gUqaR/D4gUqaR/D4gUqaR/D4gUqaR/D4gUr4gUr4gUoE4NJtAAAAJnRSTlMAzMwMA8nDw7y8tLSqqp2dj4+BgXNzZmZYWEtLPT0vLyIiGBgQCRpukPsAAAEHSURBVGje7c43DsNADETR0UrOOWcr3/+KLswF5gAsCJBTDl7x8V+daDvIvgVti7BK1k6CP3tg+sl0z/SNsErWToI727LcZNmwXANhdaydBH/2xPSV6ZHpE2GVrJ0Ed7afkFxVIjuWywphlayZBH/2kmgPyM5M70BYHWsnwZ0dZiQXo8hySnJeIqySNZPgz94S7QbZtaBdgbA61k6COzsuSM4GkeWc5LREWCVrJsGffSTaBbJ7QTsDYXWsnQR3tlqRnPSQd8m0Q1glaybBn30l2gmyJ8sjEFbH2knwZzdM20zXTBuEVbJ2EtzZD8tDlm+WeyCsjrWT4M/umNaZbpl+EVbJ2klwZ382LYEZZaeY9gAAAABJRU5ErkJggg==');
+  position: absolute;
+  left: 0;
+  top: 20rpx;
+}
+
+
+</style>
