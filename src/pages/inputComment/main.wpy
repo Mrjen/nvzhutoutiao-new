@@ -1,0 +1,142 @@
+<template>
+<view class="comm-pop">
+    <view class="pop-op">
+        <view class="cencal" @tap="cencalComment">取消</view>
+        <view class="send">发表</view>
+    </view>
+    <textarea placeholder="{{inputPlaceholder}}" 
+                maxlength="-1" 
+                fixed="true"
+                auto-height="true"
+                @blur="inputBlur"
+                @confirm="addComment"
+                value="{{commContent}}"
+                cursor-spacing="20"
+                show-confirm-bar="{{0}}"
+                confirm-type="send"
+                placeholder-style="color:#999"
+                focus="{{inputFcus}}"
+                class="pop-textarea"></textarea>
+    <view class="comm-addimage">
+    <view class="add-comm-image" wx:for="{{commImageArr}}" wx:key="{{index}}">
+        <image src="{{item}}" mode="aspectFill"/>
+        <view class="delete-image" @tap="deleteAddImage" data-idx="{{index}}">+</view>
+    </view>
+    <view class="add-icon" wx:if="{{commImageArr.length<9}}"  @tap="addCommImage"></view>
+    </view>
+</view>
+</template>
+
+<script>
+import wepy from 'wepy';
+import wxRequest from '../../utils/http.js';
+import api from '../../utils/api.js';
+export default class inputComment extends wepy.page {
+  data = {
+
+  }
+
+  onLoad(options){
+     console.log(options)Joan
+     if(options.commType==='article'){
+         console.log('评论文章')
+     }else if(options.commType==='commentFollow'){
+         console.log('创建跟评')
+     }
+  }
+
+}
+</script>
+
+<style lang="less" scoped>
+// 评论弹层
+.comm-pop{
+  position: fixed;
+  left: 0;
+  top: 0;
+  background: #fff;
+  width: 100%;
+  height: 100%;
+  z-index: 10000;
+  padding: 30rpx;
+  .pop-op{
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 50rpx;
+  }
+  .send{
+    color: #7c48c6;
+  }
+  .pop-textarea{
+    width: 690rpx;
+    min-height:100rpx;
+    display: block;
+    background: transparent;
+  }
+  .comm-addimage{
+    width: 100%;
+    min-height: 330rpx;
+    padding-top: 30rpx;
+    display: flex;
+    flex-wrap: wrap;
+    .add-icon{
+      width: 200rpx;
+      height: 200rpx;
+      background-color: #f2f2f2;
+      position: relative;
+    }
+  }
+  .add-icon::before{
+     content: '';
+     display: block;
+     width: 1px;
+     height: 21px;
+     position: absolute;
+     top: 50%;
+     left: 50%;
+     background-color: #a9a9a9;
+     transform: translateY(-50%);
+  }
+  .add-icon::after{
+     content: '';
+     display: block;
+     width: 21px;
+     height: 1px;
+     position: absolute;
+     top: 50%;
+     left: 50%;
+     background-color: #a9a9a9;
+     transform: translateX(-50%);
+  }
+  .add-comm-image{
+    width: 200rpx;
+    height: 200rpx;
+    margin:4rpx;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    image{
+      width: 200rpx;
+      height: 200rpx;
+      display: block;
+    }
+    .delete-image{
+      width: 50rpx;
+      height: 50rpx;
+      position: absolute;
+      right: 0;
+      top: 0;
+      color: #fff;
+      line-height: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transform: rotate(45deg);
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 50%;
+    }
+  }
+}
+</style>

@@ -71,7 +71,7 @@ function formatRemainTime(endTime) {
       s = Math.floor(t / 1000 % 60);
       if(s<10){ s = '0'+s }
   }
-  return d + "天 " + h + ": " + m + ": " + s;
+  return d + "天 " + h + ":" + m + ":" + s;
 }
 
 // 获取token 
@@ -91,6 +91,14 @@ function getToken() {
     });
   })
 
+}
+
+// 获取七牛token
+async function getQiNiuToken(){
+  let qiniu = await wxRequest(api.getQiNiuToken,{},'POST')
+  if(qiniu.data.code === api.STATUS){
+    return qiniu.data.data;
+  }
 }
 
 // 保存用户信息
@@ -350,5 +358,6 @@ export default {
   updateFormId,
   getPoster,
   getQueryString,
-  formatRemainTime
+  formatRemainTime,
+  getQiNiuToken
 };

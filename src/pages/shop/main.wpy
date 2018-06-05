@@ -10,7 +10,7 @@
       <!-- 签到领积分 -->
       <form report-submit="true" bindsubmit="signChunk">
         <button class="sign-btn" formType="submit" wx:if="{{is_sign=='0'?true:false}}">签到领积分</button>
-        <view class="sign-btn" wx:else>今天已签到</view>
+        <view class="sign-btn has_sign" wx:else>今天已签到</view>
       </form>
   </view>
 
@@ -64,7 +64,7 @@
               <view class="text">{{item.text}}</view>
            </view>
         </view>
-        <view class="success-btn" @tap="toIndex">签到成功</view>
+        <view class="success-btn" @tap="openLvRule">签到成功</view>
         <view class="sign-tip">
            <view class="tip-item">签到积分说明：</view>
            <view class="tip-item">1、第7天后连续签到将持续获得100积分</view>
@@ -307,24 +307,28 @@ export default class shop extends wepy.page {
     
     // 签到
     async signChunk(e){
-    let formId = e.detail.formId;
-    let chunk = await wxRequest(api.chunk,{},'POST');
-    if(chunk.data.code===api.STATUS){
-      console.log('chunk', chunk)
-      let signList = this.signList;
-      for(let i=0;i<chunk.data.data.continue_sign;i++){
-        if(signList[i]){
-          signList[i].active = true;
+      if(this.loadEnd){
+        this.loadEnd = false;
+        this.$apply();
+        let formId = e.detail.formId;
+        let chunk = await wxRequest(api.chunk,{},'POST');
+        if(chunk.data.code===api.STATUS){
+          console.log('chunk', chunk)
+          let signList = this.signList;
+          for(let i=0;i<chunk.data.data.continue_sign;i++){
+            if(signList[i]){
+              signList[i].active = true;
+            }
+          }
+          this.jiFenPop = !this.jiFenPop;
+          this.signList = signList;
+          this.is_sign = 1;
+          this.continue_sign = chunk.data.data.continue_sign;
+          this.total_sign = chunk.data.data.total_sign;
+          this.loadEnd = true;
+          this.$apply();
         }
       }
-      this.jiFenPop = !this.jiFenPop;
-      this.signList = signList;
-      this.is_sign = 1;
-      this.continue_sign = chunk.data.data.continue_sign;
-      this.total_sign = chunk.data.data.total_sign;
-      this.$apply();
-    }
-
     // 保存formId
     wxRequest(api.saveFormId,{formid:formId},'POST')
   },
@@ -456,6 +460,10 @@ export default class shop extends wepy.page {
    line-height: 70rpx;
    border-radius: 10rpx;
    margin: 20rpx auto;
+}
+
+.has_sign{
+  background-color: #999;
 }
 
 .jifen-popup{

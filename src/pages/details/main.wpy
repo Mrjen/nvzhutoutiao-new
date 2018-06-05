@@ -1,5 +1,5 @@
 <template>
-  <div class="detail">
+  <scroll-view class="detail" scroll-y="true" scroll-into-view="{{toView}}" style="width:100vw;height:100vh" @scrolltolower="LoadMore">
     <import src="../../wxparse/wxParse.wxml"/>
         <!-- 话题主题 -->
       <view class="topic" 
@@ -15,10 +15,10 @@
           <!-- <button formType="submit" class="form-btn"> -->
           <view class="content" @tap="inputBlur">
               <block wx:if="{{article_Show_type=='rich_text'?true:false}}">
-                  <!-- <rich-text class="richtext" nodes="{{ArticleContent}}"></rich-text> -->
+                  <rich-text class="richtext" nodes="{{ArticleContent}}"></rich-text>
               </block>
               <block wx:elif="{{article_Show_type=='wxparse'?true:false}}">
-                  <!-- <html2wxml :parserContent.sync="ArticleContent" :parserName="name"></html2wxml> -->
+                  <html2wxml :parserContent.sync="ArticleContent" :parserName="name"></html2wxml>
               </block>
           </view>
           <!-- </button> -->
@@ -52,13 +52,13 @@
           </view> -->
 
           <!-- 投票 -->
-          <view class="vote">
+          <view class="vote" wx:if="{{voteList.length}}">
             <!-- 站位用的 -->
             <view class="zanwei">
               <view class="vote-item" 
                     wx:for="{{voteList}}" 
                     wx:key="{{index}}">
-                     <view style="width:300rpx;height:200rpx;"></view>
+                     <view style="width:300rpx;height:320rpx;"></view>
                 <!-- <view class="item {{item.active?'text-active':''}}">{{item.text}}</view> -->
               </view>
             </view>
@@ -68,7 +68,7 @@
               <view class="player">
               参与人数：<text>{{vote_total}}</text>
               </view>    
-              <view class="remain">剩余天数：<view class="time">{{voteDeadLine}}</view></view>  
+              <view class="remain"><text>剩余天数：</text><view class="time">{{voteDeadLine}}</view></view>  
             </view>  
             <view class="vote-main vote-before" wx:if="{{vote_status=='0'?true:false}}">
               <view class="vote-item" 
@@ -109,13 +109,13 @@
       <!-- 话题结束 -->
 
       <!-- 评论区 -->
-      <block>
+      <view id="comm">
         <!-- 精彩评论 -->
         <view class="comments" wx:if="{{topComment.length>0?true:false}}">
           <view class="wonderfulComments">
             <text>热门评论</text>
             <text wx:if="{{topComment.length>0?true:false}}" 
-                  class="wrtie-comment">(点亮10次为热门)</text>
+                  class="wrtie-comment">点亮10次上热门</text>
           </view>
 
           <view class="commentsConter" 
@@ -194,6 +194,19 @@
               <view class="commentsTxt" 
                     wx:else 
                     @tap="followCommentComment({{comm.id}}, {{cidx}}, {{comm.user_id}}, '最新评论一级', {{comm.nickName}})">{{comm.comment}}</view>
+              <view class="comm-image">
+                 <view class="c-image" 
+                       wx:for="{{comm.image}}" 
+                       wx:key="{{index}}" 
+                       wx:for-item="cimage"
+                       wx:for-index="cimdx">
+                   <image src="{{cimage}}" 
+                          @tap="prevImage" 
+                          mode="aspectFill"
+                          data-idx="{{cimdx}}"
+                          data-arr="{{comm.image}}"/>
+                 </view>
+              </view>
             </block>
             
 
@@ -262,6 +275,14 @@
                       wx:else
                       @tap="followFollowComment({{follow.user_id}}, {{comm.id}}, {{fidx}}, {{cidx}}, '精彩评论二级', {{follow.nickName}})">回复
                       <text>@{{follow.renickName}}：</text>{{follow.follow_comment}}
+                      <view class="f-image">
+                         <view class="f-img" 
+                               wx:for="{{follow.image}}" 
+                               wx:key="{{index}}"
+                               wx:for-item="simage">
+                           <image src="{{simage}}" mode="widthFix"/>
+                         </view>
+                      </view>
                 </view>
                 </block>
 
@@ -282,7 +303,7 @@
           <view class="wonderfulComments">
             <text>最新评论</text>
             <text wx:if="{{topComment.length>0?false:true}}" 
-                  class="wrtie-comment">(点亮10次为热门)</text>
+                  class="wrtie-comment">点亮10次上热门</text>
           </view>
            
           <view class="commentsConter" 
@@ -360,6 +381,19 @@
               <view class="commentsTxt" 
                     wx:else  
                     @tap="followCommentComment({{comm.id}}, {{cidx}}, {{comm.user_id}}, '最新评论一级', {{comm.nickName}})">{{comm.comment}}</view>
+              <view class="comm-image">
+                 <view class="c-image" 
+                       wx:for="{{comm.image}}" 
+                       wx:key="{{index}}" 
+                       wx:for-item="cimage"
+                       wx:for-index="cimdx">
+                   <image src="{{cimage}}" 
+                          mode="aspectFill" 
+                          @tap="prevImage" 
+                          data-idx="{{cimdx}}"
+                          data-arr="{{comm.image}}"/>
+                 </view>
+              </view>
             </block>
 
 
@@ -423,10 +457,25 @@
                     <view class="talker"
                         wx:else
                         @tap="followFollowComment({{follow.user_id}}, {{comm.id}}, {{fidx}}, {{cidx}}, '最新评论二级', {{follow.nickName}})">回复
-                        <text>@{{follow.renickName}}：</text>{{follow.follow_comment}}</view>
+                        <text>@{{follow.renickName}}：</text>{{follow.follow_comment}}
+                          <view class="f-image">
+                              <view class="f-img" 
+                                    wx:for="{{follow.image}}" 
+                                    wx:key="{{index}}"
+                                    wx:for-index="fidx"
+                                    wx:for-item="simage">
+                                <image src="{{simage}}" 
+                                        mode="widthFix" 
+                                        data-arr="{{follow.image}}"
+                                        data-idx="{{fidx}}"
+                                        @tap="prevImage"/>
+                              </view>
+                          </view>
+                    </view>
               </block>
 
               </view>
+
               <view class="otherAnswer" wx:if="{{comm.is_page}}" 
                     @tap="readMoreFollowComm({{comm.id}}, {{cidx}}, '点击最新评论查看更多')">查看更多评论</view>
               <view class="otherAnswer" 
@@ -441,18 +490,18 @@
             <image src="https://gcdn.playonwechat.com/nvzhu/msg_1.png" alt=""/>
             <view>还没有人发言，快来抢沙发~</view>
         </view>
-      </block>
+      </view>
       <!-- 评论结束 -->
 
    <block>
-      <view class="input-view" 
+      <!-- <view class="input-view" 
             wx:if="{{inputShow}}" 
             style="{{systemInfo==='iPhone X'?'min-height:138rpx;':'bottom:0'}}">
         <textarea   placeholder="{{inputPlaceholder}}"
                     auto-height="true"
                     maxlength="-1"
-                    wx:if="{{is_accredit=='1'?true:false}}"
                     fixed="true"
+                    @blur="inputBlur"
                     value="{{commContent}}"
                     cursor-spacing="20"
                     @input="inputComment"
@@ -462,27 +511,31 @@
                     placeholder-style="color:#999"
                     focus="{{inputFcus}}"
                     class="inputRedict"></textarea>
-     </view>
+                    <view class="add-image" @tap="addCommImage"></view>
+     </view> -->
 
-    
-     <!-- 仿input授权按钮 -->
-    <!-- <button wx:else 
-            open-type="getUserInfo" 
-            @getuserinfo="getUserInfo"  
-            lang="zh_CN" 
-            class="getinfo"> 
-        <view class="same-input" style="color:#999">发表你的观点</view>
-    </button> -->
 
     <view class="botm-bar">
-      <view class="is_userinfo">
-         <button class="btn-input">写评论...</button>
-         <button class="no_userinfo"></button>
-      </view>
+      <block>
+        <view class="is_userinfo">
+          <button class="btn-input" wx:if="{{is_accredit=='1'}}" @tap="writeComment">写评论...</button>
+          <button class="btn-input no_userinfo" wx:else open-type="getUserInfo" lang="zh_CN" @getuserinfo="getUserInfo">写评论....</button>
+        </view>
+      </block>
+
       <view class="input-op">
-         <view class="a-op"><view class="a-icon like {{Article_likestatus=='1'?'like-active':''}}" @tap="likeArticle"></view><view class="num">{{Article_liketimes}}</view></view>
-         <view class="a-op"><view class="a-icon comm"></view><view class="num">454</view></view>
-         <view class="a-op" @tap="shareOpation"><view class="a-icon share"></view><view class="num">4545</view></view>
+        <view class="a-op">
+           <view class="a-icon like {{Article_likestatus=='1'?'like-active':''}}" @tap="likeArticle"></view>
+           <view class="num">{{Article_liketimes}}</view>
+        </view>
+        <view class="a-op">
+           <view class="a-icon comm" @tap="toComment"></view>
+           <view class="num">{{Article_comments}}</view>
+        </view>
+        <view class="a-op" @tap="shareOpation">
+           <view class="a-icon share"></view>
+           <view class="num">{{Article_sharetimes}}</view>
+        </view>
       </view>
     </view>
 </block>
@@ -511,10 +564,11 @@
         <button bindtap="downloadPoster" data-name="item" class="action-item action-item1">生成图片分享朋友圈</button>
     <!--自动隐藏action-sheet-->
     <action-sheet-cancel>取消</action-sheet-cancel>
+    <view style="width:750rpx;height:50rpx;background:#fff"></view>
   </action-sheet>
 
 
-</div>
+</scroll-view>
 </template>
 
 <script>
@@ -527,6 +581,7 @@ import sharPop from '../../components/shareItem';
 import utils from '../../utils/utils';
 import html2wxml from '../../components/html2wxml';
 import myToast from '../../components/myToast';
+import qiniuUploader from '../../utils/qiniuUploader';
 export default class Detail extends wepy.page {
   config = {
     navigationBarTitleText: '话题详情'
@@ -539,6 +594,8 @@ export default class Detail extends wepy.page {
     comment: [],                   // 最新评论内容
     inputFcus: false,              // 输入框焦点
     commContent: '',               // 评论内容
+    commImageArr:[],               // 评论图片数组图片
+    
     inputCursor: -1,               // 输入框光标位置
     inputValue: '',                // 输入框的值
     id: '',                        // 评论id
@@ -552,6 +609,7 @@ export default class Detail extends wepy.page {
     comment_id: null,              // 评论id
     comment_type: null,            // 评论类型  -> 最新评论 \ 精彩评论
     inputPlaceholder: '发表你的观点',
+
     Article_likestatus: '',        // 文章点亮状态
     Article_liketimes: '',         // 文章喜欢次数
     Article_readtimes: 0,          // 文章阅读次数
@@ -573,21 +631,23 @@ export default class Detail extends wepy.page {
     systemInfo: '',                // 兼容iphone X
 
     // myToast
-    toastTitle: '',
-    toastJiFen: '',
-    toastJingyan: '',
-    toastShow: false,
+    toastTitle: '',                // toast标题
+    toastJiFen: '',                // 积分
+    toastJingyan: '',              // 经验
+    toastShow: false,              // 是否显示
 
     // 投票
     vote_status: 0,                // 我是否已投票
-    voteList:[],                   // 投票选项列表
+    voteList: [],                  // 投票选项列表
     vote_total: '',                // 投票的总数
     currentVoteId: '',             // 当前选择的投票的id
     voteDeadLine: '',              // 投票截止日期
 
-    
     actionSheetHidden: true,       // actionSheet
-    actionSheetItems: ['发给朋友', '生成图片分享朋友圈']
+    actionSheetItems: ['发给朋友', '生成图片分享朋友圈'],
+
+    // scroll-view
+    toView: ''
   };
 
   components = {
@@ -628,19 +688,26 @@ export default class Detail extends wepy.page {
 
     // 这里数据字节过大，把数据拆分分次传递
     let _page_data = detail.data.data;
-
     let voteList = _page_data.votedata;
-    voteList.map(el=>{
-      el.active = false;
-      el.percent = (el.involveNum/_page_data.vote_total_num*100).toFixed(0);
-    })
-    this.voteList = voteList;
-    this.vote_total = _page_data.vote_total_num;
-    this.vote_status = _page_data.vote_status;
+    if(voteList){
+      // 是否存在投票
+      voteList.map(el=>{
+        el.active = false;
+        el.percent = (el.involveNum/_page_data.vote_total_num*100).toFixed(0); 
+      })
+      this.voteList = voteList;
+      this.vote_total = _page_data.vote_total_num;
+      this.vote_status = _page_data.vote_status;
+    }
     this.id = _article_id;
     this.ArticleId = _article_id;
     this.ArticleContent = _page_data.content;
     this.topComment = _page_data.topcomment;
+
+    // 把评论保存至缓存
+    wx.setStorage({key: 'topComment', data:_page_data.topcomment});
+    wx.setStorage({key: 'comment', data:_page_data.comment})
+
     this.comment = _page_data.comment;
     this.Article_liketimes = _page_data.liketimes;
     this.ArticleTtictle = _page_data.title;
@@ -699,8 +766,8 @@ export default class Detail extends wepy.page {
     let userInfo = await wxRequest(api.getUserInfo, {}, 'POST');
     console.log('user', userInfo);
     if (userInfo.data.code === api.STATUS) {
-      this.is_accredit = 0;
-      // this.is_accredit = userInfo.data.data.is_accredit;
+      // this.is_accredit = 0;
+      this.is_accredit = userInfo.data.data.is_accredit;
       this.nickName = userInfo.data.data.nickName;
       wx.setStorage({
         key: 'is_accredit',
@@ -712,12 +779,16 @@ export default class Detail extends wepy.page {
 
     // 计算票
     let voteList = this.voteList;
-    console.log('voteList', voteList)
-    voteList.map(el=>{
-      el.percent = (el.cnum/el.pnum*100).toFixed(0)
-    })
-    this.voteList = voteList;
-    this.$apply();
+    let vote_total_num = this.vote_total;
+    if(voteList.length>0){
+      voteList.map(el=>{
+        el.active = false;
+        el.percent = (el.involveNum/vote_total_num*100).toFixed(0); 
+      })
+      this.voteList = voteList;
+      this.$apply();
+    }
+    
   }
 
   onUnload() {
@@ -744,6 +815,7 @@ export default class Detail extends wepy.page {
       }
     }
   }
+
 
   async onPullDownRefresh() {
     console.log('刷新页面');
@@ -816,13 +888,19 @@ export default class Detail extends wepy.page {
   //   评论文章
   async commentArticle() {
     let that = this;
+
+    // wx.navigateTo({
+    //    url:`../inputComment/main?commType=article&article_id=${this.ArticleId}`
+    // })
+
     this.inputPlaceholder = '发表你的观点';
     if (this.requestOver) {
       this.requestOver = false;
       let comm = await wxRequest(api.addComment, {
         article_id: this.ArticleId,
-        comment: this.commContent
-      });
+        comment: this.commContent,
+        image: this.commImageArr
+      },'POST');
       this.requestOver = true;
       console.log('评论完成', comm);
       if (comm.data.code === api.STATUS) {
@@ -849,12 +927,16 @@ export default class Detail extends wepy.page {
         }
       }
     }
-    this.$apply();
+    // this.$apply();
   }
 
   // 创建追评
   async commentFollow(user_id, comment_id, fidx, cidx, comment_type) {
     console.log('提交评论', user_id, comment_id, fidx, cidx, comment_type);
+    // wx.navigateTo({
+    //   url: `../inputComment/main?user_id=${user_id}&comment_id=${comment_id}`
+    // })
+
     let that = this;
     if (this.requestOver) {
       this.requestOver = false;
@@ -862,8 +944,9 @@ export default class Detail extends wepy.page {
       let follow = await wxRequest(api.followComment, {
         follow_comment: this.commContent,
         re_user_id: user_id,
-        comment_id: this.comment_id
-      });
+        comment_id: this.comment_id,
+        image: this.commImageArr
+      },'POST');
       this.requestOver = true;
       this.commContent = '';
       console.log('follow', follow);
@@ -886,6 +969,7 @@ export default class Detail extends wepy.page {
       if (follow.data.code === api.STATUS) {
         //  tips.success('评论成功')
         this.inputFcus = false;
+        this.commentDom = 'article';
         console.log('评论奖励', follow.data.data);
         if (comment_type == '精彩评论一级') {
           console.log('精彩评论一级');
@@ -942,6 +1026,99 @@ export default class Detail extends wepy.page {
     }
 
   methods = {
+    // 删除发送图片
+    deleteAddImage(e){
+       let dataset = e.currentTarget.dataset;
+       let commImageArr = this.commImageArr;
+        commImageArr.splice(dataset.idx,1);
+       this.commImageArr = commImageArr;
+       this.$apply();
+    },
+    // 取消发送
+    cencalComment(){
+      this.inputShow = false;
+      this.commImageArr = [];
+      this.commContent = '';
+      this.$apply();
+    },
+    // 评论预览图片
+    prevImage(e){
+      console.log(e.currentTarget.dataset);
+      let dataset = e.currentTarget.dataset;
+      wx.previewImage({
+        current: dataset.arr[dataset.idx], 
+        urls: dataset.arr 
+      })
+    },
+    // 点击评论添加图片
+    async addCommImage(){
+      let that = this;
+      let QiNiuToken = await utils.getQiNiuToken();
+      let _qiniu_token = QiNiuToken.upload_token;
+      let commImageArr = this.commImageArr;
+      let _commImageArr = [];
+      let commentDom = this.commentDom;
+      let len = 0;
+      console.log('图片评论对象', this.commentDom)
+      wx.chooseImage({
+        count: 9, // 默认9
+        sizeType: ['compressed'],
+        sourceType: ['album','camera'],
+        success: function (res) {
+          var tempFilePaths = res.tempFilePaths;
+          console.log('tempFilePaths', tempFilePaths)
+          tips.loading('上传中');
+          len = tempFilePaths.length;
+          for(let i=0;i<len;i++){
+               qiniuUploader.upload(tempFilePaths[i], (res) => {
+                  _commImageArr.push('https://gcdn.playonwechat.com'+res.imageURL);
+                  console.log(i+' '+ (len-1))
+                  if(i===len-1){
+                    that.commImageArr = commImageArr.concat(_commImageArr).slice(0,10);
+                    that.commentDom = commentDom;
+                    that.$apply();
+                  }
+                  console.log('这里是上传的图片列表', _commImageArr);
+                  
+                  wx.hideLoading();
+                }, (error) => {
+                  console.log('error: ' + error);
+                  wx.hideLoading();
+                }, {
+                  region: 'SCN',
+                  uptoken: _qiniu_token, 
+                  uptokenFunc: function() {
+                    return '[yourTokenString]';
+                  }
+                }, (res) => {
+                  console.log('上传进度', res.progress)
+                  console.log('已经上传的数据长度', res.totalBytesSent)
+                  console.log('预期需要上传的数据总长度', res.totalBytesExpectedToSend)
+                });
+          }
+
+        }
+      })
+    },
+    // 已授权点击写评论
+    writeComment(){
+       this.inputShow = true;
+       this.inputFcus =  true;
+       this.$apply();
+    },
+    // 点击滚动到评论
+    toComment(){
+      console.log('滚动到评论')
+      let that = this;
+      if(this.toView){
+         this.toView = '';
+         this.$apply();
+      }
+      setTimeout(()=>{
+          that.toView = 'comm';
+          that.$apply();
+      },30);
+    },
     // 点击投票
     async VoteBtn(){
        // 选项id，文章id
@@ -968,7 +1145,6 @@ export default class Detail extends wepy.page {
        let that = this;
        this.actionSheetHidden = !this.actionSheetHidden;
        this.$apply();
-
     },
     // 选择投票按钮
     changeVote(e){
@@ -988,19 +1164,14 @@ export default class Detail extends wepy.page {
       this.actionSheetHidden = !this.actionSheetHidden;
       this.$apply();
     },
-
     // 分享好友
     shareWechat() {},
-
     //   输入评论
     inputComment(e) {
-      console.log(e.detail.value);
+      // console.log(e.detail.value);
+      console.log('this.commentDom', this.commentDom)
       this.commContent = e.detail.value;
       this.$apply();
-    },
-
-    inputValueChange(e) {
-      console.log(e);
     },
     // 返回首页
     goHomego(e) {
@@ -1011,20 +1182,11 @@ export default class Detail extends wepy.page {
         });
         wxRequest(api.clickbutton,{type:'index'},'POST');
     },
-    // 文章评论
-    openArticleComm() {
-      console.log('评论文章');
-      this.inputPlaceholder = '发表你的观点';
-      this.inputGetFocus();
-      this.commentDom = 'article';
-      this.page = 2;
-      this.$apply();
-    },
-
     // input失去焦点
     inputBlur() {
       console.log('失去焦点');
       this.inputFcus = false;
+      // this.inputShow = false;
       this.$apply();
     },
     // 点击跟评图标
@@ -1095,10 +1257,11 @@ export default class Detail extends wepy.page {
       this.comment_id = id;
       this.user_id = user_id;
       this.comment_type = type;
+      this.inputShow = true;
       this.inputPlaceholder = `回复${nickName}`;
       this.$apply();
     },
-    // 追评添加追评
+    // 添加追评
     async followFollowComment(user_id, comment_id, fidx, cidx, type, nickName) {
       console.log(
         '点击二级评论',
@@ -1121,9 +1284,10 @@ export default class Detail extends wepy.page {
     },
     // 提交评论
     async addComment() {
-      console.log('评论发送了', this.commContent);
+      // console.log('评论发送了', this.commContent);
       if (!this.commContent) return;
       let _data = JSON.stringify({ content: this.commContent });
+      console.log('评论对象',this.commentDom)
       if (this.commentDom === 'article') {
         console.log('评论文章');
         this.commentArticle();
@@ -1141,7 +1305,6 @@ export default class Detail extends wepy.page {
       this.inputFcus = false;
       this.$apply();
     },
-
     // 点亮
     async likeCommentZan(cidx, id, likestatus, type) {
       console.log('点亮');
@@ -1194,7 +1357,6 @@ export default class Detail extends wepy.page {
       }
       this.$apply();
     },
-
     // 查看更多评论
     async readMoreFollowComm(id, idx, text) {
       console.log('点击更多评论', id, idx, text);
@@ -1287,7 +1449,6 @@ export default class Detail extends wepy.page {
       }
       this.$apply();
     },
-
     // 获取用户信息
     async getUserInfo(e) {
       let userInfo = e.detail.userInfo;
@@ -1297,12 +1458,11 @@ export default class Detail extends wepy.page {
       let _userInfo = await wxRequest(api.saveUserInfo, userInfo);
       if (_userInfo.data.code === api.STATUS) {
         this.is_accredit = 1;
-        this.inputGetFocus = true;
+        this.inputFcus = true;
         this.inputShow = true;
       }
       this.$apply();
     },
-
     // 去用户中心
     toUserCenter(user_id, is_self) {
       console.log('用户id', user_id, is_self);
@@ -1312,7 +1472,25 @@ export default class Detail extends wepy.page {
         });
       }
     }
-  };
+  }
+
+  // 触底加载更多
+    async LoadMore(){
+      console.log('触底了');
+      let more = await wxRequest(api.commentList, {
+        page: this.page,
+        id: this.ArticleId
+      });
+      console.log('more', more);
+      if (more.data.code === api.STATUS) {
+        if (more.data.data.length > 0) {
+          let oldList = this.comment;
+          this.comment = [...oldList, ...more.data.data];
+          this.page++;
+          this.$apply();
+        }
+      }
+    }
 }
 </script>
 
@@ -1436,26 +1614,28 @@ page {
 }
 
 .niceImg,.zan_get_info{
-  width: 42rpx;
-  height: 42rpx;
-  padding: 8rpx;
-  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAYCAMAAADJYP15AAAAOVBMVEUAAACZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZku8lwOAAAAEnRSTlMAgD/AvxDQsDDwoJDgIJ9wYFDOMeq4AAAAiklEQVQoz23O2xLDIAhFUYTiNSbp+f+PrdpOpxX2G2uEkX7LrGSrQMlGMwIfyXCAUoqGZZDIrloqkT3SkIkQzOVGxHh+xp4eowOoayOOofX5SkQQA6+fy6wUHUz7yYzL8ho9Vp8Z7PGN7PAkj1N0OYrLCB533B4n6GRmxsnfzvXmwlZ5b3L4i3XiCyz3BuIl6eBOAAAAAElFTkSuQmCC');
-  background-size: 36rpx 38rpx;
+  width: 40rpx;
+  height: 40rpx;
+  // padding: 8rpx;
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAAAoCAMAAABevo0zAAABC1BMVEUAAACZmZmYmJiampqZmZmXl5eZmZmZmZmZmZn/7QD/0QD/3QCZmZmZmZmZmZmZmZn/5QD+5wD98QCZmZn/yACZmZn/ywCZmZn/3wD/0wD/2gCZmZn/4wCZmZmZmZmZmZn/zgCZmZn/yACYmJiZmZn+5gD/zAD97QD/zgCampr/zAD/7gCbm5v/2wCZmZn/zwD+5gD+5wD+5gD/xAD+5wD98QD/3ACZmZn/3wCYmJj/6gD/xgD/8AD/zQD/7AD/2QD+5AD/0gD+7AD/zgD/ywD+2gD/wQD92wCampr98gD/5wCZmZn/1gD+3wD/zwD+5QD+6QD+3AD+2QD+7QD/0gD+4gD/zAD+8gD/wwCCGnC3AAAAS3RSTlMAQDUTqA2dU0lCNRH6y60oDfqpg316aGZUSSkdFevh19LRzr60sK+dm4qEHAkJ8vLs4NfIvaeKa2daWlJGPzoh6eHNwLerqJqXiHXi5ALXAAAB00lEQVRIx+3UWVPiQBSG4S+JJCSBAMMqi4AgmzCjjtu4zr6dkeCo6P//JWajQmza9JU3+twAVam3TvUJjTev0CcK1PCsk/vAdkwwo655hgk8q9o/eOc4+JPFS0tISUlKyoiT1c90/ewivrdBHjXmOXP3xtNHjBr50jHPbd/4voJHkvxgyg924GN2o+t+MDfz7C8mZoJEquJ2ydeAS2um8MRs1q+73ZlvB67KXo4JdohSTrFLgaIzneV84ol92845xS078BfIuj/AKDcaSvheU6oGhcjKMM8df94xcWIv5C5Rt+2t6qoFjyFTqAnIyZUvzATGXWgPuFgHxwYtyYNr92rJIbg0CnlHylG5WnZtgkelCA0cv64jKuCxKOIIHD/+RxyDZyg44eG/CP6ESYrgnuF6NFgHhLasguvL7ZIB72rtthWZQu8T42IZrGqvZRrT0IfspFACK+80ZJTDngyJqMNcjCOnYaAU9gycT6ffjBWXQ1Nzj7Ht97oZQFFX/Jfn89ape4ytuef7JWAOnC9M8Hd+sZmhZRWDwaQ0cy8ORovNjHq9QjDY+eYmXtC4nIGISakKIUeUhojSw0cIKQoGC6LBPLUFg4Kb0GgNIk4ffuLN6/QIco6VWhMTc3UAAAAASUVORK5CYII=');
+  background-size: 80rpx 40rpx;
   background-repeat: no-repeat;
-  background-position: center;
+  background-position: 0 0;
+  background-clip: content-box;
   background-color: transparent;
   border-radius: 0;
   margin-right: 4rpx;
 }
 
 .active_nice{
-  width: 42rpx;
-  height: 44rpx;
-  padding: 8rpx;
-  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAYCAMAAADJYP15AAAAOVBMVEUAAAB8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMZ8SMalKoX3AAAAEnRSTlMAgD/AvxDQsDDwoJDgIJ9wYFDOMeq4AAAAiklEQVQoz23O2xLDIAhFUYTiNSbp+f+PrdpOpxX2G2uEkX7LrGSrQMlGMwIfyXCAUoqGZZDIrloqkT3SkIkQzOVGxHh+xp4eowOoayOOofX5SkQQA6+fy6wUHUz7yYzL8ho9Vp8Z7PGN7PAkj1N0OYrLCB533B4n6GRmxsnfzvXmwlZ5b3L4i3XiCyz3BuIl6eBOAAAAAElFTkSuQmCC');
-  background-size: 34rpx 36rpx;
+  width: 40rpx;
+  height: 40rpx;
+  // padding: 8rpx;
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAAAoCAMAAABevo0zAAABC1BMVEUAAACZmZmYmJiampqZmZmXl5eZmZmZmZmZmZn/7QD/0QD/3QCZmZmZmZmZmZmZmZn/5QD+5wD98QCZmZn/yACZmZn/ywCZmZn/3wD/0wD/2gCZmZn/4wCZmZmZmZmZmZn/zgCZmZn/yACYmJiZmZn+5gD/zAD97QD/zgCampr/zAD/7gCbm5v/2wCZmZn/zwD+5gD+5wD+5gD/xAD+5wD98QD/3ACZmZn/3wCYmJj/6gD/xgD/8AD/zQD/7AD/2QD+5AD/0gD+7AD/zgD/ywD+2gD/wQD92wCampr98gD/5wCZmZn/1gD+3wD/zwD+5QD+6QD+3AD+2QD+7QD/0gD+4gD/zAD+8gD/wwCCGnC3AAAAS3RSTlMAQDUTqA2dU0lCNRH6y60oDfqpg316aGZUSSkdFevh19LRzr60sK+dm4qEHAkJ8vLs4NfIvaeKa2daWlJGPzoh6eHNwLerqJqXiHXi5ALXAAAB00lEQVRIx+3UWVPiQBSG4S+JJCSBAMMqi4AgmzCjjtu4zr6dkeCo6P//JWajQmza9JU3+twAVam3TvUJjTev0CcK1PCsk/vAdkwwo655hgk8q9o/eOc4+JPFS0tISUlKyoiT1c90/ewivrdBHjXmOXP3xtNHjBr50jHPbd/4voJHkvxgyg924GN2o+t+MDfz7C8mZoJEquJ2ydeAS2um8MRs1q+73ZlvB67KXo4JdohSTrFLgaIzneV84ol92845xS078BfIuj/AKDcaSvheU6oGhcjKMM8df94xcWIv5C5Rt+2t6qoFjyFTqAnIyZUvzATGXWgPuFgHxwYtyYNr92rJIbg0CnlHylG5WnZtgkelCA0cv64jKuCxKOIIHD/+RxyDZyg44eG/CP6ESYrgnuF6NFgHhLasguvL7ZIB72rtthWZQu8T42IZrGqvZRrT0IfspFACK+80ZJTDngyJqMNcjCOnYaAU9gycT6ffjBWXQ1Nzj7Ht97oZQFFX/Jfn89ape4ytuef7JWAOnC9M8Hd+sZmhZRWDwaQ0cy8ORovNjHq9QjDY+eYmXtC4nIGISakKIUeUhojSw0cIKQoGC6LBPLUFg4Kb0GgNIk4ffuLN6/QIco6VWhMTc3UAAAAASUVORK5CYII=');
+  background-size: 80rpx 40rpx;
   background-repeat: no-repeat;
-  background-position: center;
+  background-clip: content-box;
+  background-position:-40rpx 0;
   border-radius: 0;
   margin-right: 4rpx;
 }
@@ -1501,6 +1681,53 @@ page {
 .flex_end {
   align-self: flex-end;
 }
+
+// 一级评论图片
+.comm-image{
+  display: flex;
+  flex-wrap: wrap;
+  padding-left: 98rpx;
+  padding-bottom: 30rpx;
+  .c-image{
+    width: 150rpx;
+    height: 150rpx;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    margin:6rpx;
+    flex-wrap: wrap;
+    image{
+      display: block;
+      width: 150rpx;
+      height: 150rpx;
+    }
+  }
+}
+
+// 二级评论图片
+.f-image{
+  display: flex;
+  flex-wrap: wrap;
+  .f-img{
+    width: 150rpx;
+    height: 150rpx;
+    background-color: #eee;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 6rpx;
+    flex-wrap: wrap;
+    overflow: hidden;
+    image{
+      display: block;
+      width: 150rpx;
+      height: 150rpx;
+    }
+  }
+}
+
+
 .commentsTxt {
   color: #333333;
   font-size: 28rpx;
@@ -1712,8 +1939,12 @@ page {
   box-sizing: border-box;
   padding: 10rpx 20rpx;
   box-shadow: 0 -5rpx 20rpx rgba(0, 0, 0, 0.1);
-  .inputRedict {
-    min-width: 80rpx;
+  .add-image{
+    width: 52rpx;
+    height: 52rpx;
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADQAAAAzCAMAAADvo9thAAAAe1BMVEUAAABkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGSYekhrAAAAKHRSTlMA+ecG3BarU4FJ3+vkxlscCIpXPzgKdxHX0b2lnYTvlHAuKCThZEsOGa9+5gAAAXxJREFUSMfdldtygjAURRNCCCICooJa7/ay//8LS0wdiBDC6Utnul7IMCyyc3Jjk5kFwYxRCYCALKHh30uifEs4Blg9ag2Ln8qrEA5uptYvlu5mCSe5SxpxUAzES5t4pW7wg7rXYnIhRApgl9OqlzXtuSSWPGraR+o8JXo2qJKeU0ndGu0PijjkYVy4N2E660mbBTSLDSVqDENMkZ7rL6RIHAb+m54SNsimzq996egcU/sdtXqtNDpPfqnlD6RK0aUMc0mVVhyIiNL6hAZFku5zNOiAfqn8ME/5XFORX8pPfK2fXws8UV5pD6Q5Y2JvBBPQI10ea0+wN3SIxqUrh+ZwhIUak8QOFm3AYUkyxz3QBhQ9SZds5XJMQGlJeiAXxup3txRI80/OusfynpmKjQSsrNMjMvl8bK3lkWlpW3ucGA0Zsy417G6jTqVHnor2RQlzf37mgg1QyHW1habsvl5iEkvWRZynOOfXHCr0KaFiPUQWJdwl8CTK7G6+AXXtiLa+XMiwAAAAAElFTkSuQmCC');
+    background-size: 100% 100%;
+    margin:10rpx 0 0 16rpx;
   }
 }
 
@@ -1723,10 +1954,11 @@ page {
   left: 0;
   bottom: 0;
   width: 100%;
-  height: 100rpx;
+  height: 160rpx;
   background: #fff;
-  padding: 0 30rpx;
+  padding: 20rpx 30rpx 30rpx 30rpx;
   align-items: center;
+  box-shadow: 0 0 10rpx rgba(0, 0, 0, 0.1);
   .is_userinfo{
     width: 360rpx;
     height: 68rpx;
@@ -1867,8 +2099,11 @@ page {
   }
   .remain{
     display: flex;
+    justify-content: flex-end;
     .time{
       color: #f15969;
+      min-width: 170rpx;
+      text-align: right;
     }
   }
   .item{
@@ -1974,7 +2209,7 @@ page {
       line-height: 48rpx;
       height: 48rpx;
       color: #fff;
-      padding-left: 20rpx;
+      text-indent: 20rpx;
     }
     .v-item:nth-of-type(odd) .bar-in{
       background: #f04759;
@@ -2009,6 +2244,20 @@ page {
     }
 
 }
+.vote::before{
+  content: '';
+  display: block;
+  width: 128rpx;
+  height: 48rpx;
+  background-image: url('http://p766oymet.bkt.clouddn.com/nvzhu/vote-text-icon.png');
+  background-size: 100% 100%;
+  position: absolute;
+  left: -38rpx;
+  top: -2rpx;
+  z-index: 2;
+}
+
+
 
 </style>
 
