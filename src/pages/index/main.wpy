@@ -73,7 +73,7 @@
                     <view class="article-main">
                       <view class="main-left">
                         <view class="title">{{item.title}}</view>
-                        <view class="parameter">
+                        <view class="parameter {{item.top>0?'article-top':''}}">
                           <view class="brower"><text class="icon icon1"></text>{{item.readtimes}}</view>
                           <view class="brower"><text class="icon icon2"></text>{{item.commenttimes}}</view>
                           <view class="brower"><text class="icon icon3"></text>{{item.liketimes}}</view>
@@ -95,8 +95,17 @@
                :toastShow.sync="toastShow"></myToast>
 
       <!-- 签到 -->
-      <view class="to_sign" wx:if="{{showSignIcon}}" @tap="toSign">
+      <!-- <view class="to_sign" wx:if="{{showSignIcon}}" @tap="toSign">
          <view class="close-sign" catchtap="closeSign"></view>
+      </view> -->
+
+      <view class="sign_pop" wx:if="{{showSignIcon}}">
+         <view class="main">
+            <view class="close" catchtap="closeSign"></view>
+            <view class="jifen jifen1"><text>+2 </text>经验值</view>
+            <view class="jifen"><text>+20 </text>积分</view>
+            <navigator class="to_sign_btn" url="../shop/main"></navigator>
+         </view>
       </view>
 
   </view>
@@ -216,6 +225,9 @@ export default class Index extends wepy.page {
         this.$apply();
       }
 
+      // this.showSignIcon = true;
+      this.$apply();
+
       // 每日首次登录加经验加积分
       if (msg.data.data.getintegral) {
         let toastData = msg.data.data.getintegral;
@@ -247,15 +259,16 @@ export default class Index extends wepy.page {
     let that = this;
     this.getHomeData({
       page: 1,
-      slide_view: 0,
+      slide_view: 1,
       type_id: this.currentTypeId
     }).then(res => {
-      console.log('切换导航数据', res);
+      console.log('下拉刷新', res);
       that.article_list = res.article_list;
+      that.bannerData = res.slide_list;
       that.loadCount = 0;
       that.$apply();
+      wx.stopPullDownRefresh();
     });
-    wx.stopPullDownRefresh();
   }
 
   async onReachBottom() {
@@ -535,6 +548,18 @@ page {
     }
     .parameter {
       display: flex;
+      position: relative;
+    }
+    .article-top::after{
+      content: '置顶';
+      display: block;
+      border:1px solid #fc9a12;
+      position: absolute;
+      right: 20rpx;
+      top: -4rpx;
+      font-size: 24rpx;
+      padding: 4rpx 6rpx;
+      color: #fc9a12;
     }
     .brower {
       display: flex;
@@ -552,20 +577,26 @@ page {
     .icon1 {
       width: 38rpx;
       height: 34rpx;
-      background: url('http://p766oymet.bkt.clouddn.com/nvzhu/nz-index-sprites.png') -10rpx -10rpx;
-      background-size: 116rpx 108rpx;
+      background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAYFBMVEUAAAC6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urr////l5eXKysrDw8P4+Pj09PTs7Oze3t7Z2dm+vr6+LRipAAAAFXRSTlMA+vbH7LGDbE5JPDYeGAXi4KKhJCOHBqNgAAAAhUlEQVQoz9WRSRKAIAwEMe7iruCu//+lhRtBKM7a167UJBnyXbLQLwFKP8w01dYOu3DqVlF5cKhHB7l0qcteuOntEo9peMnpImAGIBIuxnEDCo4JoYDUyGc0SwnepeOc92grZXJRJFAlc+umFWXatrXdafuQ9beYppKtVI2pzwKgEH3+kx2MHxitVsgBXAAAAABJRU5ErkJggg==');
+      background-size: 28rpx 28rpx;
+      background-repeat: no-repeat;
+      background-position: center;
     }
     .icon2 {
       width: 38rpx;
       height: 34rpx;
-      background: url('http://p766oymet.bkt.clouddn.com/nvzhu/nz-index-sprites.png') -68rpx -10rpx;
-      background-size: 116rpx 108rpx;
+      background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAUVBMVEUAAAC6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urqgmJljAAAAGnRSTlMA1PNM2mr66sG4oYRysH5ZEvTg0MuadnA/GkJaMEsAAABxSURBVCjPzdHbCoAgDAbgVWqeOp99/wcNMzPQBt353wz5YLgNck3LSfFOUwUTJsqjlYlDPOoEMo80gaXHDkP1jb10z5q7OpOAlN12wGrrAjBFWADstm4AIm4r6Xh10Ar50J9RaAIHdH3o4tGTocfOMCcR7R8FnAvaTAAAAABJRU5ErkJggg==');
+      background-size: 28rpx 28rpx;
+      background-repeat: no-repeat;
+      background-position: center;
     }
     .icon3 {
       width: 38rpx;
       height: 34rpx;
-      background: url('http://p766oymet.bkt.clouddn.com/nvzhu/nz-index-sprites.png') -10rpx -64rpx;
-      background-size: 116rpx 108rpx;
+      background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAeFBMVEUAAAC6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urogVSNDAAAAJ3RSTlMACqUE9+DCrJRS2HZuH5uNhEw/JhoSDgHq08a2iWZYRjMxzcyiXzWwYpPmAAAAyUlEQVQoz53S147DIBRF0YMJxt2OW3qbdv7/D8djbIVBIEXZ4m0J3SsEXizX0ZS+ejHjXOJFOYqpAYF28/F22W+m1N2LX5z7xr/aQmIqMZjir3u54JEqfW5bAegrqgUfMSlw5VIHSTLHWlGg41q2k5EuYSWVEe8zXGhVOniyMXcwtrF2MLKxcDANz/zZ4mBvOzxpPJNi2Kx2QM/stuIHWQt0n8a0QK/IZsGzfpi51TGuW/Nl9gnCSbiJpkWwLeMwpjy9eXNsbni5X20pHeQbuz5lAAAAAElFTkSuQmCC');
+      background-size: 28rpx 28rpx;
+      background-repeat: no-repeat;
+      background-position: center;
     }
   }
 }
@@ -619,6 +650,51 @@ page {
     position: absolute;
     right: 0;
     top: 0;
+  }
+}
+
+.sign_pop{
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  .close{
+    width: 68rpx;
+    height: 68rpx;
+    position: absolute;
+    right: 0;
+    top: -100rpx;
+    background-image: url('http://p766oymet.bkt.clouddn.com/nvzhu/sign-close-bg.png');
+    background-size: 100% 100%;
+  }
+  .main{
+    width: 590rpx;
+    height: 780rpx;
+    background-color: transparent;
+    background-image: url('http://p766oymet.bkt.clouddn.com/nvzhu/sign-bg.png');
+    background-size: 100% 100%;
+    position: relative;
+  }
+  .jifen1{
+    margin-top: 196rpx;
+  }
+  .jifen{
+    font-size: 40rpx;
+    color: #f03e3d;
+    text-align: center;
+  }
+  .to_sign_btn{
+    width: 410rpx;
+    height: 96rpx;
+    background-image: url('http://p766oymet.bkt.clouddn.com/nvzhu/sign-btn-bg.png');
+    background-size: 100% 100%;
+    margin: 304rpx auto 0 auto;
   }
 }
 </style>

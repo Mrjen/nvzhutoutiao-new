@@ -1,29 +1,29 @@
 <template>
 <view class="comm-pop">
-    <view class="pop-op">
-        <view class="cencal" @tap="cencalComment">取消</view>
-        <view class="send">发表</view>
-    </view>
+    <view class="comm-title">{{commTitle}}</view>
+    <view class="re-comm">{{recomment}}</view>
     <textarea placeholder="{{inputPlaceholder}}" 
                 maxlength="-1" 
                 fixed="true"
                 auto-height="true"
                 @blur="inputBlur"
+                @input="TextInput"
                 @confirm="addComment"
                 value="{{commContent}}"
                 cursor-spacing="20"
                 show-confirm-bar="{{0}}"
                 confirm-type="send"
                 placeholder-style="color:#999"
-                focus="{{inputFcus}}"
+                focus="true"
                 class="pop-textarea"></textarea>
-    <view class="comm-addimage">
-    <view class="add-comm-image" wx:for="{{commImageArr}}" wx:key="{{index}}">
-        <image src="{{item}}" mode="aspectFill"/>
-        <view class="delete-image" @tap="deleteAddImage" data-idx="{{index}}">+</view>
+    <view class="comm-addimage" wx:if="{{is_announce=='1'?true:false}}">
+        <view class="add-comm-image" wx:for="{{commImageArr}}" wx:key="{{index}}">
+            <image src="{{item}}" mode="aspectFill"/>
+            <view class="delete-image" @tap="deleteAddImage" data-idx="{{index}}">+</view>
+        </view>
+        <view class="add-icon" wx:if="{{commImageArr.length<9}}"  @tap="addCommImage"></view>
     </view>
-    <view class="add-icon" wx:if="{{commImageArr.length<9}}"  @tap="addCommImage"></view>
-    </view>
+    <button @tap="sendMsg" class="send">发表</button>
 </view>
 </template>
 
@@ -31,18 +31,211 @@
 import wepy from 'wepy';
 import wxRequest from '../../utils/http.js';
 import api from '../../utils/api.js';
+import utils from '../../utils/utils.js';
+import tips from '../../utils/tips.js';
+import qiniuUploader from '../../utils/qiniuUploader';
 export default class inputComment extends wepy.page {
   data = {
-
+    commContent: '',                      // 输入框内容
+    commType: '',                         // 评论类型
+    commentIdx: '',                       // 评论索引
+    comment_id: '',                       // 评论id
+    comment_type: '',                     // 评论哪里
+    follow_index: '',                     // 大评论的index
+    user_id: '',                          // 用户id
+    options:{},
+    imageArr:[],
+    inputPlaceholder: '发表你的想法...',
+    commTitle: '',
+    recomment:'',
+    commImageArr: [],
+    is_announce: 0
   }
 
-  onLoad(options){
-     console.log(options)Joan
-     if(options.commType==='article'){
-         console.log('评论文章')
-     }else if(options.commType==='commentFollow'){
-         console.log('创建跟评')
+  async onLoad(options){
+     console.log(options);
+     this.options = options;
+     this.is_announce = options.is_announce;
+    // this.is_announce = 1;
+     if(options.comment_type!='文章'){
+         console.log('从跟评来的')
+        this.inputPlaceholder = wx.getStorageSync('InputTitle');
+        this.recomment = wx.getStorageSync('recomment');
+        this.$apply();
      }
+     this.$apply();
+  }
+
+  onShow(){
+    this.commTitle = wx.getStorageSync('commTitle');
+    // this.recomment = `还有一种情况就是加了好友也不聊天，久而久之也搞不清什么关系`;
+    this.$apply();
+  }
+
+  methods = {
+    // 发表评论
+    async sendMsg(){
+        let options = this.options;
+        if(options.comment_type==='文章'){
+            //  评论文章
+            let data = {
+                article_id: options.article_id,
+                comment: this.commContent
+            }
+            if(this.commImageArr.length>0){
+                data.image = this.commImageArr
+            }
+            if(!this.commContent) return;
+            let res = await wxRequest(api.addComment,data,'POST');
+            console.log('评论文章', res);
+            if(res.data.code===api.STATUS){
+                wx.setStorage({key:'comment', data:res.data.data.list});
+                let getintegral = res.data.data.getintegral;
+                if(getintegral){
+                       let myToast = {
+                            title: '评论奖励',
+                            toastJiFen: getintegral.integral,
+                            toastJingyan: getintegral.empiric
+                       }
+                       wx.setStorage({key: 'myToast', data:myToast })
+                       wx.setStorage({key: 'showMyToast', data: '1'})
+                    }else{
+                       wx.removeStorage({key: 'myToast'})
+                    }
+
+                    setTimeout(() => {
+                      wx.navigateBack({delta: 1})
+                    }, 30);
+            }
+        }else{
+            // 发跟评
+            let data = { 
+                follow_comment: this.commContent,
+                comment_id: this.options.comment_id,
+                re_user_id: this.options.user_id
+              };
+            if(this.commImageArr.length>0){
+                data.image = this.commImageArr
+            }
+            if(!this.commContent) return;
+            let json = await wxRequest(api.followComment,data,'POST');
+            let jsonData = '';
+            console.log('json', json)
+            if(json.data.code===api.STATUS){
+                    jsonData = json.data.data;
+                    console.log('jsonData', jsonData)
+                    let comment = null;
+                    if(options.comment_type==='精彩评论一级' || options.comment_type==='精彩评论二级'){
+                    comment = wx.getStorageSync('topComment');
+                    comment[options.commentIdx].follow_comment = jsonData;
+                    wx.setStorage({key: 'topComment', data: comment});
+                    
+                    
+                   console.log('有奖励有奖励有奖励有奖励有奖励有奖励',jsonData[0].getintegral)
+
+                    if(jsonData[0].getintegral){
+                        console.log('有奖励有奖励有奖励有奖励有奖励有奖励')
+                       let myToast = {
+                            title: '评论奖励',
+                            toastJiFen: jsonData[0].getintegral.integral,
+                            toastJingyan: jsonData[0].getintegral.empiric
+                       }
+                       wx.setStorage({key: 'myToast', data:myToast })
+                       wx.setStorage({key: 'showMyToast', data: '1'})
+                    }else{
+                       wx.removeStorage({key: 'myToast'})
+                    }
+
+                    setTimeout(() => {
+                      wx.navigateBack({delta: 1})
+                    }, 30);
+                    
+
+                }else if(options.comment_type === '最新评论一级'||options.comment_type === '最新评论二级'){
+                    comment = wx.getStorageSync('comment');
+                    comment[options.commentIdx].follow_comment = jsonData;
+                    wx.setStorage({key:'comment', data:comment});
+                     
+                    console.log('有奖励有奖励有奖励有奖励有奖励有奖励',jsonData[0].getintegral)
+
+                    if(jsonData[0].getintegral){
+                        console.log('有奖励有奖励有奖励有奖励有奖励有奖励')
+                       let myToast = {
+                            title: '评论奖励',
+                            toastJiFen: jsonData[0].getintegral.integral,
+                            toastJingyan: jsonData[0].getintegral.empiric
+                       }
+                       wx.setStorage({key: 'myToast', data:myToast })
+                       wx.setStorage({key: 'showMyToast', data: '1'})
+                    }else{
+                       wx.removeStorage({key: 'myToast'})
+                    }
+
+                    setTimeout(() => {
+                      wx.navigateBack({delta: 1})
+                    }, 30);
+                    
+                }
+            }
+        }  
+   },
+
+   // 点击评论添加图片
+    async addCommImage(){
+      let that = this;
+      let QiNiuToken = await utils.getQiNiuToken();
+      let _qiniu_token = QiNiuToken.upload_token;
+      let commImageArr = this.commImageArr;
+      let _commImageArr = [];
+      let commentDom = this.commentDom;
+      let len = 0;
+      console.log('图片评论对象', this.commentDom)
+      wx.chooseImage({
+        count: 9, // 默认9
+        sizeType: ['compressed'],
+        sourceType: ['album','camera'],
+        success: function (res) {
+          var tempFilePaths = res.tempFilePaths;
+          console.log('tempFilePaths', tempFilePaths)
+          tips.loading('上传中');
+          len = tempFilePaths.length;
+          for(let i=0;i<len;i++){
+               qiniuUploader.upload(tempFilePaths[i], (res) => {
+                  _commImageArr.push('https://gcdn.playonwechat.com'+res.imageURL);
+                  console.log(i+' '+ (len-1))
+                  if(i===len-1){
+                    that.commImageArr = commImageArr.concat(_commImageArr).slice(0,10);
+                    that.commentDom = commentDom;
+                    that.$apply();
+                  }
+                  console.log('这里是上传的图片列表', _commImageArr);
+                  
+                  wx.hideLoading();
+                }, (error) => {
+                  console.log('error: ' + error);
+                  wx.hideLoading();
+                }, {
+                  region: 'SCN',
+                  uptoken: _qiniu_token, 
+                  uptokenFunc: function() {
+                    return '[yourTokenString]';
+                  }
+                }, (res) => {
+                  console.log('上传进度', res.progress)
+                  console.log('已经上传的数据长度', res.totalBytesSent)
+                  console.log('预期需要上传的数据总长度', res.totalBytesExpectedToSend)
+                });
+          }
+
+        }
+      })
+    },
+
+    // 评论输入
+    TextInput(e){
+       this.commContent = e.detail.value;
+       this.$apply();
+    }
   }
 
 }
@@ -50,6 +243,12 @@ export default class inputComment extends wepy.page {
 
 <style lang="less" scoped>
 // 评论弹层
+.comm-title{
+    font-size: 34rpx;
+    font-weight: bolder;
+    padding-bottom: 40rpx;
+}
+
 .comm-pop{
   position: fixed;
   left: 0;
@@ -65,13 +264,20 @@ export default class inputComment extends wepy.page {
     margin-bottom: 50rpx;
   }
   .send{
-    color: #7c48c6;
+    background: #7c48c6;
+    color: #fff;
+    margin-top: 50rpx;
+  }
+  .send:active{
+    background: #925ae0;
   }
   .pop-textarea{
     width: 690rpx;
-    min-height:100rpx;
+    min-height:300rpx;
     display: block;
-    background: transparent;
+    background: #f2f2f2;
+    box-sizing: border-box;
+    padding: 20rpx;
   }
   .comm-addimage{
     width: 100%;
@@ -138,5 +344,10 @@ export default class inputComment extends wepy.page {
       border-radius: 50%;
     }
   }
+}
+
+.re-comm{
+  margin-bottom: 30rpx;
+  color: #666;
 }
 </style>

@@ -50,7 +50,7 @@
         <block wx:for="{{likeList}}" wx:for-index="idx" wx:key="{{idx}}">
             <!-- <likeItem :itemData="item" @toDetail="toLikeItemDetail"></likeItem> -->
              <view class="time">{{item.date}}</view>
-              <view class="in-item" wx:for="{{item.list}}" wx:for-item="lis" wx:key="{{lis.article_id}}" @tap="toDetail({{lis.article_id}})">
+              <!-- <view class="in-item" wx:for="{{item.list}}" wx:for-item="lis" wx:key="{{lis.article_id}}" @tap="toDetail({{lis.article_id}})">
                 <view class="item-left">
                   <view class="title">{{lis.title}}</view>
                   <view class="like-list-info">
@@ -62,7 +62,25 @@
                 <view class="in-right">
                   <image src="{{lis.cover}}" mode="widthFix"/>
                 </view>
-              </view>
+              </view> -->
+               <button class="form-view" formType="submit" wx:for="{{item.list}}" wx:for-item="lis" wx:key="{{lis.article_id}}" @tap="toDetail({{lis.article_id}})">
+                <view class="article-item">
+                    <view class="tag">#{{lis.type}}</view>
+                    <view class="article-main">
+                      <view class="main-left">
+                        <view class="title">{{lis.title}}</view>
+                        <view class="parameter">
+                          <view class="brower"><text class="icon icon1"></text>{{lis.readtimes}}</view>
+                          <view class="brower"><text class="icon icon2"></text>{{lis.commenttimes}}</view>
+                          <view class="brower"><text class="icon icon3"></text>{{lis.liketimes}}</view>
+                        </view>
+                      </view>
+                    </view>
+                </view>
+                <view class="main-right">
+                    <image mode="aspectFill" class="cover" src="{{lis.cover}}"/>
+                </view>
+             </button>
         </block>
      </view>
 
@@ -215,6 +233,9 @@ export default class otherUserCenter extends wepy.page{
             .then(res=>{
               if(res.data.code===api.STATUS){
                 that.isattention = 0;
+                let user_Info = that.user_Info;
+                user_Info.followerNum= user_Info.followerNum-1;
+                that.user_Info = user_Info;
                 that.$apply();
               }else{
                 console.log('请求出错', res)
@@ -230,7 +251,11 @@ export default class otherUserCenter extends wepy.page{
     async addFollowing(){
       let json = await wxRequest(api.createattention,{attention_id:this.user_id,follower_id:wx.getStorageSync('myid')},'post');
       if(json.data.code === api.STATUS){
+        console.log('添加关注')
          this.isattention = 1;
+         let user_Info = this.user_Info;
+         user_Info.followerNum= user_Info.followerNum+1;
+         this.user_Info = user_Info;
          this.$apply();
       }else{
          console.warn('json', json)
@@ -562,4 +587,111 @@ export default class otherUserCenter extends wepy.page{
   //   }
   // }
 }
+
+.article-item {
+  flex: 1;
+  text-align: left;
+  padding: 20rpx 0;
+  margin: 0;
+  line-height: 1;
+  background: transparent;
+  position: relative;
+  .tag {
+    color: #999;
+    font-size: 24rpx;
+    margin-bottom: 20rpx;
+  }
+  .article-main {
+    display: flex;
+    .main-left {
+      flex: 1;
+    }
+    .title {
+      font-size: 32rpx;
+      height: 80rpx;
+      padding-right: 80rpx;
+      margin-bottom: 26rpx;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
+      line-height: 1.4;
+    }
+    .parameter {
+      display: flex;
+    }
+    .brower {
+      display: flex;
+      align-items: center;
+      font-size: 22rpx;
+      min-width: 120rpx;
+      color: #666;
+    }
+    .icon {
+      width: 38rpx;
+      height: 34rpx;
+      display: block;
+      margin-right: 4rpx;
+    }
+    .icon1 {
+      width: 38rpx;
+      height: 34rpx;
+      background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAYFBMVEUAAAC6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urr////l5eXKysrDw8P4+Pj09PTs7Oze3t7Z2dm+vr6+LRipAAAAFXRSTlMA+vbH7LGDbE5JPDYeGAXi4KKhJCOHBqNgAAAAhUlEQVQoz9WRSRKAIAwEMe7iruCu//+lhRtBKM7a167UJBnyXbLQLwFKP8w01dYOu3DqVlF5cKhHB7l0qcteuOntEo9peMnpImAGIBIuxnEDCo4JoYDUyGc0SwnepeOc92grZXJRJFAlc+umFWXatrXdafuQ9beYppKtVI2pzwKgEH3+kx2MHxitVsgBXAAAAABJRU5ErkJggg==');
+      background-size: 28rpx 28rpx;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+    .icon2 {
+      width: 38rpx;
+      height: 34rpx;
+      background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAUVBMVEUAAAC6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urqgmJljAAAAGnRSTlMA1PNM2mr66sG4oYRysH5ZEvTg0MuadnA/GkJaMEsAAABxSURBVCjPzdHbCoAgDAbgVWqeOp99/wcNMzPQBt353wz5YLgNck3LSfFOUwUTJsqjlYlDPOoEMo80gaXHDkP1jb10z5q7OpOAlN12wGrrAjBFWADstm4AIm4r6Xh10Ar50J9RaAIHdH3o4tGTocfOMCcR7R8FnAvaTAAAAABJRU5ErkJggg==');
+      background-size: 28rpx 28rpx;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+    .icon3 {
+      width: 38rpx;
+      height: 34rpx;
+      background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAeFBMVEUAAAC6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urogVSNDAAAAJ3RSTlMACqUE9+DCrJRS2HZuH5uNhEw/JhoSDgHq08a2iWZYRjMxzcyiXzWwYpPmAAAAyUlEQVQoz53S147DIBRF0YMJxt2OW3qbdv7/D8djbIVBIEXZ4m0J3SsEXizX0ZS+ejHjXOJFOYqpAYF28/F22W+m1N2LX5z7xr/aQmIqMZjir3u54JEqfW5bAegrqgUfMSlw5VIHSTLHWlGg41q2k5EuYSWVEe8zXGhVOniyMXcwtrF2MLKxcDANz/zZ4mBvOzxpPJNi2Kx2QM/stuIHWQt0n8a0QK/IZsGzfpi51TGuW/Nl9gnCSbiJpkWwLeMwpjy9eXNsbni5X20pHeQbuz5lAAAAAElFTkSuQmCC');
+      background-size: 28rpx 28rpx;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+  }
+}
+
+.form-view {
+  display: flex;
+  align-items: center;
+}
+
+.form-view::before {
+  content: '';
+  display: block;
+  width: 700rpx;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.1);
+  transform: scaleY(0.5);
+  position: absolute;
+  left: 50%;
+  margin-left: -350rpx;
+  bottom: 0;
+}
+
+.main-right {
+  flex-shrink: 0;
+  width: 170rpx;
+  height: 140rpx;
+  overflow: hidden;
+  border-radius: 10rpx;
+  display: flex;
+  align-items: center;
+  background: #fff;
+  .cover {
+    display: block;
+    max-height: 140rpx;
+  }
+}
+
+
 </style>

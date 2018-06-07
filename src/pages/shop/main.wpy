@@ -8,10 +8,10 @@
       </view>
 
       <!-- 签到领积分 -->
-      <form report-submit="true" bindsubmit="signChunk">
+      <!-- <form report-submit="true" bindsubmit="signChunk">
         <button class="sign-btn" formType="submit" wx:if="{{is_sign=='0'?true:false}}">签到领积分</button>
         <view class="sign-btn has_sign" wx:else>今天已签到</view>
-      </form>
+      </form> -->
   </view>
 
   <!-- 商城主体 -->
@@ -224,57 +224,7 @@ export default class shop extends wepy.page {
      signDetail:[],             // 积分记录
      page: 2,                   // 数据分页
      loadEnd: true,              // 防止重复加载数据
-     shopList: [
-    //    {
-    //    id: 1,
-    //    title: '全国通用10元手机话费',
-    //    score: '1999',
-    //    lave: '200',
-    //    cover: 'http://p766oymet.bkt.clouddn.com/nvzhu/productp01.png'
-    //  },{
-    //    id: 2,
-    //    title: '超Q眯眼可妮兔钥匙扣',
-    //    score: '2999',
-    //    lave: '200',
-    //    cover: 'http://p766oymet.bkt.clouddn.com/nvzhu/productp02.png'
-    //  },{
-    //    id: 3,
-    //    title: '爱奇艺1个月黄金会员',
-    //    score: '3999',
-    //    lave: '200',
-    //    cover: 'http://p766oymet.bkt.clouddn.com/nvzhu/productp03.png'
-    //  },{
-    //    id: 4,
-    //    title: '15分钟精美水晶沙漏',
-    //    score: '5999',
-    //    lave: '200',
-    //    cover: 'http://p766oymet.bkt.clouddn.com/nvzhu/productp04.png'
-    //  },{
-    //    id: 5,
-    //    title: 'USB可充电精准体重秤',
-    //    score: ' 6999',
-    //    lave: '200',
-    //    cover: 'http://p766oymet.bkt.clouddn.com/nvzhu/productp05.png'
-    //  },{
-    //    id: 6,
-    //    title: '抖音同款迷你喷雾风扇',
-    //    score: '7999',
-    //    lave: '200',
-    //    cover: 'http://p766oymet.bkt.clouddn.com/nvzhu/productp06.png'
-    //  },{
-    //    id: 7,
-    //    title: '可爱卡通U型护颈枕头',
-    //    score: '8999',
-    //    lave: '200',
-    //    cover: 'http://p766oymet.bkt.clouddn.com/nvzhu/productp07.png'
-    //  },{
-    //    id: 8,
-    //    title: '便携式空调喷雾小风扇',
-    //    score: '9999',
-    //    lave: '200',
-    //    cover: 'http://p766oymet.bkt.clouddn.com/nvzhu/productp08.png'
-    //  }
-     ]
+     shopList: []
   }
   methods={
     // 兑换商品
@@ -305,34 +255,6 @@ export default class shop extends wepy.page {
       // })
     },
     
-    // 签到
-    async signChunk(e){
-      if(this.loadEnd){
-        this.loadEnd = false;
-        this.$apply();
-        let formId = e.detail.formId;
-        let chunk = await wxRequest(api.chunk,{},'POST');
-        if(chunk.data.code===api.STATUS){
-          console.log('chunk', chunk)
-          let signList = this.signList;
-          for(let i=0;i<chunk.data.data.continue_sign;i++){
-            if(signList[i]){
-              signList[i].active = true;
-            }
-          }
-          this.jiFenPop = !this.jiFenPop;
-          this.signList = signList;
-          this.is_sign = 1;
-          this.continue_sign = chunk.data.data.continue_sign;
-          this.total_sign = chunk.data.data.total_sign;
-          this.loadEnd = true;
-          this.$apply();
-        }
-      }
-    // 保存formId
-    wxRequest(api.saveFormId,{formid:formId},'POST')
-  },
-  
   // 关闭/打开规则
   closeExperience(){
      this.showExperience = !this.showExperience;
@@ -402,7 +324,7 @@ export default class shop extends wepy.page {
 <style lang="less" scoped>
 .header1{
   width: 750rpx;
-  height: 430rpx;
+  height: 346rpx;
   background: url(http://p766oymet.bkt.clouddn.com/nvzhu/shop-bg.png);
   background-size: 100% 100%;
   padding-top: 1px;

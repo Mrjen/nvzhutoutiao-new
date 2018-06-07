@@ -1,0 +1,256 @@
+<template>
+  <view class="check-in">
+      <view class="check">连续签到2天，累计签到4天</view>
+      <view class="main">
+        <view class="check-status">{{title}}</view>
+        <view class="sign-list">
+          <view class="sign-item" 
+                wx:for="{{signList}}" 
+                wx:key="{{index}}">
+                <view class="sign-icon {{item.active?'active-icon':''}}">{{item.count}}</view>
+                <view class="date">{{item.text}}</view>
+          </view>
+        </view>
+        <view class="op-check">
+            <view class="btn" @tap="toMyCenter">返回个人中心</view>
+            <view class="btn" @tap="toShop">去兑换礼品</view>
+        </view>
+
+        <view class="rules">
+            <view class="title">签到积分说明</view>
+            <view class="text">1. 第7天后连续签到将持续获得100积分</view>
+            <view class="text">2. 如果中断签到，将重新开始计算积分</view>
+        </view>
+      </view>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy';
+import wxRequest from "../../utils/http.js";
+import api from "../../utils/api.js";
+import utils from '../../utils/utils';
+export default class checkIn extends wepy.page{
+  config = {
+    // disableScroll: true
+  }
+  data = {
+    signList:[{
+       icon:'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-bg.png',
+       text: "第1天",
+       active: true,
+       count: 20
+     },{
+       icon:'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-bg.png',
+       text: "第2天",
+       active: false,
+       count: 30
+     },{
+       icon:'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-bg.png',
+       text: "第3天",
+       active: false,
+       count: 40
+     },{
+       icon:'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-bg.png',
+       text: "第4天",
+       active: false,
+       count: 50
+     },{
+       icon:'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-bg.png',
+       text: "第5天",
+       active: false,
+       count: 60
+     },{
+       icon:'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-bg.png',
+       text: "第6天",
+       active: false,
+       count: 80
+     },{
+       icon:'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-bg.png',
+       text: "第7天及以上",
+       active: false,
+       count: 100
+     }],
+     title: '今日已签到'
+  }
+
+  async onShow(){
+    let chunk = await wxRequest(api.chunk,{},'POST');
+    if(chunk.data.code===api.STATUS){
+        console.log('chunk', chunk)
+        let signList = this.signList;
+        for(let i=0;i<chunk.data.data.continue_sign;i++){
+            if(signList[i]){
+               signList[i].active = true;
+            }
+        }
+        this.jiFenPop = !this.jiFenPop;
+        this.signList = signList;
+        this.is_sign = 1;
+        this.continue_sign = chunk.data.data.continue_sign;
+        this.total_sign = chunk.data.data.total_sign;
+        this.loadEnd = true;
+        this.$apply();
+    }
+  }
+
+  onLoad(options){
+     this.title = options.title;
+     this.$apply();
+  }
+
+  methods = {
+    // 去个人中心
+    toMyCenter(){
+      wx.switchTab({
+        url: '../mycenter/main'
+      })
+    },
+    // 去商城
+    toShop(){
+      wx.navigateTo({
+        url: '../shop/main'
+      })
+    }
+  }
+}
+</script>
+
+<style lang="less" scoped>
+.check-in{
+  background: #fe5047;
+  background-image: url('http://p766oymet.bkt.clouddn.com/nvzhu/check-in-top.png');
+  background-size: 750rpx 223rpx;
+  background-repeat: no-repeat;
+  padding: 252rpx 0;
+  .main{
+    width: 712rpx;
+    height: 786rpx;
+    background: url('http://p766oymet.bkt.clouddn.com/nvzhu/main-bg.png');
+    background-size: 100% 100%;
+    margin:0 auto;
+  }
+  .check{
+    text-align: center;
+    color: #fff4bd;
+  }
+  .check-status{
+      text-align: center;
+      color: #bc5a28;
+      font-size: 50rpx;
+      padding-top: 30rpx;
+  }
+  .sign-list{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding-top: 100rpx;
+    .sign-item{
+       margin:20rpx;
+       text-align: center;
+    }
+    .sign-item:nth-of-type(1){
+      margin-left: 100rpx;
+    }
+    .sign-item:nth-of-type(3){
+      margin-right: 100rpx;
+    }
+    .date{
+        font-size: 20rpx;
+        color: #bc5a28;
+    }
+    .sign-icon{
+      width: 120rpx;
+      height: 120rpx;
+      font-size: 40rpx;
+    //   font-weight: bold;
+      color: #ffeebe;
+      text-align: center;
+      line-height: 100rpx;
+      margin:0 auto 20rpx auto;
+      background-image: url(http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-bg.png);
+      background-size: 100% 100%;
+      border:3px solid #fe5047;
+      border-radius: 20rpx;
+      position: relative;
+    }
+    .active-icon::before{
+      content: '';
+      display: block;
+      width: 120rpx;
+      height: 120rpx;
+      position: absolute;
+      background: rgba(0, 0, 0, .5);
+      left: -5rpx;
+      top: -5rpx;
+      border-radius: 10rpx;
+    }
+    .active-icon:after{
+        content:'';
+        display: block;
+        width: 28rpx;
+        height: 28rpx;
+        background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAkFBMVEUAAAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD//////f3/CQn/+Pj/6+v/dHT/a2v/8vL/zc3/uLj/ZGT/Vlb/5ub/3d3/09P/w8P/v7//sbH/q6v/p6f/m5v/l5f/jo7/ior/hYX/Xl7/Tk7/PT3/ODj/ICD/FRXyAWBsAAAAEHRSTlMA+QLpPtzLxGLziUgniyFAyWntVAAAAORJREFUKM+Fk+mawiAMRaFAabE6ubV1GWffx/X9306sFLHYev6ej3zJTWAeabTgXGgjWYckU+RRWRK6SUpXpJOLexDUQfjaI04RfHR2RU43yIuml5Rukp66yqiHzErVJ5WdnXqRzFDMT/VHFsN07L6ABVk0i+affgKYNUkwF8Dv4t+5j9YRb2WFcte4R6Cck5Ou7Dew7DgSbUOHGljR9N26FTm0H2UO1Ps369bUYi4hLIFn657CEHx82xJAFTiVBMHPXl/qTRj84MqGlj18Js7m0TvvbOXuaRb3jjrUcnz+DmPp1RFhqie55DwYXwAAAABJRU5ErkJggg==');
+        background-size: 100% 100%;
+        position: absolute;
+        right: -10rpx;
+        bottom: -10rpx;
+    }
+  }
+  .op-check{
+    display: flex;
+    justify-content: space-between;
+    width: 600rpx;
+    margin:20rpx auto 0 auto;
+    .btn{
+        width: 260rpx;
+        height: 80rpx;
+        text-align: center;
+        line-height: 70rpx;
+        color: #fff;
+        background-image: url(http://p766oymet.bkt.clouddn.com/nvzhu/sign-btn.png);
+        background-size: 100% 100%;
+    }
+  }
+  .rules{
+      padding-top: 100rpx;
+      color: #fef4a4;
+    .title{
+      text-align: center;
+      position: relative;
+      width: 366rpx;
+      margin: 0 auto 40rpx auto;
+    }
+    .title:before{
+        content: '';
+        display: block;
+        width: 65rpx;
+        height: 1px;
+        background: #fef4a4;
+        position: absolute;
+        left: 0;
+        top: 50%;
+        opacity: .6;
+    }
+    .title:after{
+        content: '';
+        display: block;
+        width: 65rpx;
+        height: 1px;
+        background: #fef4a4;
+        position: absolute;
+        right: 0;
+        top: 50%;
+        opacity: .6;
+    }
+    .text{
+        text-align: center;
+        margin-bottom: 20rpx;
+    }
+  } 
+}
+
+
+
+
+</style>

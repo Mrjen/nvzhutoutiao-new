@@ -142,6 +142,15 @@ const closesign = `${domainUrl}/user/closesign`
 // 投票
 const vote = `${domainUrl}/article/voteing`
 
+// 获取投票海报
+const voteposter = `${domainUrl}/image/voteposter`
+
+// 创建或编辑地址
+const addreceiptaddr = `${domainUrl}/shop/addreceiptaddr`
+
+// 获取地址列表
+const addressList = `${domainUrl}/shop/showalladdr`
+
 export default {
   STATUS,
   domainUrl,
@@ -190,5 +199,8 @@ export default {
   getintegralshare,
   clickbutton,
   closesign,
-  vote
+  vote,
+  voteposter,
+  addreceiptaddr,
+  addressList
 };

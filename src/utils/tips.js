@@ -69,7 +69,7 @@ export default class Tips {
   static alert(title) {
     wx.showToast({
       title: title,
-      image: "../images/alert.png",
+      image: "/pages/image/alert.png",
       mask: true,
       duration: 1500
     });

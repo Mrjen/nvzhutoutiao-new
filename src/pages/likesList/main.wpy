@@ -145,9 +145,10 @@ export default class likesList extends wepy.page{
        height: 34rpx;
        margin-right: 6rpx;
        position: relative;
-       background-color: aqua;
-       background: url('http://p766oymet.bkt.clouddn.com/nvzhu/nz-index-sprites.png') -10rpx -10rpx;
-       background-size:116rpx 108rpx;
+       background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAYFBMVEUAAAC6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urr////l5eXKysrDw8P4+Pj09PTs7Oze3t7Z2dm+vr6+LRipAAAAFXRSTlMA+vbH7LGDbE5JPDYeGAXi4KKhJCOHBqNgAAAAhUlEQVQoz9WRSRKAIAwEMe7iruCu//+lhRtBKM7a167UJBnyXbLQLwFKP8w01dYOu3DqVlF5cKhHB7l0qcteuOntEo9peMnpImAGIBIuxnEDCo4JoYDUyGc0SwnepeOc92grZXJRJFAlc+umFWXatrXdafuQ9beYppKtVI2pzwKgEH3+kx2MHxitVsgBXAAAAABJRU5ErkJggg==');
+      background-size: 28rpx 28rpx;
+      background-repeat: no-repeat;
+      background-position: center;
      }
      .info-icon2::before{
        content: '';
@@ -155,8 +156,10 @@ export default class likesList extends wepy.page{
        width: 38rpx;
        height: 34rpx;
        margin-right: 6rpx;
-      background: url('http://p766oymet.bkt.clouddn.com/nvzhu/nz-index-sprites.png') -68rpx -10rpx;
-      background-size: 116rpx 108rpx;
+      background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAUVBMVEUAAAC6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urqgmJljAAAAGnRSTlMA1PNM2mr66sG4oYRysH5ZEvTg0MuadnA/GkJaMEsAAABxSURBVCjPzdHbCoAgDAbgVWqeOp99/wcNMzPQBt353wz5YLgNck3LSfFOUwUTJsqjlYlDPOoEMo80gaXHDkP1jb10z5q7OpOAlN12wGrrAjBFWADstm4AIm4r6Xh10Ar50J9RaAIHdH3o4tGTocfOMCcR7R8FnAvaTAAAAABJRU5ErkJggg==');
+      background-size: 28rpx 28rpx;
+      background-repeat: no-repeat;
+      background-position: center;
      }
      .info-icon3::before{
        content: '';
@@ -164,8 +167,10 @@ export default class likesList extends wepy.page{
        width: 38rpx;
        height: 34rpx;
        margin-right: 6rpx;
-       background: url('http://p766oymet.bkt.clouddn.com/nvzhu/nz-index-sprites.png') -10rpx -64rpx;
-       background-size: 115rpx 108rpx;
+      background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAeFBMVEUAAAC6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urogVSNDAAAAJ3RSTlMACqUE9+DCrJRS2HZuH5uNhEw/JhoSDgHq08a2iWZYRjMxzcyiXzWwYpPmAAAAyUlEQVQoz53S147DIBRF0YMJxt2OW3qbdv7/D8djbIVBIEXZ4m0J3SsEXizX0ZS+ejHjXOJFOYqpAYF28/F22W+m1N2LX5z7xr/aQmIqMZjir3u54JEqfW5bAegrqgUfMSlw5VIHSTLHWlGg41q2k5EuYSWVEe8zXGhVOniyMXcwtrF2MLKxcDANz/zZ4mBvOzxpPJNi2Kx2QM/stuIHWQt0n8a0QK/IZsGzfpi51TGuW/Nl9gnCSbiJpkWwLeMwpjy9eXNsbni5X20pHeQbuz5lAAAAAElFTkSuQmCC');
+      background-size: 28rpx 28rpx;
+      background-repeat: no-repeat;
+      background-position: center;
      }
    }
    .in-right{

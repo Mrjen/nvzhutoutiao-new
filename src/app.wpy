@@ -38,7 +38,9 @@ export default class extends wepy.app {
       'pages/gradeDetail/main',
       'pages/wxCropper/wxCropper',
       'pages/exchangeType/main',
-      'pages/addressManage/main'
+      'pages/addressManage/main',
+      'pages/inputComment/main',
+      'pages/checkIn/main'
     ],
     window: {
       backgroundTextStyle: "light",

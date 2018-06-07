@@ -20,11 +20,15 @@
                     src="../image/boy.png"/>
           </block>
           </view>
-          <view class="user-leval" @tap="toGrade">
-             <view class="grade">Lv.{{userInfo.empiric_level}}</view>
-             <view class="grade-icon">
+          <view class="user-leval">
+             <view class="grade"  @tap="toGrade">Lv.{{userInfo.empiric_level}}</view>
+             <view class="grade-icon" @tap="toGrade">
                <image wx:for="{{lvIconArr}}" wx:key="{{index}}" src="{{item}}"/>
              </view>
+             <block>
+                <view class="sign_btn" wx:if="{{todaySign===0}}" catchtap="checkIn('签到成功')">签到</view>
+                <view class="sign_btn" wx:else catchtap="checkIn('今天已签到')">已签到</view>
+             </block>
           </view>
           
         </view>
@@ -140,7 +144,8 @@ export default class myCenter extends wepy.page{
           text:'粉丝'
         }
         ],
-        lvIconArr: []    // 等级图标数组
+        lvIconArr: [],    // 等级图标数组
+        todaySign: 0     //  今天是否签到
     }
   components={
     listItem,
@@ -157,6 +162,16 @@ export default class myCenter extends wepy.page{
       wx.navigateTo({
         url:'../gradeDetail/main'
       })
+    },
+    // 签到
+    async checkIn(e){
+      let json = await wxRequest(api.chunk,{},'POST')
+      console.log('json', json)
+      if(json.data.code === api.STATUS){
+        wx.navigateTo({
+           url: `../checkIn/main?title=${e}`
+        })
+      }
     }
   }
   
@@ -188,6 +203,16 @@ export default class myCenter extends wepy.page{
       }
       this.lvIconArr = lvIconArr;
       this.$apply();
+
+      // 最后签到的时间戳
+      let time = _info.last_sign_time*1000;
+      let now = new Date();
+      now.setHours(0, 0, 0, 0);
+      let _time = now.getTime() - 24*60*60*1000;
+      if(time>_time){
+         this.todaySign = 1;
+         this.$apply();
+      }
     }
   }
 
@@ -227,6 +252,7 @@ export default class myCenter extends wepy.page{
         display: block;
         width: 28rpx;
         height: 28rpx;
+        margin:0 4rpx;
       }
     }
     .user-tag{
@@ -241,6 +267,7 @@ export default class myCenter extends wepy.page{
     }
     .user-leval{
        display: flex;
+       align-items: center;
     }
   }
   .myCenterImg {
@@ -342,6 +369,15 @@ export default class myCenter extends wepy.page{
        display: none;
      }
    }
+}
+
+.sign_btn{
+  display: inline-block;
+  background: #fc9a12;
+  color: #fff;
+  padding: 4rpx 6rpx;
+  border-radius: 5rpx;
+  margin-left: 20rpx;
 }
 
 // 列表

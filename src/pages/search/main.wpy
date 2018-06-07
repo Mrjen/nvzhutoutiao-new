@@ -48,7 +48,7 @@
     </view>
 
 <block wx:if="{{searchEnd}}">
-    <view wx:if="{{articleList.length>0?true:false}}">
+    <!-- <view wx:if="{{articleList.length>0?true:false}}">
       <view class="about">
         相关话题
       </view>
@@ -89,7 +89,34 @@
             </button>
         </view>
       </view>
-    </view>
+    </view> -->
+ 
+    <view class="article" wx:if="{{articleList.length>0?true:false}}">
+          <form report-submit="true"
+                wx:for="{{articleList}}"
+                wx:key="{{index}}"
+                data-id="{{item.id}}"
+                bindsubmit="toThemeDeatil">
+              <button class="form-view" formType="submit">
+                <view class="article-item">
+                    <view class="tag">#{{item.type}}</view>
+                    <view class="article-main">
+                      <view class="main-left">
+                        <view class="title">{{item.title}}</view>
+                        <view class="parameter">
+                          <view class="brower"><text class="icon icon1"></text>{{item.readtimes}}</view>
+                          <view class="brower"><text class="icon icon2"></text>{{item.commenttimes}}</view>
+                          <view class="brower"><text class="icon icon3"></text>{{item.liketimes}}</view>
+                        </view>
+                      </view>
+                    </view>
+                </view>
+                <view class="main-right">
+                    <image mode="aspectFill" class="cover" src="{{item.cover}}"/>
+                </view>
+             </button>
+          </form>
+      </view>
     <view wx:else class="none-more">
        暂无数据
     </view>
@@ -226,29 +253,6 @@ export default class search extends wepy.page {
         })
       },
 
-      // 添加喜欢
-      async addLike(type, id, idx){
-        console.log(type, id, idx)
-         let _type = (type=='0'?'inc':'dec')
-         console.log('_type', _type)
-         let like = await wxRequest(api.likeArticle, { id: id, status: _type });
-         if(like.data.code === api.STATUS){
-           let _articleList = this.articleList;
-          let str = _articleList[idx].liketimes;
-          console.log('_type', _type)
-           if(_type == 'inc'){
-             _articleList[idx].liketimes++;
-             _articleList[idx].likestatus = 1;
-           }else if(_type == 'dec'){
-             _articleList[idx].liketimes--;
-             _articleList[idx].likestatus = 0;
-           }
-           this.articleList = _articleList;
-           this.$apply();
-            // tips.success('点亮')
-         }
-      },
-
       inputWord(e){
         this.searchWord = e.detail.value;
         if(!e.detail.value){
@@ -257,9 +261,10 @@ export default class search extends wepy.page {
         this.$apply();
       },
       
-      Hots(id){
+      toThemeDeatil(e){
+        console.log(e.currentTarget.dataset)
         wx.navigateTo({
-          url: '../details/main?id='+ id 
+          url: '../details/main?id='+ e.currentTarget.dataset.id 
         })
       },
       // 分享
@@ -482,6 +487,113 @@ export default class search extends wepy.page {
     border-top: 1rpx solid #EEEEEE;
     border-bottom: 20rpx solid #F3F6F8;
   }
+
+  
+.article-item {
+  flex: 1;
+  text-align: left;
+  padding: 20rpx 0;
+  margin: 0;
+  line-height: 1;
+  background: transparent;
+  position: relative;
+  .tag {
+    color: #999;
+    font-size: 24rpx;
+    margin-bottom: 20rpx;
+  }
+  .article-main {
+    display: flex;
+    .main-left {
+      flex: 1;
+    }
+    .title {
+      font-size: 32rpx;
+      height: 80rpx;
+      padding-right: 80rpx;
+      margin-bottom: 26rpx;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
+      line-height: 1.4;
+    }
+    .parameter {
+      display: flex;
+    }
+    .brower {
+      display: flex;
+      align-items: center;
+      font-size: 22rpx;
+      min-width: 120rpx;
+      color: #666;
+    }
+    .icon {
+      width: 38rpx;
+      height: 34rpx;
+      display: block;
+      margin-right: 4rpx;
+    }
+    .icon1 {
+      width: 38rpx;
+      height: 34rpx;
+      background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAYFBMVEUAAAC6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urr////l5eXKysrDw8P4+Pj09PTs7Oze3t7Z2dm+vr6+LRipAAAAFXRSTlMA+vbH7LGDbE5JPDYeGAXi4KKhJCOHBqNgAAAAhUlEQVQoz9WRSRKAIAwEMe7iruCu//+lhRtBKM7a167UJBnyXbLQLwFKP8w01dYOu3DqVlF5cKhHB7l0qcteuOntEo9peMnpImAGIBIuxnEDCo4JoYDUyGc0SwnepeOc92grZXJRJFAlc+umFWXatrXdafuQ9beYppKtVI2pzwKgEH3+kx2MHxitVsgBXAAAAABJRU5ErkJggg==');
+      background-size: 28rpx 28rpx;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+    .icon2 {
+      width: 38rpx;
+      height: 34rpx;
+      background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAUVBMVEUAAAC6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urqgmJljAAAAGnRSTlMA1PNM2mr66sG4oYRysH5ZEvTg0MuadnA/GkJaMEsAAABxSURBVCjPzdHbCoAgDAbgVWqeOp99/wcNMzPQBt353wz5YLgNck3LSfFOUwUTJsqjlYlDPOoEMo80gaXHDkP1jb10z5q7OpOAlN12wGrrAjBFWADstm4AIm4r6Xh10Ar50J9RaAIHdH3o4tGTocfOMCcR7R8FnAvaTAAAAABJRU5ErkJggg==');
+      background-size: 28rpx 28rpx;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+    .icon3 {
+      width: 38rpx;
+      height: 34rpx;
+      background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAeFBMVEUAAAC6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urogVSNDAAAAJ3RSTlMACqUE9+DCrJRS2HZuH5uNhEw/JhoSDgHq08a2iWZYRjMxzcyiXzWwYpPmAAAAyUlEQVQoz53S147DIBRF0YMJxt2OW3qbdv7/D8djbIVBIEXZ4m0J3SsEXizX0ZS+ejHjXOJFOYqpAYF28/F22W+m1N2LX5z7xr/aQmIqMZjir3u54JEqfW5bAegrqgUfMSlw5VIHSTLHWlGg41q2k5EuYSWVEe8zXGhVOniyMXcwtrF2MLKxcDANz/zZ4mBvOzxpPJNi2Kx2QM/stuIHWQt0n8a0QK/IZsGzfpi51TGuW/Nl9gnCSbiJpkWwLeMwpjy9eXNsbni5X20pHeQbuz5lAAAAAElFTkSuQmCC');
+      background-size: 28rpx 28rpx;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+  }
+}
+
+.main-right {
+  flex-shrink: 0;
+  width: 170rpx;
+  height: 140rpx;
+  overflow: hidden;
+  border-radius: 10rpx;
+  display: flex;
+  align-items: center;
+  background: #fff;
+  .cover {
+    display: block;
+    max-height: 140rpx;
+  }
+}
+
+.form-view {
+  display: flex;
+  align-items: center;
+}
+
+.form-view::before {
+  content: '';
+  display: block;
+  width: 700rpx;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.1);
+  transform: scaleY(0.5);
+  position: absolute;
+  left: 50%;
+  margin-left: -350rpx;
+  bottom: 0;
+}
+
 
 </style>
 

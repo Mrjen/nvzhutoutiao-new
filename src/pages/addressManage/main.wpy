@@ -1,28 +1,54 @@
 <template>
 <view class="address-manage">
+  <view class="addr-main" wx:if="{{ShowAddressList}}">
     <addressItem>
         <view slot="edit" class="edit-adress"></view>
     </addressItem>
-
-    <view class="add-address"><view class="plus"></view>新建地址</view>
+    <view class="add-address" @tap="AddNewAddress">
+      <view class="plus"></view>新建地址
+    </view>
+  </view>
     
+
     <!-- 新建地址 -->
-    <view class="new-address">
-        <view class="u-item"><input type="text"  placeholder="姓名"/></view>
-        <view class="u-item"><input type="text"  placeholder="手机号"/></view>
+    <view class="new-address" wx:else>
         <view class="u-item">
-            <picker class="picker" mode="region" bindchange="bindRegionChange" value="{{region}}" custom-item="{{customItem}}">
+          <input type="text" 
+                 @input="InputName" 
+                 vlaue="{{name}}"  
+                 placeholder="姓名"/>
+        </view>
+        <view class="u-item">
+          <input type="number" 
+                 @input="InputPhone"
+                 value="{{phone}}"  
+                 placeholder="手机号"/>
+        </view>
+        <view class="u-item">
+            <picker class="picker" 
+                    mode="region" 
+                    bindchange="bindRegionChange" 
+                    value="{{region}}" 
+                    custom-item="{{customItem}}">
                 <view class="picker-in {{pickerActive?'picker-active':''}}">{{region[0]}}{{region[1]}}{{region[2]}}</view>
             </picker>
         </view>
-        <view class="u-item"><input type="text"  placeholder="详细地址：如街道、楼盘号等"/></view>
-        <view class="set-default" @tap="setDefaultOption">
+        <view class="u-item">
+          <input type="text" 
+                 placeholder="详细地址：如街道、楼盘号等"
+                 @input="InputAddressDetail"/>
+        </view>
+        <view class="set-default" 
+              @tap="setDefaultOption">
             <radio-group bindchange="radioChange">
-               <radio value="设为默认地址" checked="{{setDefault}}" color="#f8814a"/>设为默认地址 
+               <radio value="设为默认地址" 
+                      checked="{{setDefault}}" 
+                      color="#f8814a"/>设为默认地址 
             </radio-group>
-            </view>
-        <view class="save-btn">保存</view>
+        </view>
+        <view class="save-btn" @tap="saveAddress">保存</view>
     </view>
+
 </view>
 </template>
 
@@ -30,24 +56,118 @@
 import wepy from 'wepy';
 import wxRequest from '../../utils/http.js';
 import api from '../../utils/api.js';
+import tips from '../../utils/tips.js';
 import addressItem from './components/address-item';
 export default class addressManage extends wepy.page  {
   config={
     "navigationBarTitleText":"地址管理"
   }
   data = {
+    ShowAddressList: true,              // 默认显示地址
     region: ['省份', '城市', '区县'],
     pickerActive: false,
-    setDefault: false
+    setDefault: false,
+    AddressList: [],                    // 地址列表
+
+    // 地址信息
+    name: '',                           // 姓名
+    phone: '',                          // 手机号
+    province: '',                       // 省份
+    city: '',                           // 城市
+    district: '',                       // 区
+    detail_addr: '',                    // 详细地址
+    address_id: '',
+
+    addressType: 'create'               // 地址类型 	create->创建  edit->编辑
   }
   components = {
     addressItem
   }
 
+  async getAddressList(){
+     let json = await wxRequest(api.addressList,{},'POST');
+     if(json.data.code===api.STATUS){
+       return json.data.data;
+     }
+  }
+
+  onShow(){
+    this.AddressList = this.getAddressList();
+    this.$apply();
+  }
+
   methods = {
+    // 新建地址
+    AddNewAddress(){
+      this.ShowAddressList = !this.ShowAddressList;
+      this.$apply();
+    },
+    // 保存地址
+    async saveAddress(){
+       if(!this.name){
+         tips.alert('请输入姓名');
+         return;
+       } 
+       if(!this.phone){
+         tips.alert('请输入手机号');
+         return;
+       }
+       let region = this.region;
+       if(region[0]==='省份'&&region[1]==='城市'){
+         tips.alert('请选择省份');
+         return;
+       }
+       if(!this.detail_addr){
+         tips.alert('请填写详细地址');
+         return;
+       }
+       
+       let data = {
+           status: this.addressType,
+           name: this.name,
+           phone: this.phone,
+           province: this.region[0],
+           city: this.region[1],
+           district: this.region[2],
+           detail_addr: this.detail_addr,
+           is_default: this.setDefault?1:0
+       }
+       if(this.address_id){
+          data.addr_id = this.address_id;
+       }
+
+       let json = await wxRequest(api.addreceiptaddr,data,'POST');
+       console.log('json', json);
+       if(json.data.code===api.STATUS){
+          this.success('保存成功')
+       }
+    },
+    // 输入手机号
+    InputPhone(e){
+      this.phone = e.detail.value;
+      this.$apply();
+    },
+    // 输入名字
+    InputName(e){
+      this.name = e.detail.value;
+      this.$apply();
+    },
+    // 输入详细地址
+    InputAddressDetail(e){
+       this.detail_addr = e.detail.value;
+       this.$apply();
+    },
+    // 是否设置为默认地址
     setDefaultOption(){
       this.setDefault = !this.setDefault;
       this.$apply();
+    },
+    // 选择省份
+    bindRegionChange(e){
+       console.log('选择省份',e.detail.value)
+       this.region = e.detail.value;
+       this.pickerActive = true;
+       this.$apply();
     },
 
     radioChange(e){
@@ -159,6 +279,9 @@ export default class addressManage extends wepy.page  {
     .picker-in{
        line-height: 90rpx;
        color: #999;
+    }
+    .picker-active{
+      color: #333;
     }
   }
   .u-item:after{
