@@ -113,6 +113,12 @@ export default class myCenter extends wepy.page{
            iconPath: 'https://gcdn.playonwechat.com/mycenter-icon-shop.png',
            msgNum: 0
          },
+         {
+            url: '../dayQuote/main',
+            text: '每日物语',
+            iconPath: 'http://p766oymet.bkt.clouddn.com/nvzhu/day-yu-ico1n.png',
+            msgNum: 0
+         },
         //  {
         //    url: '../myWallet/main',
         //    text: '我的钱包',
@@ -208,7 +214,7 @@ export default class myCenter extends wepy.page{
       let time = _info.last_sign_time*1000;
       let now = new Date();
       now.setHours(0, 0, 0, 0);
-      let _time = now.getTime() - 24*60*60*1000;
+      let _time = now.getTime();
       if(time>_time){
          this.todaySign = 1;
          this.$apply();

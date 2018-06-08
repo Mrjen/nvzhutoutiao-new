@@ -1,0 +1,117 @@
+<template>
+  <view class="day-quote">
+     <view class="today"></view>
+     <button class="share" @tap="shareOpation">分享给好友</button>
+
+     <view class="list">
+        <view class="mon-item">
+          <view class="mon">2018年6月</view>
+          <view class="item-main">
+             <view class="d-image">
+                 <image src="http://placehold.it/400x850" mode="widthFix"/>
+             </view>
+             <view class="d-image">
+                 <image src="http://placehold.it/400x850" mode="widthFix"/>
+             </view>
+             <view class="d-image">
+                 <image src="http://placehold.it/400x850" mode="widthFix"/>
+             </view>
+             <view class="d-image">
+                 <image src="http://placehold.it/400x850" mode="widthFix"/>
+             </view>
+          </view>
+        </view>
+     </view>
+
+     <action-sheet hidden="{{actionSheetHidden}}" catchchange="shareOpation">
+            <button open-type="share" data-name="item" class="action-item action-item0">发给朋友</button>
+            <button @tap="downloadPoster" data-name="item" class="action-item action-item1">生成图片分享朋友圈</button>
+        <!--自动隐藏action-sheet-->
+        <action-sheet-cancel>取消
+        <view style="width:750rpx;height:40rpx;background:#fff"></view>
+        </action-sheet-cancel>
+    </action-sheet>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy';
+import wxRequest from "../../utils/http.js";
+import api from "../../utils/api.js";
+export default class dayQuote extends wepy.page{
+  data={
+    actionSheetHidden: true
+  }
+
+  methods = {
+    // 点击分享
+    shareOpation(){
+      this.actionSheetHidden = !this.actionSheetHidden;
+      this.$apply();
+    }
+  }
+  
+}
+</script>
+
+<style lang="less" scoped>
+.today{
+  width: 362rpx;
+  height: 632rpx;
+  box-shadow: 0 0 18rpx rgba(0, 0, 0, .1);
+  border-radius: 10rpx;
+  margin:20rpx auto;
+}
+
+.action-item0{
+    position: relative;
+}
+
+.action-item0::after{
+    content: '';
+    display: block;
+    width: 100%;
+    border-bottom: 1px solid rgba(0, 0, 0, .1);
+    transform: scaleY(.5);
+    position: absolute;
+    left: 0;
+    bottom: 0;
+}
+.share{
+  background: #fe8e40;
+  color: #fff;
+  width: 260rpx;
+  height: 60rpx;
+  line-height: 60rpx;
+  font-size: 30rpx;
+}
+
+.list{
+  padding: 60rpx 40rpx 0 40rpx;
+}
+
+.item-main{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.mon{
+  font-size: 40rpx;
+  margin-bottom: 40rpx;
+}
+
+.d-image{
+  width: 184rpx;
+  height: 334rpx;
+  border:10rpx solid #fff;
+  overflow: hidden;
+  box-shadow: 0 0 18rpx rgba(0, 0, 0, .1);
+  border-radius: 10rpx;
+  margin-bottom: 40rpx;
+  image{
+    width: 100%;
+  }
+  
+}
+</style>

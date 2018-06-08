@@ -4,7 +4,6 @@
     <view class="re-comm">{{recomment}}</view>
     <textarea placeholder="{{inputPlaceholder}}" 
                 maxlength="-1" 
-                fixed="true"
                 auto-height="true"
                 @blur="inputBlur"
                 @input="TextInput"
@@ -24,6 +23,7 @@
         <view class="add-icon" wx:if="{{commImageArr.length<9}}"  @tap="addCommImage"></view>
     </view>
     <button @tap="sendMsg" class="send">发表</button>
+    <view style="width:600rpx;height:200rpx"></view>
 </view>
 </template>
 
@@ -48,8 +48,9 @@ export default class inputComment extends wepy.page {
     inputPlaceholder: '发表你的想法...',
     commTitle: '',
     recomment:'',
-    commImageArr: [],
-    is_announce: 0
+    commImageArr: [],                     // 图片数组
+    is_announce: 0,                       // 是否允许评论图片
+    requestEnd: true
   }
 
   async onLoad(options){
@@ -75,6 +76,10 @@ export default class inputComment extends wepy.page {
   methods = {
     // 发表评论
     async sendMsg(){
+      let that = this;
+      if(this.requestEnd){
+        that.requestEnd = false;
+        that.$apply();
         let options = this.options;
         if(options.comment_type==='文章'){
             //  评论文章
@@ -93,19 +98,24 @@ export default class inputComment extends wepy.page {
                 let getintegral = res.data.data.getintegral;
                 if(getintegral){
                        let myToast = {
-                            title: '评论奖励',
-                            toastJiFen: getintegral.integral,
-                            toastJingyan: getintegral.empiric
+                          title: '评论奖励',
+                          toastJiFen: getintegral.integral,
+                          toastJingyan: getintegral.empiric
                        }
                        wx.setStorage({key: 'myToast', data:myToast })
                        wx.setStorage({key: 'showMyToast', data: '1'})
                     }else{
                        wx.removeStorage({key: 'myToast'})
                     }
-
+                    
+                    that.requestEnd = true;
+                    that.$apply();
+                    
                     setTimeout(() => {
                       wx.navigateBack({delta: 1})
                     }, 30);
+            }else{
+               tips.alert(res.data.data)
             }
         }else{
             // 发跟评
@@ -145,6 +155,9 @@ export default class inputComment extends wepy.page {
                     }else{
                        wx.removeStorage({key: 'myToast'})
                     }
+                    
+                    that.requestEnd = true;
+                    that.$apply();
 
                     setTimeout(() => {
                       wx.navigateBack({delta: 1})
@@ -171,13 +184,19 @@ export default class inputComment extends wepy.page {
                        wx.removeStorage({key: 'myToast'})
                     }
 
+                    that.requestEnd = true;
+                    that.$apply();
+
                     setTimeout(() => {
                       wx.navigateBack({delta: 1})
                     }, 30);
                     
                 }
+            }else{
+              tips.alert(res.data.data)
             }
         }  
+    }   
    },
 
    // 点击评论添加图片
@@ -250,13 +269,6 @@ export default class inputComment extends wepy.page {
 }
 
 .comm-pop{
-  position: fixed;
-  left: 0;
-  top: 0;
-  background: #fff;
-  width: 100%;
-  height: 100%;
-  z-index: 10000;
   padding: 30rpx;
   .pop-op{
     display: flex;

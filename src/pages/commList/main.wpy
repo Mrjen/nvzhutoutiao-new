@@ -8,8 +8,7 @@
                     wx:for="{{item.list}}" 
                     wx:for-item="list" 
                     wx:for-index="indx"
-                    wx:key="list.article_id" 
-                    >
+                    wx:key="list.article_id">
               <view class="item-left" 
                     @tap="toDetail({{list.article_id}})"
                     bindtouchstart="touchS" 
@@ -18,7 +17,11 @@
                     data-inidx="{{indx}}"
                     data-outidx="{{idx}}"
                     style="{{list.txtStyle}}">
-                  <view class="title">{{list.comment}}</view>
+                  <block>
+                     <view class="title title2" wx:if="{{!item.sliderDown}}">{{list.comment}}<text class="zhankai">展开</text></view>
+                     <view class="title" wx:else>{{list.comment}}</view>
+                  </block>
+                  
                   <view class="info">
                   #{{list.title}}
                   </view>
@@ -59,7 +62,13 @@ export default class commentList extends wepy.page {
   async onShow(){
      let commentList = await this.getList(1,'comment');
      if(commentList.data.code === api.STATUS){
-       this.commentList = commentList.data.data;
+       let _comm = commentList.data.data;
+       for(let i=0,len=_comm.length;i<len;i++){
+          for(let j=0,lenth=_comm[i].list.length;j<lenth;j++){
+             _comm[i].list[j].sliderDown = false;
+          }
+       }
+       this.commentList = _comm;
        this.$apply();
      }else{
        console.warn('请求错误',commentList);
@@ -85,7 +94,7 @@ export default class commentList extends wepy.page {
     // 去详情页
     toDetail(id){
       wx.navigateTo({
-        url: '../details/main?id=' + id
+        url: `../details/main?id=${id}`
       })
     },
 
@@ -231,7 +240,7 @@ export default class commentList extends wepy.page {
      display: flex;
      flex-direction: column;
      justify-content: space-around;
-     position: absolute;
+     position: relative;
      z-index: 2;
      padding: 20rpx;
      width: 100%;
@@ -239,6 +248,15 @@ export default class commentList extends wepy.page {
      background: #fff;
      .title{
        font-size: 28rpx;
+     }
+     .title2{
+       display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
+     }
+     .zhankai{
+       position: absolute;
      }
      .info{
        display: flex;
@@ -250,7 +268,7 @@ export default class commentList extends wepy.page {
    }
    .item-delete{
        width: 100rpx;
-       height: 100%;
+       height: 96%;
        display: flex;
        align-items: center;
        justify-content: center;
@@ -258,7 +276,8 @@ export default class commentList extends wepy.page {
        color: #fff;
        position: absolute;
        right: 0;
-       top: 0;
+       top: 50%;
+       transform: translateY(-50%);
        z-index: 1;
      }
 }

@@ -104,7 +104,7 @@
             <view class="close" catchtap="closeSign"></view>
             <view class="jifen jifen1"><text>+2 </text>经验值</view>
             <view class="jifen"><text>+20 </text>积分</view>
-            <navigator class="to_sign_btn" url="../shop/main"></navigator>
+            <view class="to_sign_btn" @tap="toSign"></view>
          </view>
       </view>
 
@@ -181,7 +181,7 @@ export default class Index extends wepy.page {
     // })
 
     // 获取文章标签
-    let tag = await wxRequest(api.articletype, {}, 'POST');
+    let tag = await wxRequest(api.articletype, {token:code.data.data.token}, 'POST');
     if (tag.data.code === api.STATUS) {
       console.log(tag.data.data);
       if (tag.data.data.length > 0) {
@@ -207,7 +207,7 @@ export default class Index extends wepy.page {
       const code = await utils.getToken();
       token = code.data.data.token;
     }
-    let msg = await wxRequest(api.getUserInfo, {token:token}, 'POST');
+    let msg = await wxRequest(api.getUserInfo,{token:token}, 'POST');
     if (msg.data.code === api.STATUS) {
       // console.log('msg',msg.data.data.msgNum)
       
@@ -289,14 +289,20 @@ export default class Index extends wepy.page {
   events = {};
 
   watch = {
-    currentTypeId: function(newValue, oldValue) {
+    currentTypeId:async function(newValue, oldValue) {
       let that = this;
       let slide_view = that.loadCount === 1 ? 1 : 0;
+      let token = wx.getStorageSync('token');
+      if(!this.token){
+        const code = await utils.getToken();
+        token = code.data.data.token;
+      }
       if (newValue) {
         this.getHomeData({
           page: 1,
           slide_view: slide_view,
-          type_id: newValue
+          type_id: newValue,
+          token: token
         }).then(res => {
           console.log('切换导航数据', res);
           that.article_list = res.article_list;
@@ -313,8 +319,8 @@ export default class Index extends wepy.page {
   methods = {
     // 跳转签到页面
     toSign(){
-      wx.navigateTo({
-         url:'../shop/main'
+      wx.switchTab({
+        url: '../mycenter/main'
       })
       // 统计点击
       wxRequest(api.clickbutton,{type:'sign'},'POST');

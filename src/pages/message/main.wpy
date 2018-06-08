@@ -206,7 +206,7 @@ export default class Message extends wepy.page{
       console.log('dataset',dataset)
       if(dataset.type==="comment"||dataset.type==="commentlike"){
         wx.navigateTo({
-          url:`../details/main?id=${dataset.aid}`
+          url:`../details/main?id=${dataset.aid}&reid=${dataset.reid}`
         })
       }else if(dataset.type==='sys'){
         wx.navigateTo({

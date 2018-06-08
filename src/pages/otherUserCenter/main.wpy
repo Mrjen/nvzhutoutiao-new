@@ -102,14 +102,27 @@
      <!-- 底部按钮 -->
      <view class="attation-bar">
         <view class="item add-div">
-            <button class="get_user_info" wx:if="{{is_accredit=='0'?true:false}}" open-type="getUserInfo" bindgetuserinfo="getUserInfo" lang="zh_CN"> <view class="icon-plus"></view>关注</button>
+            <button class="get_user_info" 
+                    wx:if="{{is_accredit=='0'?true:false}}" 
+                    open-type="getUserInfo" 
+                    bindgetuserinfo="getUserInfo" 
+                    lang="zh_CN"><view class="icon-plus"></view>关注</button>
             <view class="add" wx:elif="{{isattention===0?true:false}}" @tap="addFollowing">
               <view class="icon-plus"></view>关注
             </view> 
             <view class="has-add" wx:elif="{{isattention===1?true:false}}" @tap="removeFollower"><view class="has-add-icon"></view>已关注</view>
             <view class="remove" wx:elif="{{isattention===2}}">相互关注</view>
         </view>
-        <view class="item chart" @tap="toChart"><view class="icon-chart"></view>私聊</view>
+
+        <block>
+          <button class="get_user_info" 
+                    wx:if="{{is_accredit=='0'?true:false}}" 
+                    open-type="getUserInfo" 
+                    bindgetuserinfo="getUserInfo" 
+                    lang="zh_CN"><view class="icon-chart"></view>私聊</button>
+          <view class="item chart" @tap="toChart" wx:else>
+            <view class="icon-chart"></view>私聊</view>
+        </block>
      </view>
 
 
@@ -184,6 +197,7 @@ export default class otherUserCenter extends wepy.page{
     }else{
       console.warn('请求错误',care)
     }
+    // this.is_accredit = 0;
     this.is_accredit = wx.getStorageSync('is_accredit');
     this.$apply()
   }

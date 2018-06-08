@@ -40,7 +40,8 @@ export default class extends wepy.app {
       'pages/exchangeType/main',
       'pages/addressManage/main',
       'pages/inputComment/main',
-      'pages/checkIn/main'
+      'pages/checkIn/main',
+      'pages/dayQuote/main'
     ],
     window: {
       backgroundTextStyle: "light",

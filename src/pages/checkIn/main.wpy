@@ -1,6 +1,6 @@
 <template>
   <view class="check-in">
-      <view class="check">连续签到2天，累计签到4天</view>
+      <view class="check">连续签到{{continue_sign}}天，累计签到{{total_sign}}天</view>
       <view class="main">
         <view class="check-status">{{title}}</view>
         <view class="sign-list">
@@ -71,7 +71,10 @@ export default class checkIn extends wepy.page{
        active: false,
        count: 100
      }],
-     title: '今日已签到'
+     title: '今日已签到',
+     continue_sign:'0',
+     total_sign: '0'
+
   }
 
   async onShow(){
@@ -86,10 +89,8 @@ export default class checkIn extends wepy.page{
         }
         this.jiFenPop = !this.jiFenPop;
         this.signList = signList;
-        this.is_sign = 1;
         this.continue_sign = chunk.data.data.continue_sign;
         this.total_sign = chunk.data.data.total_sign;
-        this.loadEnd = true;
         this.$apply();
     }
   }

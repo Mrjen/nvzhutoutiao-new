@@ -9,7 +9,7 @@
           </view>
         </view> -->
         <view class="chart-list" wx:for="{{msgList}}" wx:key="{{item.id}}">
-          <!-- <view class="time">{{}}</view> -->
+          <view class="time" wx:if="{{item.is_show_time}}">{{item.create_time}}</view>
           <view class="mySay" wx:if="{{item.is_self===0?false:true}}">
             <image src="{{item.avatarUrl}}" class="myPotrait" />
             <view>
@@ -258,6 +258,20 @@ export default class messageDetail extends wepy.page{
   .zhanwei{
       width: 550rpx;
       height: 250rpx;
+  }
+
+  .time{
+    text-align: center;
+    font-size: 20rpx;
+    color: #999;
+    margin: 20rpx auto;
+    background: #eee;
+    display: inline-block;
+    padding: 4rpx 6rpx;
+    border-radius: 8rpx;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
   }
 
   .timeInfo {
