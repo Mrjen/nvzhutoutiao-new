@@ -18,7 +18,7 @@
                     data-outidx="{{idx}}"
                     style="{{list.txtStyle}}">
                   <block>
-                     <view class="title title2" wx:if="{{!item.sliderDown}}">{{list.comment}}<text class="zhankai">展开</text></view>
+                     <view class="title title2" wx:if="{{!item.sliderDown}}">{{list.comment}}</view>
                      <view class="title" wx:else>{{list.comment}}</view>
                   </block>
                   

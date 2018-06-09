@@ -1,5 +1,11 @@
 <template>
-  <scroll-view class="detail" scroll-y scroll-into-view="{{toView}}" style="width:100vw;height:100vh;box-sizing:border-box" @scrolltolower="LoadMore" scroll-with-animation="true">
+  <scroll-view 
+     class="detail" 
+     scroll-y 
+     scroll-into-view="{{toView}}" 
+     style="width:100vw;height:100vh;box-sizing:border-box" @scrolltolower="LoadMore" 
+     scroll-with-animation="true"
+     @tap="doubleTap">
     <import src="../../wxparse/wxParse.wxml"/>
         <!-- 话题主题 -->
       <view class="topic" id="topic" 
@@ -958,6 +964,10 @@ export default class Detail extends wepy.page {
     }
 
   methods = {
+    // 点击scroll-view
+    doubleTap(e){
+       console.log('eeeeeeeeeeee',e)
+    },
     // 删除发送图片
     deleteAddImage(e){
        let dataset = e.currentTarget.dataset;
@@ -1340,6 +1350,13 @@ export default class Detail extends wepy.page {
           _comment[idx].is_page = more.data.data.is_page;
           
           // 隐藏查看更多评论
+          console.log('_comment',_comment)
+          for(let i=0,len=_comment.length;i<len;i++){
+             for(let jen=_comment.length-1, j=jen;j>0;j--){
+                console.log(_comment[i], _comment[j])
+             }
+          }
+
           this.topComment = _comment;
           this.$apply();
         } else if (text === '点击最新评论查看更多') {
