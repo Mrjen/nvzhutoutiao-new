@@ -10,12 +10,14 @@
                     wx:for-index="indx"
                     wx:key="list.article_id">
               <view class="item-left" 
-                    @tap="toDetail({{list.article_id}})"
+                    @tap="toDetail"
                     bindtouchstart="touchS" 
                     bindtouchmove="touchM" 
                     bindtouchend="touchE" 
                     data-inidx="{{indx}}"
                     data-outidx="{{idx}}"
+                    data-id="{{list.article_id}}"
+                    data-reid="{{list.comment_id}}"
                     style="{{list.txtStyle}}">
                   <block>
                      <view class="title title2" wx:if="{{!item.sliderDown}}">{{list.comment}}</view>
@@ -92,9 +94,10 @@ export default class commentList extends wepy.page {
     },
 
     // 去详情页
-    toDetail(id){
+    toDetail(e){
+      let dataset = e.currentTarget.dataset;
       wx.navigateTo({
-        url: `../details/main?id=${id}`
+        url: `../details/main?id=${dataset.id}&reid=${dataset.reid}`
       })
     },
 

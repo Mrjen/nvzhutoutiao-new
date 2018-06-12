@@ -149,7 +149,10 @@ const voteposter = `${domainUrl}/image/voteposter`
 const addreceiptaddr = `${domainUrl}/shop/addreceiptaddr`
 
 // 获取地址列表
-const addressList = `${domainUrl}/shop/showalladdr`
+const addressList = `${domainUrl}/shop/showalladdr`;
+
+// 今日物语
+const dayQuote = `${domainUrl}/calendar/calendarlist`;
 
 export default {
   STATUS,
@@ -202,5 +205,6 @@ export default {
   vote,
   voteposter,
   addreceiptaddr,
-  addressList
+  addressList,
+  dayQuote
 };

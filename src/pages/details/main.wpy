@@ -5,7 +5,9 @@
      scroll-into-view="{{toView}}" 
      style="width:100vw;height:100vh;box-sizing:border-box" @scrolltolower="LoadMore" 
      scroll-with-animation="true"
-     @tap="doubleTap">
+     >
+     <!-- @touchstart="scrollTouchStart"
+     @touchend="scrolltouchEnd" -->
     <import src="../../wxparse/wxParse.wxml"/>
         <!-- 话题主题 -->
       <view class="topic" id="topic" 
@@ -18,7 +20,6 @@
           </view>
         <!-- 文章正文 -->
         <form bindsubmit="saveFormId" report-submit="true">
-          <!-- <button formType="submit" class="form-btn"> -->
           <view class="content" @tap="inputBlur">
               <block wx:if="{{article_Show_type=='rich_text'?true:false}}">
                   <rich-text class="richtext" nodes="{{ArticleContent}}"></rich-text>
@@ -27,7 +28,7 @@
                   <html2wxml :parserContent.sync="ArticleContent" :parserName="name"></html2wxml>
               </block>
           </view>
-          <!-- </button> -->
+          <navigator wx:if="{{is_story=='1'?true:false}}" url="../dayQuote/main" style="text-align:center;color:#647ffb;margin-bottom:50rpx" hover-class="none">查看更多物语>></navigator>
         </form>
 
           <!-- 投票 -->
@@ -91,11 +92,18 @@
       <!-- 评论区 -->
       <view id="comm">
         <!-- 精彩评论 -->
-        <view class="comments" wx:if="{{topComment.length>0?true:false}}">
+        <view class="comments" wx:if="{{topComment.length>0&&showNewComm?true:false}}">
           <view class="wonderfulComments">
-            <text>热门评论</text>
-            <text wx:if="{{topComment.length>0?true:false}}" 
-                  class="wrtie-comment">点亮10次上热门</text>
+            <text>{{commTitle}}</text>
+            <view wx:if="{{topComment.length>0?true:false}}" 
+                  class="wrtie-comment">
+                <view wx:for="{{commListNav}}" 
+                      wx:key="{{index}}"
+                      data-type="{{item.type}}"
+                      data-idx="{{index}}"
+                      class="ls-item {{item.active?'ls-active':''}}" 
+                      @tap="changeCommSort">{{item.text}}</view>
+            </view>
           </view>
 
           <view class="commentsConter" 
@@ -203,7 +211,7 @@
                   <view class="info-left">
                     <image class="info-avatar" 
                            src="{{follow.avatarUrl}}" 
-                           @tap="toUserCenter({{follow.user_id}})"/>
+                           @tap="toUserCenter({{follow.user_id}}, {{follow.is_self}})"/>
                     <view class="info-info">
                       <view class="info-name">{{follow.nickName}}</view>
                       <view class="info-time">{{follow.create_time}}</view>
@@ -282,9 +290,17 @@
         <view class="comments" 
               wx:if="{{comment.length>0?true:false}}">
           <view class="wonderfulComments">
-            <text>最新评论</text>
-            <text wx:if="{{topComment.length>0?false:true}}" 
-                  class="wrtie-comment">点亮10次上热门</text>
+            <text>{{commTitle==='热门评论'?'最新评论':commTitle}}</text>
+            <!-- wx:if="{{topComment.length>0?false:true}}" -->
+            <view wx:if="{{showNewComm===true&&topComment!=0?false:true}}"
+                  class="wrtie-comment">
+              <view wx:for="{{commListNav}}" 
+                      wx:key="{{index}}"
+                      data-type="{{item.type}}"
+                      data-idx="{{index}}"
+                      class="ls-item {{item.active?'ls-active':''}}" 
+                      @tap="changeCommSort">{{item.text}}</view>
+            </view>
           </view>
            
           <view class="commentsConter" 
@@ -476,26 +492,6 @@
       <!-- 评论结束 -->
 
    <block>
-      <!-- <view class="input-view" 
-            wx:if="{{inputShow}}" 
-            style="{{systemInfo==='iPhone X'?'min-height:138rpx;':'bottom:0'}}">
-        <textarea   placeholder="{{inputPlaceholder}}"
-                    auto-height="true"
-                    maxlength="-1"
-                    fixed="true"
-                    @blur="inputBlur"
-                    value="{{commContent}}"
-                    cursor-spacing="20"
-                    @input="inputComment"
-                    cursor="{{inputCursor}}"
-                    @confirm="addComment"
-                    confirm-type="send" 
-                    placeholder-style="color:#999"
-                    focus="{{inputFcus}}"
-                    class="inputRedict"></textarea>
-                    <view class="add-image" @tap="addCommImage"></view>
-     </view> -->
-
 
     <view class="botm-bar">
       <block>
@@ -531,7 +527,7 @@
       <image mode="widthFix" style="width:100rpx;height:100rpx" src="https://gcdn.playonwechat.com/nvzhu/Spinner-1s-100px.gif"/>
   </view>
   <!-- 小房子回首页 -->
-  <form bindsubmit="goHomego" report-submit="true">
+  <form bindsubmit="goHomego" wx:if="{{showHome}}" report-submit="true">
     <button formType="submit" class="go-home"></button>
   </form>
 
@@ -573,11 +569,13 @@ export default class Detail extends wepy.page {
     name: 'myHtmlParserKiner1',
     ArticleContent: '',            // 文章内容
     topComment: '',                // 热门评论
+    copyTopComment: '',            // 热门评论备份
     detail: {},                    // 详情数据
     comment: [],                   // 最新评论内容
     inputFcus: false,              // 输入框焦点
     commContent: '',               // 评论内容
     commImageArr:[],               // 评论图片数组图片
+    commTitle: '热门评论',          // 评论bar的标题
     
     inputCursor: -1,               // 输入框光标位置
     inputValue: '',                // 输入框的值
@@ -632,11 +630,36 @@ export default class Detail extends wepy.page {
     actionSheetItems: ['发给朋友', '生成图片分享朋友圈'],
 
     // scroll-view
-    toView: '',
+    toView: '',                    // 滚动到页面元素的id
 
     // 定时器
     timer: null,
-    is_announce: 0                 // 评论是否允许发送图片
+    is_announce: 0,                 // 评论是否允许发送图片
+
+    tapCount: 1,
+    tapStartTime: '',               // 双击屏幕开始时间
+    tapEndTime: '',                 // 双击屏幕开始时间
+
+    commListNav:[{
+      id: 1,
+      text: '默认',
+      type: 'default',
+      active: true
+    },{
+      id: 2,
+      text: '最新',
+      type: 'new',
+      active: false
+    },{
+      id: 3,
+      text: '最热',
+      type: 'hot',
+      active: false
+    }],
+    showNewComm: true,                // 是否显示
+    showCommType: 'default',          // 默认显示的评论内容
+    is_story: null,
+    showHome: false
   };
 
   components = {
@@ -658,31 +681,52 @@ export default class Detail extends wepy.page {
     if (options.id) {
       _article_id = options.id;
       wx.setStorage({ key: 'article_id', data: options.id });
+      wx.setStorageSync('showCommIndex', 0);
     } else if (options.scene) {
       let scene = decodeURIComponent(options.scene);
       _article_id = utils.getQueryString('id', scene);
       share_user_id = utils.getQueryString('share_user_id', scene);
+      if(utils.getQueryString('show_home', scene)){
+        that.showHome = utils.getQueryString('show_home', scene);
+        that.$apply();
+      }
       wx.setStorage({ key: 'share_user_id', data: share_user_id });
+      wx.setStorageSync('showCommIndex', 0);
       console.log('_article_id', _article_id, 'share_user_id', share_user_id);
     }
     // 保证获取到token,如果从首页来不用重新请求token
-    if (!options.from) {
-      const token = await utils.getToken();
+      let token ='';
+    if (!wx.getStorageSync('token')) {
+       token = await utils.getToken();
+       console.log('token', token)
     }
+
+    // 显示首页按钮
+    if(options.show_home){
+       that.showHome = 1;
+       that.$apply();
+    }
+
 
     // 获取详情页数据
     let data = {
       id: _article_id,
       page: 1,
+      token:wx.getStorageSync('token')||token.data.data.token
     }
     if(options.reid){
       reid = options.reid;
       data.reid = options.reid;
+      setTimeout(()=>{
+        that.toView = `c${options.reid}`;
+        that.$apply();
+      },0)
     }
     const detail = await wxRequest(api.getArticleDetail,data);
 
     // 这里数据字节过大，把数据拆分分次传递
     let _page_data = detail.data.data;
+    this.is_story = _page_data.is_story;
     let voteList = _page_data.votedata;
     if(voteList){
       // 是否存在投票
@@ -699,6 +743,7 @@ export default class Detail extends wepy.page {
     this.ArticleId = _article_id;
     this.ArticleContent = _page_data.content;
     this.topComment = _page_data.topcomment;
+    this.copyTopComment = JSON.parse(JSON.stringify(_page_data.topcomment));
 
     // 把评论保存至缓存
     wx.setStorage({key: 'topComment', data:_page_data.topcomment});
@@ -718,14 +763,6 @@ export default class Detail extends wepy.page {
 
     this.systemInfo = wx.getStorageSync('systemInfo');
     this.$apply();
-    
-    if(options.reid){
-      setTimeout(()=>{
-        that.toView = `c${options.reid}`;
-        that.$apply();
-      },0)
-    }
-    
 
     // 投票剩余时间计算
     let voteDeadLine = _page_data.deadline*1000;
@@ -763,6 +800,9 @@ export default class Detail extends wepy.page {
     });
     this.$apply();
 
+    // 保存默认评论列表选项
+    wx.setStorage({key: 'showCommType', data: 'default'});
+    
     // 下载投票分享海报
     if(voteList){
       console.log('文章存在投票')
@@ -787,8 +827,12 @@ export default class Detail extends wepy.page {
       console.log('相等');
     }
     this.commentDom = 'article';
+    let token = '';
+    if(!wx.getStorageSync('token')){
+       token = await utils.getToken();
+    }
 
-    let userInfo = await wxRequest(api.getUserInfo, {}, 'POST');
+    let userInfo = await wxRequest(api.getUserInfo, {token:wx.getStorageSync('token')||token.data.data.token}, 'POST');
     console.log('user', userInfo);
     if (userInfo.data.code === api.STATUS) {
       // this.is_accredit = 0;
@@ -815,11 +859,28 @@ export default class Detail extends wepy.page {
     }
 
     // 更新评论
+    let tab = wx.getStorageSync('showCommType');
     let comment = wx.getStorageSync('comment');
     let topComment = wx.getStorageSync('topComment');
     if(comment)  this.comment = comment;
     if(topComment) this.topComment = topComment;
     this.$apply();
+
+    let cidx = wx.getStorageSync('showCommIndex') || 0;
+    console.log('cidx', wx.getStorageSync('showCommIndex'))
+    if(cidx>-1){
+      setTimeout(()=>{
+        console.log('当前的cidx',cidx)
+        let commListNav = that.commListNav;
+        commListNav.map(el=>{
+          el.active = false;
+        })
+        commListNav[cidx].active = true;
+        that.commListNav = commListNav;
+        that.$apply();
+      },100)  
+    }
+    
 
     // 检查评论是否有积分和经验
     
@@ -846,6 +907,7 @@ export default class Detail extends wepy.page {
     this.ArticleContent = '';
     this.inputPlaceholder = '发表你的观点';
     clearTimeout(this.timer);
+    wx.setStorage({key:'topComment', data: this.topComment});
     this.$apply();
   }
 
@@ -868,6 +930,8 @@ export default class Detail extends wepy.page {
     this.vote_status = _page_data.vote_status;
     this.ArticleContent = _page_data.content;
     this.topComment = _page_data.topcomment;
+    console.log('JSON.stringify(_page_data.topcomment)', JSON.stringify(_page_data.topcomment))
+    this.copyTopComment = JSON.parse(JSON.stringify(_page_data.topcomment));
     this.comment = _page_data.comment;
     this.Article_liketimes = _page_data.liketimes;
     this.ArticleTtictle = _page_data.title;
@@ -894,6 +958,7 @@ export default class Detail extends wepy.page {
     if(e.from==='menu'){
       //  右上角分享
       imageUrl = that.Article_cover;
+      title = `${nickName}邀请你一起讨论这个话题`
       
     }else if(e.from==='button'){
       // 页面内分享
@@ -914,7 +979,7 @@ export default class Detail extends wepy.page {
     that.ArticleShare();
     return {
       title: title,
-      path: `/pages/details/main?id=${article_id}&share_user_id=${wx.getStorageSync('myid')}`,
+      path: `/pages/details/main?id=${article_id}&share_user_id=${wx.getStorageSync('myid')}&show_home=1`,
       imageUrl: imageUrl,
     };
 
@@ -959,15 +1024,72 @@ export default class Detail extends wepy.page {
   }
 
   // 保存formid
-    saveFormId(formId) {
-       wxRequest(api.saveFormId,{ formid: formId },'post');
-    }
+  saveFormId(formId) {
+      wxRequest(api.saveFormId,{ formid: formId },'post');
+  }
 
   methods = {
-    // 点击scroll-view
-    doubleTap(e){
-       console.log('eeeeeeeeeeee',e)
+    // 切换评论列表
+    async changeCommSort(e){
+      let dataset = e.currentTarget.dataset;
+      let commListNav = this.commListNav;
+      commListNav.map(el=>{
+        el.active = false;
+      });
+      commListNav[dataset.idx].active = true;
+      wx.setStorage({key:'showCommIndex',data: dataset.idx})
+      this.commListNav = commListNav;
+      this.$apply();
+      console.log(dataset);
+
+      // 请求接口数据
+      let json = await wxRequest(api.commentList,{ desc: dataset.type, page:1,id: this.ArticleId});
+      console.log('json', json);
+      if(json.data.code===api.STATUS){
+         let commLs = json.data.data;
+         if(dataset.type==='default'){
+            this.showNewComm = true;
+            this.commTitle = '热门评论'
+         }else{
+            this.showNewComm = false;
+            this.comment = commLs;
+            wx.setStorage({key: 'comment', data: commLs})
+            this.commTitle = dataset.type==='new'?'按最新排序':'按点亮数排序'
+         }
+         this.showCommType = dataset.type;
+         wx.setStorage({key:'showCommType', data: dataset.type});
+         this.page = 2;
+         this.$apply();
+      }
     },
+
+    // 点击scroll-view
+    // scrollTouchStart(e){
+    //    console.log('start',e.timeStamp);
+    //    this.tapStartTime = e.timeStamp;
+    //    this.$apply();
+    // },
+
+    // scrolltouchEnd(e){
+    //   let count = 1;
+    //   if(count===1){
+    //     this.tapCount = 2;
+    //     console.log('zhel', count)
+    //     this.tapEndTime = e.timeStamp;
+    //     this.$apply();
+    //   }
+
+    //   if(count===2){
+    //      let lastTap =  e.timeStamp;
+    //      console.log('lastTap', lastTap)
+    //      if(lastTap-this.tapStartTime<350){
+    //         console.log('用户双击了');
+    //         count = 1;
+    //      }
+    //   }
+    //   console.log('count', count)
+    // },
+
     // 删除发送图片
     deleteAddImage(e){
        let dataset = e.currentTarget.dataset;
@@ -1276,32 +1398,32 @@ export default class Detail extends wepy.page {
       console.log(cidx, id, likestatus, type);
       let that = this;
       this.inputFcus = false;
+      let runEnd = true;
       let _status = likestatus == '0' ? 'inc' : 'dec';
-      console.log('_status', _status);
-      
-      let comment = null;
-      if (type === '最新评论点亮') {
-        comment = this.comment;
-      } else if (type === '精彩评论点亮') {
-        comment = this.topComment;
+      if(runEnd){  
+          console.log('_status', _status);
+          let comment = null;
+          if (type === '最新评论点亮') {
+            comment = this.comment;
+          } else if (type === '精彩评论点亮') {
+            comment = this.topComment;
+          }
+            //   console.log('comment', comment[cidx])
+            if (likestatus) {
+              comment[cidx].liketimes--;
+              comment[cidx].likestatus = 0;
+            } else if (likestatus == '0') {
+              comment[cidx].liketimes++;
+              comment[cidx].likestatus = 1;
+            }
+
+            if (type === '最新评论点亮') {
+              this.comment = comment;
+            } else if (type === '精彩评论点亮') {
+              this.topComment = comment;
+            }
+          this.$apply();
       }
-
-        //   console.log('comment', comment[cidx])
-        if (likestatus) {
-          comment[cidx].liketimes--;
-          comment[cidx].likestatus = 0;
-        } else if (likestatus == '0') {
-          comment[cidx].liketimes++;
-          comment[cidx].likestatus = 1;
-        }
-        if (type === '最新评论点亮') {
-          this.comment = comment;
-        } else if (type === '精彩评论点亮') {
-          this.topComment = comment;
-        }
-      
-      this.$apply();
-
       let like = await wxRequest(api.likeComment, { comment_id: id,status: _status});
       console.log('点亮结果', like);
       if (like.data.code === api.STATUS) {
@@ -1322,6 +1444,7 @@ export default class Detail extends wepy.page {
       }
       this.$apply();
     },
+
     // 查看更多评论
     async readMoreFollowComm(id, idx, text) {
       console.log('点击更多评论', id, idx, text);
@@ -1343,30 +1466,25 @@ export default class Detail extends wepy.page {
       });
       if (more.data.code === api.STATUS) {
         let _comment = [];
-        if (page === 1) more.data.data.list.splice(0, 2); // 删除评论前两条
+        // if (page === 1) more.data.data.list.splice(0, 2);  
         if (text === '点击精彩评论查看更多') {
           _comment = this.topComment;
           _comment[idx].follow_comment = [..._comment[idx].follow_comment,...more.data.data.list];
           _comment[idx].is_page = more.data.data.is_page;
           
           // 隐藏查看更多评论
-          console.log('_comment',_comment)
-          for(let i=0,len=_comment.length;i<len;i++){
-             for(let jen=_comment.length-1, j=jen;j>0;j--){
-                console.log(_comment[i], _comment[j])
-             }
-          }
-
+          let _follow_comment = _comment[idx].follow_comment;
+          _comment[idx].follow_comment = utils.unique(_follow_comment);
           this.topComment = _comment;
           this.$apply();
         } else if (text === '点击最新评论查看更多') {
           _comment = this.comment;
-          _comment[idx].follow_comment = [
-            ..._comment[idx].follow_comment,
-            ...more.data.data.list
-          ];
+          _comment[idx].follow_comment = [..._comment[idx].follow_comment,...more.data.data.list];
           _comment[idx].is_page = more.data.data.is_page;
+
           // 隐藏查看更多评论
+          let _follow_comment = _comment[idx].follow_comment;
+          _comment[idx].follow_comment = utils.unique(_follow_comment);
           this.comment = _comment;
           this.$apply();
         }
@@ -1438,9 +1556,10 @@ export default class Detail extends wepy.page {
     },
 
     // 去用户中心
-    toUserCenter(user_id, is_self) {
-      console.log('用户id', user_id, is_self);
-      if (is_self !== 1) {
+    toUserCenter(user_id) {
+      console.log('用户id', user_id);
+      let myid = wx.getStorageSync('myid');
+      if (user_id!=myid) {
         wx.navigateTo({
           url: `../otherUserCenter/main?user_id=${user_id}`
         });
@@ -1449,23 +1568,25 @@ export default class Detail extends wepy.page {
   }
 
   // 触底加载更多
-    async LoadMore(){
-      console.log('触底了');
-      let more = await wxRequest(api.commentList, {
-        page: this.page,
-        id: this.ArticleId
-      });
-      console.log('more', more);
-      if (more.data.code === api.STATUS) {
-        if (more.data.data.length > 0) {
-          let oldList = this.comment;
-          this.comment = [...oldList, ...more.data.data];
-          wx.setStorage({key: 'comment', data:this.comment});
-          this.page++;
-          this.$apply();
-        }
+  async LoadMore(){
+    console.log('触底了');
+    let showCommType = this.showCommType;
+    let more = await wxRequest(api.commentList, {
+      page: this.page,
+      id: this.ArticleId,
+      desc: showCommType
+    });
+    console.log('more', more);
+    if (more.data.code === api.STATUS) {
+      if (more.data.data.length > 0) {
+        let oldList = this.comment;
+        this.comment = [...oldList, ...more.data.data];
+        wx.setStorage({key: 'comment', data:this.comment});
+        this.page++;
+        this.$apply();
       }
     }
+  }
 }
 </script>
 
@@ -1482,7 +1603,7 @@ export default class Detail extends wepy.page {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 100;
+  z-index: 90000;
   image {
     width: 100rpx;
   }
@@ -1548,24 +1669,24 @@ page {
     font-weight: normal;
     color: #999;
     display: inline-block;
-    margin-right: 50rpx;
+    position: relative;
+    display: flex;
+  }
+  .ls-item{
+    padding: 0 15rpx;
     position: relative;
   }
-  .wrtie-comment:after{
-     content: '>>';
-     display: block;
-     width: 40rpx;
-     height: 40rpx;
-     display: flex;
-     justify-content: center;
-     align-items: center;
-     position: absolute;
-     left: 50%;
-     top: 50%;
-     margin-top: 10rpx;
-     margin-left: -15rpx;
-     transform: rotate(90deg);
-    //  border:1px solid red;
+  .ls-item:not(:last-child)::after{
+    content: '|';
+    display: block;
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #eee;
+  }
+  .ls-active{
+    color: #7c48c6;
   }
 }
 .commentsConter {
@@ -1807,21 +1928,6 @@ page {
     height: 60rpx;
     background-color: #226abc;
   }
-}
-
-.go-home {
-  width: 100rpx;
-  height: 100rpx;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border-radius: 50%;
-  position: fixed;
-  z-index: 80;
-  bottom: 250rpx;
-  right: 30rpx;
-  background-image: url('http://p766oymet.bkt.clouddn.com/nvzhu/more.png');
-  background-size: 100% 100%;
 }
 
 // 跟评样式

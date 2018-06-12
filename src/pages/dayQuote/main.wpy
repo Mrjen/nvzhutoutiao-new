@@ -1,26 +1,20 @@
 <template>
   <view class="day-quote">
-     <view class="today"></view>
+     <view class="today">
+       <image src="{{currentQuote}}" @tap="prevImage" data-img="{{currentQuote}}" mode="widthFix"/>
+     </view>
      <button class="share" @tap="shareOpation">分享给好友</button>
 
      <view class="list">
-        <view class="mon-item">
-          <view class="mon">2018年6月</view>
+        <view class="mon-item" wx:for="{{quoteList}}" wx:key="{{index}}">
+          <view class="mon">{{item.date}}</view>
           <view class="item-main">
-             <view class="d-image">
-                 <image src="http://placehold.it/400x850" mode="widthFix"/>
-             </view>
-             <view class="d-image">
-                 <image src="http://placehold.it/400x850" mode="widthFix"/>
-             </view>
-             <view class="d-image">
-                 <image src="http://placehold.it/400x850" mode="widthFix"/>
-             </view>
-             <view class="d-image">
-                 <image src="http://placehold.it/400x850" mode="widthFix"/>
+             <view class="d-image" wx:for="{{item.list}}" wx:for-item="day" wx:key="{{index}}">
+                 <image src="{{day.pic}}" @tap="prevImage" data-img="{{day.pic}}" data-arr="{{item.imageArr}}" mode="widthFix"/>
              </view>
           </view>
         </view>
+        <navigator class="submit" url="../details/main?id=1348">提交物语</navigator>
      </view>
 
      <action-sheet hidden="{{actionSheetHidden}}" catchchange="shareOpation">
@@ -31,6 +25,11 @@
         <view style="width:750rpx;height:40rpx;background:#fff"></view>
         </action-sheet-cancel>
     </action-sheet>
+
+    <!-- 小房子回首页 -->
+  <form bindsubmit="goHomego" report-submit="true" wx:if="{{showHome}}">
+    <button formType="submit" class="go-home"></button>
+  </form>
   </view>
 </template>
 
@@ -38,9 +37,13 @@
 import wepy from 'wepy';
 import wxRequest from "../../utils/http.js";
 import api from "../../utils/api.js";
+import utils from '../../utils/utils.js';
 export default class dayQuote extends wepy.page{
   data={
-    actionSheetHidden: true
+    actionSheetHidden: true,               // 分享给朋友弹层
+    quoteList: '',                         // 每日物语列表
+    currentQuote: '',                      // 今日物语
+    showHome: false                        // 是否显示返回首页
   }
 
   methods = {
@@ -48,9 +51,84 @@ export default class dayQuote extends wepy.page{
     shareOpation(){
       this.actionSheetHidden = !this.actionSheetHidden;
       this.$apply();
+    },
+    // 预览图片
+    prevImage(e){
+       let dataset = e.currentTarget.dataset;
+       console.log(dataset.arr)
+       wx.previewImage({
+          current: dataset.img, 
+          urls: dataset.arr || [dataset.img] 
+        })
+    },
+    // 下载海报
+    async downloadPoster(){
+      this.actionSheetHidden = !this.actionSheetHidden;
+      this.$apply();
+      let url = await utils.getImage(this.currentQuote);
+      await utils.saveImageToPhotosAlbum(url);
+    },
+    // 返回首页
+    goHomego(e) {
+       let formId = e.detail.formId;
+       this.saveFormId(formId)
+        wx.switchTab({
+            url: '../index/main'
+        });
+        wxRequest(api.clickbutton,{type:'index'},'POST');
+    },
+  }
+
+  saveFormId(formId){
+    wxRequest(api.saveFormId, { formid: formId },'post');
+  }
+
+  async getDayQuote(page){
+     let json = await wxRequest(api.dayQuote,{page:page},'POST');
+     if(json.data.code===api.STATUS){
+       console.log(json.data.data)
+        return json.data.data;
+     }
+  }
+
+  async onShow(){
+     let token = ''; 
+     if(!wx.getStorageSync('token')){
+        let getToken = await utils.getToken();
+        token = getToken.data.data.token;
+     }
+      let quoteList = await this.getDayQuote(1);
+      let _quoteList = [...quoteList];
+      this.currentQuote = _quoteList[0].list[0].pic;
+      quoteList[0].list.shift();
+      for(let i=0,len=quoteList.length;i<len;i++){
+        quoteList[i].imageArr=[];
+        for(let j=0,leng=quoteList[i].list.length;j<leng;j++){
+           quoteList[i].imageArr.push(quoteList[i].list[j].pic);
+        }
+      }
+      this.quoteList = quoteList;
+      this.$apply();
+  }
+
+  onLoad(options){
+    if(options.show_home){
+      this.showHome = true;
+      this.$apply();
     }
   }
-  
+
+  onShareAppMessage(e){
+     this.actionSheetHidden = true;
+     this.$apply();
+     let nickName = wx.getStorageSync('userInfo').nickName || '我';
+     return {
+       title: `${nickName}送你一段今日最佳物语，请查收！`,
+       path: '/pages/dayQuote/main?show_home=1'
+     }
+  }
+
+
 }
 </script>
 
@@ -61,6 +139,13 @@ export default class dayQuote extends wepy.page{
   box-shadow: 0 0 18rpx rgba(0, 0, 0, .1);
   border-radius: 10rpx;
   margin:20rpx auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  image{
+    display: block;
+    width: 100%;
+  }
 }
 
 .action-item0{
@@ -84,16 +169,31 @@ export default class dayQuote extends wepy.page{
   height: 60rpx;
   line-height: 60rpx;
   font-size: 30rpx;
+  margin-top: 40rpx;
+  box-shadow: 0 0 18rpx #fe8e40;
 }
 
 .list{
   padding: 60rpx 40rpx 0 40rpx;
+  position: relative;
+}
+
+.submit{
+  position: absolute;
+  right: 40rpx;
+  color: #647ffb;
+  font-size: 26rpx;
+  top: 80rpx;
 }
 
 .item-main{
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-between;
+    justify-content: flex-start;
+}
+
+.d-image:not(:nth-of-type(3n)){
+  margin-right: 56rpx;
 }
 
 .mon{

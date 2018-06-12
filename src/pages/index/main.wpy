@@ -1,19 +1,21 @@
 <template>
   <view class="main">
     <!-- header -->
-     <view class="header">
+     <!-- <view class="header">
         <view class="title-nav">
           <view class="title">
+             每日物语
             <image mode="widthFix" 
-            src="http://p766oymet.bkt.clouddn.com/nvzhu/nz-index-logo-text.png" style="height:38rpx"/></view>
+            src="http://p766oymet.bkt.clouddn.com/nvzhu/nz-index-logo-text.png" style="height:38rpx"/>
+            </view>
           <navigator class="search" url="../search/main">
              <view class="search-icon"></view>
              搜索相关话题
           </navigator>
         </view>
-     </view>
+     </view> -->
 
-     <!-- swiper -->
+     <!-- 轮播 -->
      <view class="swiper-out">
         <swiper class="swiper" 
                 autoplay="true"
@@ -42,7 +44,7 @@
 
       <!-- nav -->
       <view class="nav">
-         <scroll-view scroll-x="true">
+         <scroll-view  scroll-x style="width:650rpx;">
             <view class="nav-main">
               <form report-submit="true" 
                     wx:for="{{typeNav}}"
@@ -55,9 +57,11 @@
                   {{item.type}}
                 </button>
               </form>
-               
             </view>
          </scroll-view>
+         <navigator class="search" url="../search/main">
+            <view class="search-icon"></view>
+         </navigator>
       </view>
 
       <!-- 文章列表 -->
@@ -170,15 +174,7 @@ export default class Index extends wepy.page {
     const code = await utils.getToken();
     wx.setStorage({ key: 'token', data: code.data.data.token });
     this.token = code.data.data.token;
-
-    // userAuth.global.kid = '110';
-    // userAuth.fromPageData({
-    //   kid:'110',
-    //   app:'nvzhushuo',
-    //   scene:'735a42e66988eb9e271b1a0e193ea751',
-    //   token:'VoXF2TkTM22CKyJp51NQ',
-    //   project_secret:'saaaaaaaaaaaaadsafsdf'
-    // })
+    this.$apply();
 
     // 获取文章标签
     let tag = await wxRequest(api.articletype, {token:code.data.data.token}, 'POST');
@@ -203,47 +199,48 @@ export default class Index extends wepy.page {
     // 获取用户是否有未读信息
     console.log('this.token', this.token)
     let token = '';
-    if(!this.token){
-      const code = await utils.getToken();
-      token = code.data.data.token;
-    }
-    let msg = await wxRequest(api.getUserInfo,{token:token}, 'POST');
-    if (msg.data.code === api.STATUS) {
-      // console.log('msg',msg.data.data.msgNum)
-      
-      if (msg.data.data.msgNum) {
-        let _msg = msg.data.data.msgNum.toString();
-        if (_msg > 0) {
-          wx.setTabBarBadge({ index: 1, text: _msg });
-        } else {
-          wx.removeTabBarBadge({ index: 2 });
+    // if(!wx.getStorageSync('token')){
+    //   const code = await utils.getToken();
+    //   token = code.data.data.token;
+    // }
+    setTimeout(async ()=>{
+        let msg = await wxRequest(api.getUserInfo,{token:wx.getStorageSync('token')}, 'POST');
+      if (msg.data.code === api.STATUS) {
+        wx.setStorage({key:'userInfo', data: msg.data.data})
+        
+        if (msg.data.data.msgNum) {
+          let _msg = msg.data.data.msgNum.toString();
+          if (_msg > 0) {
+            wx.setTabBarBadge({ index: 1, text: _msg });
+          } else {
+            wx.removeTabBarBadge({ index: 2 });
+          }
         }
-      }
 
-      if(msg.data.data.sign_view=='1'){
-        this.showSignIcon = true;
+        if(msg.data.data.sign_view=='1'){
+          this.showSignIcon = true;
+          this.$apply();
+        }
+
+        // this.showSignIcon = true;
         this.$apply();
+
+        // 每日首次登录加经验加积分
+        if (msg.data.data.getintegral) {
+          let toastData = msg.data.data.getintegral;
+          this.toastTitle = '今日登录';
+          this.toastJiFen = toastData.integral;
+          this.toastJingyan = toastData.empiric;
+          this.toastShow = !this.toastShow;
+          setTimeout(() => {
+            that.toastShow = !that.toastShow;
+            that.$apply();
+          }, 2000);
+          this.$apply();
+        }
+
       }
-
-      // this.showSignIcon = true;
-      this.$apply();
-
-      // 每日首次登录加经验加积分
-      if (msg.data.data.getintegral) {
-        let toastData = msg.data.data.getintegral;
-        this.toastTitle = '今日登录';
-        this.toastJiFen = toastData.integral;
-        this.toastJingyan = toastData.empiric;
-        this.toastShow = !this.toastShow;
-        setTimeout(() => {
-          that.toastShow = !that.toastShow;
-          that.$apply();
-        }, 2000);
-        this.$apply();
-      }
-
-    }
-
+    },1000)
   }
 
   // 分享
@@ -263,6 +260,9 @@ export default class Index extends wepy.page {
       type_id: this.currentTypeId
     }).then(res => {
       console.log('下拉刷新', res);
+      if(res.slide_list.length<3){
+        res.slide_list = [...res.slide_list,...res.slide_list,...res.slide_list];
+      }
       that.article_list = res.article_list;
       that.bannerData = res.slide_list;
       that.loadCount = 0;
@@ -307,7 +307,13 @@ export default class Index extends wepy.page {
           console.log('切换导航数据', res);
           that.article_list = res.article_list;
           if (that.loadCount === 1) {
-            that.bannerData = res.slide_list;
+            let slider = [];
+            if(res.slide_list.length<3){
+              slider = [...res.slide_list,...res.slide_list,...res.slide_list];
+            }else{
+              slider = res.slide_list;
+            }
+            that.bannerData = slider;
           }
           that.loadCount = 0;
           that.$apply();
@@ -395,27 +401,6 @@ page {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  .search {
-    display: block;
-    width: 260rpx;
-    height: 58rpx;
-    line-height: 58rpx;
-    background-color: #ffffff;
-    border-radius: 29rpx;
-    text-align: center;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 24rpx;
-    color: #999;
-    .search-icon {
-      width: 30rpx;
-      height: 28rpx;
-      margin-right: 14rpx;
-      background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAcCAMAAABBJv+bAAAAb1BMVEUAAADMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMyM8SaVAAAAJHRSTlMAB/DS6if15NahNrRY+np0aZlSHhINroA6EMy6qZCNX0gw2j1PmaIIAAABAklEQVQoz32S2XKDMAxFhe2A2SGQhexpz/9/Y9thNS45T5q5upYsSQaCV60VStevQDyCKmLElOuEne6VMAdA7xw1MUB0SlqRJksBlSy9CvLTYUq+gJr9gQb1vWwkBj3VLyE/i0MK5ZhroBCX1mAG+x4i76sVZH0Uw0nWdDlxH2lIxOOK7gMFrS/fCfuA38CngNGd/yePJguNL9fYqfPMlyPi6d+ppyaQzVN7r+Uj5jDP/HJw1T2Uy43d3KcVOnD2nbYLr0It7+VsIKqGAu8jGHfBjQbC9F4UtQV0I3JTz41Lrf7qfsFjeUFZbENCG2dB35CFayebdCnYnWzzgEg+8FTHH2xGF9n5nkR9AAAAAElFTkSuQmCC);
-      background-size: 100% 100%;
-    }
-  }
   .title-nav {
     display: flex;
     justify-content: space-between;
@@ -434,6 +419,22 @@ page {
   }
 }
 
+.search{
+  display: flex;
+  width: 100rpx;
+  justify-content: center;
+  align-items: center;
+  // border:1px solid red;
+  background: #fff;
+  box-shadow: 0 0 10rpx rgba(0, 0, 0, 0.1);
+  .search-icon {
+    width: 36rpx;
+    height: 34rpx;
+    background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAcCAMAAABBJv+bAAAAb1BMVEUAAADMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMyM8SaVAAAAJHRSTlMAB/DS6if15NahNrRY+np0aZlSHhINroA6EMy6qZCNX0gw2j1PmaIIAAABAklEQVQoz32S2XKDMAxFhe2A2SGQhexpz/9/Y9thNS45T5q5upYsSQaCV60VStevQDyCKmLElOuEne6VMAdA7xw1MUB0SlqRJksBlSy9CvLTYUq+gJr9gQb1vWwkBj3VLyE/i0MK5ZhroBCX1mAG+x4i76sVZH0Uw0nWdDlxH2lIxOOK7gMFrS/fCfuA38CngNGd/yePJguNL9fYqfPMlyPi6d+ppyaQzVN7r+Uj5jDP/HJw1T2Uy43d3KcVOnD2nbYLr0It7+VsIKqGAu8jGHfBjQbC9F4UtQV0I3JTz41Lrf7qfsFjeUFZbENCG2dB35CFayebdCnYnWzzgEg+8FTHH2xGF9n5nkR9AAAAAElFTkSuQmCC);
+    background-size: 100% 100%;
+  }
+}
+
 // banner
 .swiper-out {
   // padding-left: 30rpx;
@@ -442,12 +443,13 @@ page {
 .swiper {
   height: 384rpx;
   background: transparent;
-  margin-top: -20rpx;
+  padding-top: 20rpx;
   swiper-item {
     box-sizing: border-box;
     display: flex;
     justify-content: center;
     align-items: flex-start;
+    // margin-top: 20rpx;
   }
   .form-btn {
     background: transparent;
@@ -504,11 +506,12 @@ page {
   background: #fff;
   line-height: 88rpx;
   margin-top: -30rpx;
+  display: flex;
   .nav-main {
     display: flex;
   }
   .text-item {
-    min-width: 105rpx;
+    min-width: 100rpx;
     height: 88rpx;
     line-height: 88rpx;
     text-align: center;

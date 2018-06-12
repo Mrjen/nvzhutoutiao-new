@@ -26,7 +26,8 @@
         <view class="wrap" wx:if="{{searchWord?false:true}}">
           <view class="hotSearchRank" 
                 wx:for="{{hotsearch}}" 
-                wx:key="{{item.id}}" @tap="Hots({{item.id}})">{{item.title}}</view>
+                wx:key="{{item.id}}"
+                data-id="{{item.id}}" @tap="toThemeDeatil">{{item.title}}</view>
           <view class="manyHot" @tap="toIndex()">更多热门话题>></view>
         </view>
         <!-- 搜索历史 -->
@@ -262,7 +263,7 @@ export default class search extends wepy.page {
       },
       
       toThemeDeatil(e){
-        console.log(e.currentTarget.dataset)
+        console.log(e)
         wx.navigateTo({
           url: '../details/main?id='+ e.currentTarget.dataset.id 
         })

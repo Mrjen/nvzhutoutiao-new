@@ -337,12 +337,21 @@ async function updateFormId(form_id=''){
 }
 
 // 获取url参数
-
 function getQueryString(name, url) {
   var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
   var r = url.match(reg);
   if (r != null) return unescape(r[2]); return null;
 }
+
+// 数组去重
+function unique(array) {
+  var obj = {};
+  return array.filter(function(item, index, array){
+      // console.log(typeof item + JSON.stringify(item))
+      return obj.hasOwnProperty(typeof item.follow_comment_id + JSON.stringify(item.follow_comment_id)) ? false : (obj[typeof item.follow_comment_id + JSON.stringify(item.follow_comment_id)] = true)
+  })
+}
+
 
 export default {
   formatTime,
@@ -359,5 +368,6 @@ export default {
   getPoster,
   getQueryString,
   formatRemainTime,
-  getQiNiuToken
+  getQiNiuToken,
+  unique
 };

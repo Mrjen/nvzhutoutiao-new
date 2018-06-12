@@ -113,12 +113,12 @@ export default class myCenter extends wepy.page{
            iconPath: 'https://gcdn.playonwechat.com/mycenter-icon-shop.png',
            msgNum: 0
          },
-        //  {
-        //     url: '../dayQuote/main',
-        //     text: '每日物语',
-        //     iconPath: 'http://p766oymet.bkt.clouddn.com/nvzhu/day-yu-ico1n.png',
-        //     msgNum: 0
-        //  },
+         {
+            url: '../dayQuote/main',
+            text: '每日物语',
+            iconPath: 'http://p766oymet.bkt.clouddn.com/nvzhu/day-yu-ico1n.png',
+            msgNum: 0
+         },
         //  {
         //    url: '../myWallet/main',
         //    text: '我的钱包',

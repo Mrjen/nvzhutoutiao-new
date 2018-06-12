@@ -91,15 +91,15 @@ export default class extends wepy.app {
   onLaunch() {
     let that = this;
     wx.setStorage({key:'desc',data:'new'});
-    wx.login({
-      success(res){
-         wxRequest(api.getToken,{code:res.code}).then((res)=>{
-          //  console.log('获取token', res)
-          wx.setStorage({ key:'myid',data:res.data.data.id });
-          wx.setStorage({ key:'token',data: res.data.data.token});
-        })
-      }
-    })
+    // wx.login({
+    //   success(res){
+    //      wxRequest(api.getToken,{code:res.code}).then((res)=>{
+    //       //  console.log('获取token', res)
+    //       wx.setStorage({ key:'myid',data:res.data.data.id });
+    //       wx.setStorage({ key:'token',data: res.data.data.token});
+    //     })
+    //   }
+    // })
 
     // 获取设备
     wx.getSystemInfo({
@@ -324,6 +324,21 @@ button::after{
 
 button::after{
   display: none;
+}
+
+.go-home {
+  width: 82rpx;
+  height: 82rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  position: fixed;
+  z-index: 80;
+  bottom: 250rpx;
+  right: 30rpx;
+  background-image: url('https://gcdn.playonwechat.com/nvzhu/nav-detail-home-new.png');
+  background-size: 100% 100%;
 }
 
 </style>
