@@ -18,8 +18,10 @@
      </view>
 
      <action-sheet hidden="{{actionSheetHidden}}" catchchange="shareOpation">
-            <button open-type="share" data-name="item" class="action-item action-item0">发给朋友</button>
-            <button @tap="downloadPoster" data-name="item" class="action-item action-item1">生成图片分享朋友圈</button>
+            <button open-type="share" 
+                    data-name="item" 
+                    class="action-item action-item0">发给朋友</button>
+            <button @tap="downloadPoster" data-name="item" class="action-item action-item1">生成图片分享朋友</button>
         <!--自动隐藏action-sheet-->
         <action-sheet-cancel>取消
         <view style="width:750rpx;height:40rpx;background:#fff"></view>
@@ -55,7 +57,6 @@ export default class dayQuote extends wepy.page{
     // 预览图片
     prevImage(e){
        let dataset = e.currentTarget.dataset;
-       console.log(dataset.arr)
        wx.previewImage({
           current: dataset.img, 
           urls: dataset.arr || [dataset.img] 
@@ -67,6 +68,10 @@ export default class dayQuote extends wepy.page{
       this.$apply();
       let url = await utils.getImage(this.currentQuote);
       await utils.saveImageToPhotosAlbum(url);
+
+      let quoteList = this.quoteList;
+      let id = quoteList[0].list[0].id;
+      wxRequest(api.statisticsstroy,{id:id, type:'down'},'POST')
     },
     // 返回首页
     goHomego(e) {
@@ -122,6 +127,9 @@ export default class dayQuote extends wepy.page{
      this.actionSheetHidden = true;
      this.$apply();
      let nickName = wx.getStorageSync('userInfo').nickName || '我';
+     let quoteList = this.quoteList;
+     let id = quoteList[0].list[0].id;
+     wxRequest(api.statisticsstroy,{id:id, type:'share'},'POST')
      return {
        title: `${nickName}送你一段今日最佳物语，请查收！`,
        path: '/pages/dayQuote/main?show_home=1'

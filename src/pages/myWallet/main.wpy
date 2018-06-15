@@ -3,46 +3,67 @@
   <view class="main">
       <view class="icon"></view>
       <view class="revenue">我的收益</view>
-      <view class="money">￥88.88</view>
+      <view class="money">￥{{myMomoney/100}}</view>
       <button class="kiting" type="primary" @tap="closeKitPop">微信提现</button>
-      <view class="details" catchtap="colseDeatilPop">收益明细></view>
+      <view class="details" catchtap="colseDeatilPop">交易明细></view>
   </view>
   <!-- 提现弹层 -->
   <view class="kitin-popup" wx:if="{{kitinPop}}">
     <view class="kitin-main">
       <view class="m-input">
-        <input text="number" placeholder="输入提现金额"/>
+        <input type="number" 
+               placeholder="输入提现金额"   
+               value="{{kitIn}}"
+               @input="inputMoney"/>
       </view>
-      <view class="kitin-money">确认提现</view>
-      <view class="tips">注：账户余额必须大于<text>2</text>元才能申请提现哦</view>
+      <block>
+        <view class="kitin-money runover" wx:if="{{kitIn>myMomoney/100}}">金额超出余额</view>
+        <view class="kitin-money" @tap="kitInMoney" wx:else>确认提现</view>
+      </block>
+      <view class="tips">注：账户余额必须大于<text>1</text>元才能申请提现哦</view>
     </view>
     <view class="close" @tap="closeKitPop"></view>
   </view>
 
   <!-- 明细弹层 -->
   <action-sheet class="details-pop" catchchange="colseDeatilPop" hidden="{{DetailPop}}">
-     <view class="title">收益明细</view>
+     <view class="title">交易明细</view>
      <view class="main">
-       <scroll-view class="scrollview" scroll-y>
-          <view class="d-item">
+       <scroll-view class="scrollview" scroll-y bindscrolltolower="loadMore" wx:if="{{DetailList.length>0}}">
+          <view class="d-item border_bottom" wx:for="{{DetailList}}" wx:key="{{index}}">
              <view class="d-left">
-               <view class="title">小恶魔赞赏</view>
-               <view class="date">2018-06-12</view>
+               <view class="item-title">{{item.nickName}}{{item.info}}<text class="status" wx:if="{{item.status_type}}">({{item.status_type}})</text></view>
+               <view class="date">{{item.create_time}}</view>
              </view>
-             <view class="money">+1.68</view>
+             
+             <view class="money" style="color:{{item.rmb/100>0?'#05be06':'#333'}}">{{item.rmb/100>0?'+'+item.rmb/100:item.rmb/100}}</view>
           </view>
        </scroll-view>
+       <view wx:else class="none-list">
+          <view>暂无收益哦～</view>
+          <view>快去参与话题评论等待打赏吧</view>
+       </view>
      </view>
+     <view class="close" @tap="colseDeatilPop"></view>
   </action-sheet>
 </view>
 </template>
 
 <script>
 import wepy from 'wepy';
+import wxRequest from '../../utils/http.js';
+import api from '../../utils/api.js';
+import utils from '../../utils/utils';
+import tips from '../../utils/tips.js';
 export default class shop extends wepy.page {
   data = {
-    kitinPop: false,
-    DetailPop: true
+    kitinPop: false,        //  提现弹层
+    DetailPop: true,        //  详情弹层
+    DetailList:[],          //  详情列表
+    myMomoney: '',          //  我的余额
+    page: 2,                //  数据页数
+    requestEnd: true,       //  请求完成
+    kitIn: null             //  提现金额
   }
   
   methods={
@@ -51,11 +72,80 @@ export default class shop extends wepy.page {
       this.kitinPop = !this.kitinPop;
       this.$apply();
     },
-
+    // 关闭详情
     colseDeatilPop(){
       this.DetailPop = !this.DetailPop;
       this.$apply();
+    },
+    // 输入提现金额
+    inputMoney(e){
+      // console.log(e.detail)
+       this.kitIn = Number(e.detail.value);
+       this.$apply();
+    },
+    // 点击提现按钮
+    async kitInMoney(){
+        let that = this;
+       if(!(this.kitIn)){
+          tips.alert('输入正确金额')
+          return false;
+       }
+       
+       wx.showModal({
+          title: '提示',
+          content: `确认提现${this.kitIn}元吗？`,
+          success: function(res) {
+            if (res.confirm) {
+              wxRequest(api.companypay,{rmb:Number(that.kitIn)*100},'POST').then(json=>{
+                if(json.data.code===200){
+                    tips.alert(json.data.data.msg)
+                    that.kitinPop = !that.kitinPop;
+                    that.myMomoney = json.data.data.cash;
+                    that.$apply();
+                }else{
+                    tips.alert(json.data)
+                    console.log(json)
+                }
+              })
+            } else if (res.cancel) {
+              console.log('用户点击取消')
+            }
+          }
+        })
     }
+  }
+
+    // 加载详请
+    async loadMore(){
+       if(this.requestEnd){
+         this.requestEnd = false;
+         this.$apply();
+         let json = await this.getDetail(this.page);
+         if(json.list.length>0){
+           let oldList = this.DetailList;
+           this.DetailList = [...oldList,...json.list];
+           this.page++;
+           this.requestEnd = true;
+           this.$apply();
+         }else{
+           console.log('没有更多数据')
+         }
+       }
+    }
+
+  async onShow(){
+    console.log('show')
+    let json = await this.getDetail(1);
+    this.DetailList = json.list;
+    this.myMomoney = json.earn;
+    this.$apply();
+  }
+
+  async getDetail(page){
+    let json = await wxRequest(api.rewarddetail,{page: page},'POST');
+     if(json.data.code === api.STATUS){
+        return json.data.data;
+     } 
   }
 
   async onPullDownRefresh(){
@@ -150,6 +240,9 @@ export default class shop extends wepy.page {
     border-radius: 10rpx;
     margin: 35rpx auto 0 auto;
   }
+  .runover{
+    background: #999;
+  }
   .tips{
     color: #999;
     font-size: 24rpx;
@@ -170,10 +263,16 @@ export default class shop extends wepy.page {
 }
 
 .details-pop{
+  position: relative;
   .title{
     text-align: center;
-    height: 80rpx;
-    line-height: 80rpx;
+    height: 88rpx;
+    line-height: 88rpx;
+    border-bottom: 1px solid rgba(0, 0, 0, .1);
+  }
+  .item-title{
+    text-align: left;
+    font-size: 30rpx;
   }
   .main{
     width: 750rpx;
@@ -181,23 +280,53 @@ export default class shop extends wepy.page {
   }
   .d-item{
     display: flex;
-    padding: 0 20rpx;
+    padding: 10rpx 20rpx;
+    height: 100rpx;
     justify-content: space-between;
     align-items: center;
+    position: relative;
   }
-  .title{
-    font-size: 30rpx;
+  .d-left{
+    height: 100%;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
   }
   .date{
     font-size: 24rpx;
     color: #999;
   }
+  .status{
+    color: #fe9814;
+  }
   .money{
+    flex: 1;
     font-size: 36rpx;
+    text-align: right;
   }
   .scrollview{
     width: 750rpx;
     height: 600rpx;
+  }
+  .close{
+     position: absolute;
+     right: 20rpx;
+     top: 20rpx;
+     width: 50rpx;
+     height: 50rpx;
+     background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAMAAADXqc3KAAAAb1BMVEUAAACZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmy5kwYAAAAJHRSTlMA+g4G9fAK6sahm45YvFFKRT0wKuW2roBmYTbiy8Gmk20l1oeZZZp6AAAAt0lEQVQoz23PVw6DQAxFUdNC7x1CSPH+15g3ciSjmfjr6VwJNDS/G3JuCXOK2CtsfzLHNLMWdV6Jcrss8NmME6VSX+EfmZkU9ZxISy2z8NRxqRTxk/QClBDvqeCZAS0PU1yX4sFTy1EmZnhAztVwr3W9CRkXbba38GlE6f54cCu1qI/4rynxpWyROMqB0l+9vMn2Ey3dz7UML7P6mPkQl3KX4u/MiS+mZfeptl2+tlCQZ3CrpEP/BURlE/QaQ3pNAAAAAElFTkSuQmCC');
+     background-size: 30rpx 30rpx;
+     background-position: center;
+     background-repeat: no-repeat;
+  }
+  .none-list{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #999;
+    min-height: 500rpx;
+    flex-direction: column;
   }
 }
 

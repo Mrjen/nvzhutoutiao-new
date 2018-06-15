@@ -1,9 +1,22 @@
 <template>
 <view class="address-manage">
   <view class="addr-main" wx:if="{{ShowAddressList}}">
-    <addressItem>
-        <view slot="edit" class="edit-adress"></view>
-    </addressItem>
+      <repeat for="{{AddressList}}" key="index" index="index" item="item">
+        <addressItem :item.sync="item" 
+           @selectAddress.user="selectAddress">
+           <view slot="edit" 
+                 class="edit-adress" 
+                 data-id="{{item.id}}" 
+                 data-province="{{item.province}}"
+                 data-city="{{item.city}}"
+                 data-district="{{item.district}}"
+                 data-phone="{{item.phone}}"
+                 data-detail="{{item.detail_addr}}"
+                 data-name="{{item.name}}"
+                 @tap="EditAddress"></view>
+        </addressItem>
+      </repeat>
+    
     <view class="add-address" @tap="AddNewAddress">
       <view class="plus"></view>新建地址
     </view>
@@ -15,7 +28,7 @@
         <view class="u-item">
           <input type="text" 
                  @input="InputName" 
-                 vlaue="{{name}}"  
+                 value="{{name}}"  
                  placeholder="姓名"/>
         </view>
         <view class="u-item">
@@ -36,6 +49,7 @@
         <view class="u-item">
           <input type="text" 
                  placeholder="详细地址：如街道、楼盘号等"
+                 value="{{detail_addr}}"
                  @input="InputAddressDetail"/>
         </view>
         <view class="set-default" 
@@ -91,12 +105,36 @@ export default class addressManage extends wepy.page  {
      }
   }
 
-  onShow(){
-    this.AddressList = this.getAddressList();
+  async onShow(){
+    this.AddressList = await this.getAddressList();
     this.$apply();
   }
 
+  onLoad(options){
+    if(options.from==='address'){
+        this.ShowAddressList = !this.ShowAddressList;
+        this.$apply();
+    }
+  }
+
   methods = {
+    // 选择地址
+    selectAddress(id){
+      console.log('地址id', id)
+    },
+    // 编辑地址
+    EditAddress(e){
+      console.log('编辑地址', e.currentTarget.dataset);
+      let dataset = e.currentTarget.dataset;
+      this.region = [dataset.province, dataset.city, dataset.district];
+      this.phone = dataset.phone;
+      this.detail_addr = dataset.detail;
+      this.addressType = 'edit';
+      this.name = dataset.name;
+      this.ShowAddressList = !this.ShowAddressList;
+      this.address_id = dataset.id;
+      this.$apply();
+    },
     // 新建地址
     AddNewAddress(){
       this.ShowAddressList = !this.ShowAddressList;
@@ -108,8 +146,11 @@ export default class addressManage extends wepy.page  {
          tips.alert('请输入姓名');
          return;
        } 
-       if(!this.phone){
-         tips.alert('请输入手机号');
+       
+       let phone = this.phone.match(/^(13[0-9]|14[579]|15[0-3,5-9]|16[6]|17[0135678]|18[0-9]|19[89])\d{8}$/);
+
+       if(!phone){
+         tips.alert('手机号格式错误');
          return;
        }
        let region = this.region;
@@ -139,7 +180,10 @@ export default class addressManage extends wepy.page  {
        let json = await wxRequest(api.addreceiptaddr,data,'POST');
        console.log('json', json);
        if(json.data.code===api.STATUS){
-          this.success('保存成功')
+          tips.success('保存成功')
+          this.ShowAddressList = !this.ShowAddressList;
+          this.addressType = 'create';
+          this.$apply();
        }
     },
     // 输入手机号

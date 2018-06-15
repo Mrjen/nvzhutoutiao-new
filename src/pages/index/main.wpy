@@ -103,6 +103,9 @@
          <view class="close-sign" catchtap="closeSign"></view>
       </view> -->
 
+      <!-- 入群 -->
+      <button open-type="contact" class="join_group"></button>
+
       <view class="sign_pop" wx:if="{{showSignIcon}}">
          <view class="main">
             <view class="close" catchtap="closeSign"></view>
@@ -111,7 +114,7 @@
             <view class="to_sign_btn" @tap="toSign"></view>
          </view>
       </view>
-
+ 
   </view>
 </template>
 
@@ -199,10 +202,6 @@ export default class Index extends wepy.page {
     // 获取用户是否有未读信息
     console.log('this.token', this.token)
     let token = '';
-    // if(!wx.getStorageSync('token')){
-    //   const code = await utils.getToken();
-    //   token = code.data.data.token;
-    // }
     setTimeout(async ()=>{
         let msg = await wxRequest(api.getUserInfo,{token:wx.getStorageSync('token')}, 'POST');
       if (msg.data.code === api.STATUS) {
@@ -221,24 +220,8 @@ export default class Index extends wepy.page {
           this.showSignIcon = true;
           this.$apply();
         }
-
         // this.showSignIcon = true;
         this.$apply();
-
-        // 每日首次登录加经验加积分
-        if (msg.data.data.getintegral) {
-          let toastData = msg.data.data.getintegral;
-          this.toastTitle = '今日登录';
-          this.toastJiFen = toastData.integral;
-          this.toastJingyan = toastData.empiric;
-          this.toastShow = !this.toastShow;
-          setTimeout(() => {
-            that.toastShow = !that.toastShow;
-            that.$apply();
-          }, 2000);
-          this.$apply();
-        }
-
       }
     },1000)
   }
@@ -324,12 +307,18 @@ export default class Index extends wepy.page {
 
   methods = {
     // 跳转签到页面
-    toSign(){
-      wx.switchTab({
-        url: '../mycenter/main'
-      })
+    async toSign(){
+      let json = await wxRequest(api.chunk,{},'POST')
+      if(json.data.code === api.STATUS){
+          wx.navigateTo({
+            url: `../checkIn/main?title=签到成功`
+          })
+          this.showSignIcon = !this.showSignIcon;
+          this.$apply();
+        }
       // 统计点击
       wxRequest(api.clickbutton,{type:'sign'},'POST');
+      wxRequest(api.closesign,{},'POST')
     },
     // 关闭签到弹层
     closeSign(){
@@ -706,4 +695,5 @@ page {
     margin: 304rpx auto 0 auto;
   }
 }
+
 </style>

@@ -96,7 +96,8 @@ export default class messageDetail extends wepy.page{
 
   onShow(){
       let that = this;
-      let obj = {user_id: wx.getStorageSync('myid'), accept_id: that.user_id};
+      console.log('myid', wx.getStorageSync('userInfo').id);
+      let obj = {user_id: wx.getStorageSync('userInfo').id, accept_id: that.user_id};
       wx.connectSocket({
         url: 'wss://nvzhu.zealcdn.cn/ws',
         data: obj,

@@ -108,6 +108,12 @@ export default class myCenter extends wepy.page{
             msgNum: 0
          },
          {
+           url: '../myWallet/main',
+           text: '我的钱包',
+           iconPath: 'https://gcdn.playonwechat.com/mycenter-icon-wallt.png',
+           msgNum: 0
+         },
+         {
            url: '../shop/main',
            text: '积分商城',
            iconPath: 'https://gcdn.playonwechat.com/mycenter-icon-shop.png',
@@ -119,12 +125,7 @@ export default class myCenter extends wepy.page{
             iconPath: 'http://p766oymet.bkt.clouddn.com/nvzhu/day-yu-ico1n.png',
             msgNum: 0
          },
-        //  {
-        //    url: '../myWallet/main',
-        //    text: '我的钱包',
-        //    iconPath: 'https://gcdn.playonwechat.com/mycenter-icon-wallt.png',
-        //    msgNum: 0
-        //  },
+         
          {
            url: '../feedback/main',
            text: '意见反馈',

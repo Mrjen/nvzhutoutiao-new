@@ -1,15 +1,22 @@
 <template>
   <view class="exchange-main">
       <!-- 输入账号 -->
-      <view class="f-input" wx:if="{{typeAccount}}">
+      <view class="f-input" wx:if="{{typeAccount=='virtual'}}">
           <input type="text" placeholder="在此输入手机号/账号"/>
       </view>
+      <block wx:else>
+          <view  wx:if="{{address.id?true:false}}">
+             <addressItem :item.sync="address"></addressItem>
+          </view>
+          <view wx:else>
+             <view class="add-addr" @tap="addAddress">新增地址</view>
+          </view>
+      </block>
       
-      <addressItem :arrow.sync="addressItemClass"></addressItem>
 
-      <Pinfo>
-        <view slot="bar">订单号</view>
-        <view slot="contact">订单号</view>
+      <Pinfo :item.sync="address">
+        <!-- <view slot="bar">订单号</view>
+        <view slot="contact">订单号</view> -->
       </Pinfo>
 
       <view class="all-scroe">总计：兑换此商品将扣除1999积分</view>
@@ -30,14 +37,51 @@ export default class exchange extends wepy.page {
   config={
     "navigationBarTitleText":"填写账号"
   }
+
   data = {
-    typeAccount: false,
-    addressItemClass: 1
+    typeAccount: '',
+    addressItemClass: 1,
+    address: '',
+    addressList: []
   }
+
   components={
     addressItem,
     Pinfo
   }
+
+  methods = {
+    // 添加地址
+    addAddress(){
+       wx.navigateTo({
+         url: '../addressManage/main?from=address'
+       })
+    }
+  }
+
+  async onLoad(options){
+    console.log(options)
+    let that = this;
+    this.typeAccount = options.type;
+    this.$apply();
+    
+    if(options.type==='product'){
+        let json = await wxRequest(api.addressList,{},'POST');
+        if(json.data.code===api.STATUS){
+          let addr = json.data.data;
+          this.addressList = addr;
+          addr.map(el=>{
+             if(el.is_default==='1'){
+                // that.address = JSON.parse(JSON.stringify(el));
+                that.$apply();
+             }
+          })
+          this.$apply();
+        }
+    }
+  }
+
+
   
 }
 </script>
@@ -61,16 +105,15 @@ export default class exchange extends wepy.page {
 
 .f-input{
   width: 750rpx;
-  height: 190rpx;
   position: relative;
-  padding: 68rpx 40rpx 34rpx 40rpx;
+  padding: 18rpx 40rpx 34rpx 40rpx;
   input{
-    width: 670rpx;
+  width: 670rpx;
 	height: 88rpx;
 	background-color: #e5e5e5;
-    border-radius: 10rpx;
-    padding: 0 20rpx;
-    box-sizing: border-box;
+  border-radius: 10rpx;
+  padding: 0 20rpx;
+  box-sizing: border-box;
   }
 }
 
@@ -173,6 +216,11 @@ export default class exchange extends wepy.page {
     font-size: 28rpx;
     color: #999;
   }
+}
+
+.add-addr{
+  text-align: center;
+  padding-bottom: 40rpx;
 }
 
 </style>

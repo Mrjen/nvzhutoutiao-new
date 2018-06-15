@@ -29,13 +29,16 @@
              wx:for="{{shopList}}" 
              wx:key="{{index}}">
          <view class="p-cover">
-           <image src="{{item.cover}}" mode="widthFix"/>
+           <image src="{{item.small_logo}}" mode="widthFix"/>
          </view>
-         <view class="p-name">{{item.title}}</view>
-         <view class="p-score">{{item.score}}积分</view>
+         <view class="p-name">{{item.name}}</view>
+         <view class="p-score">{{item.integral}}积分</view>
          <view class="p-info">
-            <view class="p-lave">剩余{{item.lave}}</view>
-            <view class="p-exchange" @tap="Exchange">立即兑换</view>
+            <view class="p-lave">剩余{{item.num}}</view>
+            <view class="p-exchange" 
+                  data-type="{{item.type}}" 
+                  data-id="{{item.id}}"
+                  @tap="Exchange">立即兑换</view>
          </view>
        </view>
        <view class="more" style="width:750rpx;height:200rpx;line-height:200rpx;color:#999;text-align:center">更多礼品敬请期待</view>
@@ -169,49 +172,7 @@ export default class shop extends wepy.page {
     navigationBarTitleText:'积分商城'
   }
   data = {
-     signList:[{
-       icon:'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-bg.png',
-       text: "第1天",
-       activebg: 'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-active-bg.png',
-       active: false,
-       count: 20
-     },{
-       icon:'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-bg.png',
-       text: "第2天",
-       activebg: 'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-active-bg.png',
-       active: false,
-       count: 30
-     },{
-       icon:'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-bg.png',
-       text: "第3天",
-       activebg: 'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-active-bg.png',
-       active: false,
-       count: 40
-     },{
-       icon:'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-bg.png',
-       text: "第4天",
-       activebg: 'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-active-bg.png',
-       active: false,
-       count: 50
-     },{
-       icon:'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-bg.png',
-       text: "第5天",
-       activebg: 'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-active-bg.png',
-       active: false,
-       count: 60
-     },{
-       icon:'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-bg.png',
-       text: "第6天",
-       activebg: 'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-active-bg.png',
-       active: false,
-       count: 80
-     },{
-       icon:'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-bg.png',
-       text: "第7天及以上",
-       activebg: 'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-active-bg.png',
-       active: false,
-       count: 100
-     }],
+     signList:[],
      jiFenPop: false,           // 积分弹层
      is_sign: false,            // 今日是否签到
      total_sign: 0,             // 总签到天数
@@ -228,7 +189,21 @@ export default class shop extends wepy.page {
   }
   methods={
     // 兑换商品
-    Exchange(){
+    Exchange(e){
+      //  let dataset = e.currentTarget.dataset;
+      //  console.log(dataset)
+      //  if(dataset.type==='virtual'){
+      //       //  虚拟产品
+      //       wx.navigateTo({
+      //          url: `../exchangeType/main?type=virtual&id=${dataset.id}`
+      //       })
+      //  }else if(dataset.type==='product'){
+      //       //  真实产品
+      //       wx.navigateTo({
+      //          url: `../exchangeType/main?type=product&id=${dataset.id}`
+      //       })
+      //  }
+
        wx.showModal({
           title: '您的积分还不够兑换',
           content: '评论/转发/点赞/签到都可以赚取哦~',
@@ -300,7 +275,7 @@ export default class shop extends wepy.page {
     }
 
     // 获取商品列表
-    let shopList = await wxRequest('https://nvzhu.zealcdn.cn/public/index.php/api/user/data',{},'post');
+    let shopList = await wxRequest(api.shopList,{page:1},'post');
     console.log('shopList', shopList);
     this.shopList = shopList.data.data;
     this.$apply();
@@ -313,7 +288,6 @@ export default class shop extends wepy.page {
        return signin.data.data;
     } 
   }
-
 
   async onPullDownRefresh(){
      wx.stopPullDownRefresh()

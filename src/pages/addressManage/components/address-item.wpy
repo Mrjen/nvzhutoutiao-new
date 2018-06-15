@@ -1,13 +1,15 @@
 <template>
-<view class="address-item {{arrow?'address-arrow':''}}">
+<view class="address-item {{arrow?'address-arrow':''}}" 
+      data-id="{{item.id}}"
+      @tap="Exchange">
     <view class="address">
         <view class="name-info">
-            <view class="name">张三</view>
-            <view class="tag">默认</view>
+            <view class="name">{{item.name}}</view>
+            <view class="tag" wx:if="{{item.is_default==1}}">默认</view>
         </view>
         <view class="address-info">
-            <view class="tell">18372668568</view>
-            <view class="address-desc">广东省深圳市大运软件小镇</view>
+            <view class="tell">{{item.phone}}</view>
+            <view class="address-desc">{{item.province}}{{item.city}}{{item.district}}</view>
         </view>
         <slot name="edit"></slot>
     </view>
@@ -22,7 +24,20 @@ export default class addressItem extends wepy.component {
     arrow:{
       type: Number,
       default: 0
+    },
+    item:{}
+  }
+
+  methods = {
+    // 选择地址
+    Exchange(e){
+      // console.log('点击了地址', e.currentTarget.dataset)
+      this.$emit('selectAddress', e.currentTarget.dataset.id)
     }
+  }
+
+  onLoad(){
+
   }
 }
 </script>

@@ -1,0 +1,195 @@
+<template>
+  <view class="reward" wx:if="{{showReward}}">
+    <view class="main" style="{{changeText==='取消'?'transform: translateY(-120rpx)':''}}">
+       <view class="m-icon"></view>
+       <view class="m-ticle">嘿，我的文采在你眼里值几个钱？</view>
+       <block>
+          <view class="m-list" wx:if="{{EditMoney}}">
+            <view wx:for="{{moneyList}}"
+                  class="m-item {{item.active?'active':''}}" 
+                  wx:key="{{index}}"
+                  data-idx="{{index}}"
+                  data-money="{{item.money}}"
+                  @tap="changeRewardMoney">
+                  {{item.money}}
+              </view>
+          </view>
+          <view class="edit-money" wx:else>
+              <input type="digit" 
+                     maxlength="5" 
+                     focus="{{focus}}"
+                     @input="inputMoney"/>
+          </view>
+       </block>
+       <view class="change" @tap="changeMoney">{{changeText}}</view>
+       <button class="reward-btn" type="primary" @tap="payMoney">打赏</button>
+       <view class="tips">注：赞赏是对评论者最大的鼓励</view>
+       <view class="close" @tap="changeReward"></view>
+    </view>
+  </view>  
+</template>
+
+<script>
+import wepy from 'wepy'
+export default class rewardPoup extends wepy.component  {
+  data = {
+    EditMoney: true,
+    focus: true,
+    changeText: '修改金额'
+  }
+  props ={
+     moneyList: {
+       type: Object,
+       default: []
+     },
+     showReward:{    // 打赏弹层
+       type: Boolean,
+       default: false
+     },
+     EditMoney:{    // 金额、自定义切换
+       type: Boolean,
+       default: true
+     }
+  }
+  methods = {
+    // 修改金额
+    changeMoney(){
+      // this.EditMoney = !this.EditMoney;
+      this.changeText = this.changeText==='修改金额'?'取消':'修改金额';
+      if(this.changeText==='修改金额'){
+         this.focus = false;
+         this.$apply();
+      }else{
+         this.focus = true;
+         this.$apply();
+      }
+      this.$apply();
+      this.$emit('TapEditMoney');
+    },
+
+    // 显示隐藏弹层
+    changeReward(){
+      this.$emit('RewardBtn', false);
+      this.$apply();
+    },
+    // 输入金额
+    inputMoney(e){
+      this.$emit('inputMoney', e.detail.value);
+    },
+    // 点击金额
+    changeRewardMoney(e){
+      let moneyList = this.moneyList;
+      let dataset = e.currentTarget.dataset;
+      moneyList.map(el=>{
+        el.active = false;
+      })
+      moneyList[dataset.idx].active = true;
+      this.moneyList = moneyList;
+      this.$apply();
+      this.$emit('changeRewardMoney', dataset.money)
+    },
+    // 点支付
+    payMoney(){
+      this.$emit('payMoney');
+    }
+  }
+}
+</script>
+
+<style lang="less" scoped>
+.reward{
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, .2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  .main{
+    width: 620rpx;
+    height: 810rpx;
+    background: #fffbf1;
+    border-radius: 20rpx;
+    transition: .05s;
+    position: relative;
+  }
+  .m-icon{
+     width: 140rpx;
+     height: 140rpx;
+     background-image: url('https://gcdn.playonwechat.com/nvzhu/detail-shang-icon.png');
+     background-size: 100% 100%;
+     margin:60rpx auto 40rpx auto;
+  }
+  .m-ticle{
+    text-align: center;
+    color: #666;
+  }
+  .m-list{
+    display: flex;
+    flex-wrap: wrap;
+    width: 442rpx;
+    margin:50rpx auto 0 auto;
+    .m-item{
+      width: 120rpx;
+      height: 60rpx;
+      margin-bottom: 40rpx;
+      text-align: center;
+      line-height: 60rpx;
+      color: #ff7905;
+      border-radius: 8rpx;
+      border:1px solid #ff7905;
+    }
+    .m-item:not(:nth-of-type(3n)){
+      margin-right:40rpx; 
+    }
+    .active{
+      background: #ff7905;
+      color: #fff;
+    }
+  }
+  .change{
+    text-align: center;
+    color: #009cff;
+  }
+  .reward-btn{
+    width: 520rpx;
+    height: 78rpx;
+    line-height: 78rpx;
+    background: #ff7905;
+    margin-top: 50rpx;
+  }
+  .tips{
+    font-size: 22rpx;
+    color: #999;
+    text-align: center;
+    margin-top: 60rpx;
+  }
+  .edit-money{
+    width: 422rpx;
+    height: 200rpx;
+    margin:0 auto;
+    input{
+      display: block;
+      width: 100%;
+      height: 100%;
+      font-size: 100rpx;
+      color: #ff7905;
+      text-align: center;
+    }
+  }
+  .close{
+    position: absolute;
+    right: 30rpx;
+    top: 30rpx;
+    width: 50rpx;
+    height: 50rpx;
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACMAAAAiCAMAAADiW5DOAAAARVBMVEUAAACZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZkBVNYgAAAAFnRSTlMABrcKtcHusKafRJpvaNSIgltTOSARJgjwRQAAAKZJREFUOMuF1EsKwzAMRVEpSfNxk/6r/S+1DsW8QbiKRjI6YHg2MrvfVsPql/HqViJiciKXOt3sFbU6ZxLFbGoIyFI77/4IyODGSASRCCIRRCKIRBCJIBJBJILoK4JoFEEkgghfWNHJJEQoISMiRdcrTCKuMJmYEBOhhAglRCghQgkRaicRQnMjR9R2QQFS0bCPttqtIge0XzG3FUP/6RHxtLP6vM1+rSYXoEG1X7sAAAAASUVORK5CYII=');
+    background-size: 34rpx 34rpx;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+}
+</style>

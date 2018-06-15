@@ -46,6 +46,7 @@
                      {{item.nickName}}回复了你的评论：{{item.msg}}</view>
                    <view class="content" wx:elif="{{item.type=='commentlike'?true:false}}">
                      {{item.nickName}}{{item.msg>2?'等':''}}{{item.msg}}人给你点亮</view>
+                   <view class="content" wx:elif="{{item.type=='reward'?true:false}}">{{item.msg}}</view>
                 </view>
              </view>
              <view class="delete" 
@@ -204,7 +205,7 @@ export default class Message extends wepy.page{
       console.log('e',e.currentTarget)
       let dataset = e.currentTarget.dataset;
       console.log('dataset',dataset)
-      if(dataset.type==="comment"||dataset.type==="commentlike"){
+      if(dataset.type==="comment"||dataset.type==="commentlike"||dataset.type==="reward"){
         wx.navigateTo({
           url:`../details/main?id=${dataset.aid}&reid=${dataset.reid}`
         })

@@ -154,6 +154,24 @@ const addressList = `${domainUrl}/shop/showalladdr`;
 // 今日物语
 const dayQuote = `${domainUrl}/calendar/calendarlist`;
 
+// 打赏
+const Raward = `${domainUrl}/reward/reward`
+
+// 打赏明细
+const rewarddetail = `${domainUrl}/reward/rewarddetail`
+
+// 每日物语
+const statisticsstroy =  `${domainUrl}/calendar/statisticsstroy`
+
+// 获取商城商品
+const shopList = `${domainUrl}/shop/shopgoods`
+
+// 钱包提现
+const companypay = `${domainUrl}/pay/deposit`
+
+// 获取单个商品的信息
+const oneshopgoods = `${domainUrl}/shop/oneshopgoods`
+
 export default {
   STATUS,
   domainUrl,
@@ -206,5 +224,11 @@ export default {
   voteposter,
   addreceiptaddr,
   addressList,
-  dayQuote
+  dayQuote,
+  Raward,
+  rewarddetail,
+  statisticsstroy,
+  shopList,
+  companypay,
+  oneshopgoods
 };

@@ -84,7 +84,8 @@ function getToken() {
         }).then(res => {
           // console.log('token', res.data.data.is_accredit)
           wx.setStorage({key:'token', data:res.data.data.token})
-          wx.setStorage({key:'is_accredit', data:res.data.data.is_accredit})
+          wx.setStorage({key:'is_accredit', data:res.data.data.is_accredit});
+          wx.setStorage({ key:'myid',data:res.data.data.id });
           reslove(res)
         })
       }
@@ -343,12 +344,21 @@ function getQueryString(name, url) {
   if (r != null) return unescape(r[2]); return null;
 }
 
-// 数组去重
+// 二级追评数组去重
 function unique(array) {
   var obj = {};
   return array.filter(function(item, index, array){
       // console.log(typeof item + JSON.stringify(item))
       return obj.hasOwnProperty(typeof item.follow_comment_id + JSON.stringify(item.follow_comment_id)) ? false : (obj[typeof item.follow_comment_id + JSON.stringify(item.follow_comment_id)] = true)
+  })
+}
+
+// 热门评论和最新评论
+function commentUnique(array) {
+  var obj = {};
+  return array.filter(function(item, index, array){
+      // console.log(typeof item + JSON.stringify(item))
+      return obj.hasOwnProperty(typeof item.id + JSON.stringify(item.id)) ? false : (obj[typeof item.id + JSON.stringify(item.id)] = true)
   })
 }
 
@@ -369,5 +379,6 @@ export default {
   getQueryString,
   formatRemainTime,
   getQiNiuToken,
-  unique
+  unique,
+  commentUnique
 };

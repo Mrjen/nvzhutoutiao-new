@@ -45,7 +45,7 @@ export default class inputComment extends wepy.page {
     user_id: '',                          // 用户id
     options:{},
     imageArr:[],
-    inputPlaceholder: '发表你的想法...',
+    inputPlaceholder: '认真评论可能获得赞赏哦...',
     commTitle: '',
     recomment:'',
     commImageArr: [],                     // 图片数组
