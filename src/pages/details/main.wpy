@@ -506,7 +506,7 @@
 
    <block>
 
-    <view class="botm-bar">
+    <view class="botm-bar" wx:if="{{is_wechat}}">
       <block>
         <view class="is_userinfo">
           <button class="btn-input" wx:if="{{is_accredit=='1'}}" @tap="writeComment">评论有赏...</button>
@@ -711,7 +711,7 @@ export default class Detail extends wepy.page {
         id: 3,
         active: false
       },{
-        money: '3.88',
+        money: '2.88',
         id: 4,
         active: false
       },{
@@ -1850,7 +1850,7 @@ page {
   color: #ffb85b;
   text-align: center;
   border-radius: 50%;
-  margin: 10rpx auto;
+  margin: 10rpx auto 0 auto;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1953,7 +1953,7 @@ page {
   display: flex;
   flex-wrap: wrap;
   padding-left: 98rpx;
-  padding-bottom: 30rpx;
+  margin-bottom: 30rpx;
   .c-image{
     width: 150rpx;
     height: 150rpx;
@@ -1996,7 +1996,7 @@ page {
 .commentsTxt {
   color: #333333;
   font-size: 28rpx;
-  margin: -24rpx 13rpx 30rpx 97rpx;
+  margin: -14rpx 13rpx 30rpx 97rpx;
   padding: 0;
   background: transparent;
   text-align: justify;

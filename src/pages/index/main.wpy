@@ -104,7 +104,7 @@
       </view> -->
 
       <!-- 入群 -->
-      <button open-type="contact" class="join_group"></button>
+      <!-- <button open-type="contact" class="join_group"></button>-->
 
       <view class="sign_pop" wx:if="{{showSignIcon}}">
          <view class="main">

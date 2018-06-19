@@ -14,7 +14,7 @@
       </block>
       
 
-      <Pinfo :item.sync="address">
+      <Pinfo :product.sync="productInfo">
         <!-- <view slot="bar">订单号</view>
         <view slot="contact">订单号</view> -->
       </Pinfo>
@@ -22,7 +22,7 @@
       <view class="all-scroe">总计：兑换此商品将扣除1999积分</view>
 
       <view class="nav-bar">
-          <view class="exchange">兑换</view>
+          <view class="exchange" @tap="Exchange">兑换</view>
       </view>
   </view>
 </template>
@@ -39,10 +39,10 @@ export default class exchange extends wepy.page {
   }
 
   data = {
-    typeAccount: '',
-    addressItemClass: 1,
-    address: '',
-    addressList: []
+    typeAccount: '',            // 当前兑换商品类型  虚拟  真实
+    address: '',                // 默认地址
+    addressList: [],            // 地址列表
+    productInfo:{}              // 商品信息
   }
 
   components={
@@ -51,6 +51,26 @@ export default class exchange extends wepy.page {
   }
 
   methods = {
+    // 兑换商品
+    async Exchange(){
+       console.log('兑换商品');
+
+       if(!address){
+          tips.alert('请填写收货地址')
+       }
+
+       let json = await wxRequest(api.goodexchange,{
+         goods_id: '',
+         addr_id: '',
+         account: '1',
+         integral: ''
+       },'POST')
+       
+       if(json.data.code===api.STATUS){
+         console.log(json)
+       }
+
+    },
     // 添加地址
     addAddress(){
        wx.navigateTo({
@@ -64,7 +84,15 @@ export default class exchange extends wepy.page {
     let that = this;
     this.typeAccount = options.type;
     this.$apply();
-    
+
+    // 获取商品信息
+    let product = await wxRequest(api.oneshopgoods,{id:options.id},'POST');
+    if(product.data.code ===api.STATUS){
+      this.productInfo = product.data.data;
+      this.$apply();
+    }
+
+    // 获取默认地址
     if(options.type==='product'){
         let json = await wxRequest(api.addressList,{},'POST');
         if(json.data.code===api.STATUS){
@@ -72,7 +100,7 @@ export default class exchange extends wepy.page {
           this.addressList = addr;
           addr.map(el=>{
              if(el.is_default==='1'){
-                // that.address = JSON.parse(JSON.stringify(el));
+                that.address = JSON.parse(JSON.stringify(el));
                 that.$apply();
              }
           })
@@ -80,8 +108,6 @@ export default class exchange extends wepy.page {
         }
     }
   }
-
-
   
 }
 </script>

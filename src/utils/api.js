@@ -172,6 +172,9 @@ const companypay = `${domainUrl}/pay/deposit`
 // 获取单个商品的信息
 const oneshopgoods = `${domainUrl}/shop/oneshopgoods`
 
+// 积分兑换产品
+const goodexchange =`${domainUrl}/shop/goodexchange`
+
 export default {
   STATUS,
   domainUrl,
@@ -230,5 +233,6 @@ export default {
   statisticsstroy,
   shopList,
   companypay,
-  oneshopgoods
+  oneshopgoods,
+  goodexchange
 };

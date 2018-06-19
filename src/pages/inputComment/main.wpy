@@ -5,7 +5,6 @@
     <textarea placeholder="{{inputPlaceholder}}" 
                 maxlength="-1" 
                 auto-height="true"
-                @blur="inputBlur"
                 @input="TextInput"
                 @confirm="addComment"
                 value="{{commContent}}"
@@ -44,20 +43,19 @@ export default class inputComment extends wepy.page {
     follow_index: '',                     // 大评论的index
     user_id: '',                          // 用户id
     options:{},
-    imageArr:[],
     inputPlaceholder: '认真评论可能获得赞赏哦...',
     commTitle: '',
     recomment:'',
     commImageArr: [],                     // 图片数组
     is_announce: 0,                       // 是否允许评论图片
-    requestEnd: true
+    requestEnd: true                      // 请求是否完成
   }
 
   async onLoad(options){
      console.log(options);
      this.options = options;
      this.is_announce = options.is_announce;
-    // this.is_announce = 1;
+     this.is_announce = 1;
      if(options.comment_type!='文章'){
          console.log('从跟评来的')
         this.inputPlaceholder = wx.getStorageSync('InputTitle');
@@ -115,7 +113,9 @@ export default class inputComment extends wepy.page {
                       wx.navigateBack({delta: 1})
                     }, 30);
             }else{
-               tips.alert(res.data.data)
+               tips.alert(res.data.data);
+               that.requestEnd = true;
+               that.$apply();
             }
         }else{
             // 发跟评
@@ -140,11 +140,7 @@ export default class inputComment extends wepy.page {
                     comment[options.commentIdx].follow_comment = jsonData;
                     wx.setStorage({key: 'topComment', data: comment});
                     
-                    
-                   console.log('有奖励有奖励有奖励有奖励有奖励有奖励',jsonData[0].getintegral)
-
                     if(jsonData[0].getintegral){
-                        console.log('有奖励有奖励有奖励有奖励有奖励有奖励')
                        let myToast = {
                             title: '评论奖励',
                             toastJiFen: jsonData[0].getintegral.integral,
@@ -168,11 +164,7 @@ export default class inputComment extends wepy.page {
                     comment = wx.getStorageSync('comment');
                     comment[options.commentIdx].follow_comment = jsonData;
                     wx.setStorage({key:'comment', data:comment});
-                     
-                    console.log('有奖励有奖励有奖励有奖励有奖励有奖励',jsonData[0].getintegral)
-
                     if(jsonData[0].getintegral){
-                        console.log('有奖励有奖励有奖励有奖励有奖励有奖励')
                        let myToast = {
                             title: '评论奖励',
                             toastJiFen: jsonData[0].getintegral.integral,
@@ -221,14 +213,8 @@ export default class inputComment extends wepy.page {
           for(let i=0;i<len;i++){
                qiniuUploader.upload(tempFilePaths[i], (res) => {
                   _commImageArr.push('https://gcdn.playonwechat.com'+res.imageURL);
-                  console.log(i+' '+ (len-1))
-                  if(i===len-1){
-                    that.commImageArr = commImageArr.concat(_commImageArr).slice(0,10);
-                    that.commentDom = commentDom;
-                    that.$apply();
-                  }
-                  console.log('这里是上传的图片列表', _commImageArr);
-                  
+                  that.commImageArr = commImageArr.concat(_commImageArr).splice(0, 9);
+                  that.$apply(); 
                   wx.hideLoading();
                 }, (error) => {
                   console.log('error: ' + error);
@@ -248,6 +234,15 @@ export default class inputComment extends wepy.page {
 
         }
       })
+    },
+
+    // 删除发送图片
+    deleteAddImage(e){
+       let dataset = e.currentTarget.dataset;
+       let commImageArr = this.commImageArr;
+        commImageArr.splice(dataset.idx,1);
+       this.commImageArr = commImageArr;
+       this.$apply();
     },
 
     // 评论输入

@@ -6,6 +6,7 @@ import 'wepy-async-function';
 import api from './utils/api';
 import wxRequest from './utils/http';
 import utils from './utils/utils';
+import tips from './utils/tips.js';
 
 import userAuth from './utils/userMethod/userAuth.js';
 
@@ -101,11 +102,42 @@ export default class extends wepy.app {
     //   }
     // })
 
+    // 获取设备
+    wx.getSystemInfo({
+      success: function(res) {
+        console.log('model',res)
+        if(res.model.indexOf('iphone X')){
+          wx.setStorage({key:'systemInfo',data:'iPhone X'});
+        }
+      }
+    })
+  }
+
+  onShow(){
     // 强制更新
+    let that = this;
+    wx.getNetworkType({
+      success: function(res) {
+        // 返回网络类型, 有效值：
+        // wifi/2g/3g/4g/unknown(Android下不常见的网络类型)/none(无网络)
+        var networkType = res.networkType;
+        if(res.networkType==='wifi'){
+            that.ApplyUpdate();
+        }else if(res.networkType==='3g'||res.networkType==='2g'){
+           tips.alert('网络信号差')
+        }else if(res.networkType==='none'){
+           tips.alert('无网络')
+        }
+      }
+    })
+    
+  }
+
+  ApplyUpdate(){
     const updateManager = wx.getUpdateManager()
     updateManager.onCheckForUpdate(function (res) {
       // 请求完新版本信息的回调
-      console.log(res.hasUpdate)
+      console.log('有没有新版',res.hasUpdate)
     })
     updateManager.onUpdateReady(function () {
       wx.showModal({
@@ -122,16 +154,7 @@ export default class extends wepy.app {
     })
     updateManager.onUpdateFailed(function () {
       // 新的版本下载失败
-    })
-
-    // 获取设备
-    wx.getSystemInfo({
-      success: function(res) {
-        console.log('model',res)
-        if(res.model.indexOf('iphone X')){
-          wx.setStorage({key:'systemInfo',data:'iPhone X'});
-        }
-      }
+      console.log('新版下载失败');
     })
   }
 

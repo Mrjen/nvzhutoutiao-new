@@ -1,7 +1,7 @@
 <template>
   <view class="day-quote">
      <view class="today">
-       <image src="{{currentQuote}}" @tap="prevImage" data-img="{{currentQuote}}" mode="widthFix"/>
+       <image src="{{currentQuote.pic}}" @tap="prevImage" data-img="{{currentQuote.pic}}" mode="widthFix"/>
      </view>
      <button class="share" @tap="shareOpation">分享给好友</button>
 
@@ -66,11 +66,11 @@ export default class dayQuote extends wepy.page{
     async downloadPoster(){
       this.actionSheetHidden = !this.actionSheetHidden;
       this.$apply();
-      let url = await utils.getImage(this.currentQuote);
+      let url = await utils.getImage(this.currentQuote.pic);
       await utils.saveImageToPhotosAlbum(url);
 
       let quoteList = this.quoteList;
-      let id = quoteList[0].list[0].id;
+      let id = this.currentQuote.id;
       wxRequest(api.statisticsstroy,{id:id, type:'down'},'POST')
     },
     // 返回首页
@@ -104,7 +104,7 @@ export default class dayQuote extends wepy.page{
      }
       let quoteList = await this.getDayQuote(1);
       let _quoteList = [...quoteList];
-      this.currentQuote = _quoteList[0].list[0].pic;
+      this.currentQuote = _quoteList[0].list[0];
       quoteList[0].list.shift();
       for(let i=0,len=quoteList.length;i<len;i++){
         quoteList[i].imageArr=[];
@@ -128,7 +128,7 @@ export default class dayQuote extends wepy.page{
      this.$apply();
      let nickName = wx.getStorageSync('userInfo').nickName || '我';
      let quoteList = this.quoteList;
-     let id = quoteList[0].list[0].id;
+     let id = this.currentQuote.id;
      wxRequest(api.statisticsstroy,{id:id, type:'share'},'POST')
      return {
        title: `${nickName}送你一段今日最佳物语，请查收！`,

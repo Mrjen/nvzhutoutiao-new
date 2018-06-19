@@ -3,11 +3,11 @@
     <slot name="bar"></slot>
     <view class="p-info">
         <view class="cover">
-            <image src="http://iph.href.lu/168x168" mode="widthFix"/>
+            <image src="{{product.big_logo}}" mode="widthFix"/>
         </view>
         <view class="info">
-            <view class="title">全网通用10元手机话费</view>
-            <view class="score">1999积分</view>
+            <view class="title">{{product.name}}</view>
+            <view class="score">{{product.integral}}积分</view>
         </view>
     </view>
     <slot name="contact"></slot>
@@ -18,6 +18,9 @@
 import wepy from 'wepy';
 export default class Pinfo extends wepy.component {
   data = {};
+  props ={
+    product:{}
+  }
 }
 </script>
 
