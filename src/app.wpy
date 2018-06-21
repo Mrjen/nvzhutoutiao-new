@@ -10,12 +10,6 @@ import tips from './utils/tips.js';
 
 import userAuth from './utils/userMethod/userAuth.js';
 
-// userAuth.fromPageData({ 
-//   kid:110, 
-//   scene:'735a42e66988eb9e271b1a0e193ea751', 
-//   token:'VoXF2TkTM22CKyJp51NQ'
-// })
-
 export default class extends wepy.app {
   config = {
     pages: [
@@ -42,7 +36,13 @@ export default class extends wepy.app {
       'pages/addressManage/main',
       'pages/inputComment/main',
       'pages/checkIn/main',
-      'pages/dayQuote/main'
+      'pages/dayQuote/main',
+      'pages/ExchangeSuccess/main',
+      'pages/webView/main',
+      'pages/ExchangeList/main',
+      'pages/ExpressInfo/main',
+      'pages/EditDayQuote/main',
+      'pages/cropper/main'
     ],
     window: {
       backgroundTextStyle: "light",
@@ -91,7 +91,6 @@ export default class extends wepy.app {
 
   onLaunch() {
     let that = this;
-    wx.setStorage({key:'desc',data:'new'});
     // wx.login({
     //   success(res){
     //      wxRequest(api.getToken,{code:res.code}).then((res)=>{

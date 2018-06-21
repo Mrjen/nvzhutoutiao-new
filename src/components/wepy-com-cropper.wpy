@@ -1,0 +1,113 @@
+<template>
+  <canvas
+    class="cropper"
+    disable-scroll="{{disable}}"
+    @touchstart="ts"
+    @touchmove="tm"
+    @touchend="te"
+    style="width:{{width}}px;height:{{height}}px;background-color: rgba(0, 0, 0, 0.8)"
+    @error="canvasError"
+    canvas-id="cropper">
+  </canvas>
+</template>
+
+<script>
+import wepy from 'wepy'
+import WeCropper from 'we-cropper'
+
+export default class Cropper extends wepy.component {
+  data = {
+    $: null,
+    id: 'cropper',
+    disable: true
+  }
+
+  props = {
+    options: Object
+  }
+
+  computed = {
+    width () {
+      return this.options.width
+    },
+    height () {
+      return this.options.height
+    }
+  }
+
+  methods = {
+    ts (e) {
+      this.$.touchStart(e)
+    },
+    tm (e) {
+      this.$.touchMove(e)
+    },
+    te (e) {
+      this.$.touchEnd(e)
+    },
+    canvasError (e) {
+      console.error(e.detail.errMsg)
+    }
+  }
+
+  watch = {
+    'options':function(){
+        if(this.$){
+          this.$ = null;
+          this.$ = new WeCropper(this.options)
+          .on('ready', (...args) => {
+            this.$emit('ready', ...args) 
+          })
+          .on('beforeImageLoad', (...args) => {
+            this.$emit('beforeImageLoad', ...args)
+          })
+          .on('imageLoad', (...args) => {
+            this.$emit('imageLoad', ...args)
+          })
+          .on('beforeDraw', (...args) => {
+            this.$emit('beforeDraw', ...args)
+          })
+          .updateCanvas();
+          this.$apply();
+        }
+     }
+  }
+
+    pushOrigin (src) {
+      this.$.pushOrign(src)
+    } 
+    updateCanvas () {
+      this.$.updateCanvas()
+    }
+    getCropperImage (fn, ev) {
+      this.$.getCropperImage(fn)
+    }
+    getCropperBase64 (fn, ev) {
+      this.$.getCropperImage(fn)
+    }
+
+  onLoad () {
+    console.log(this.options)
+    const options = this.options;
+    this.$data['options'] = null;
+    options.id = this.id;
+    this.$ = new WeCropper(options)
+    .on('ready', (...args) => {
+      this.$emit('ready', ...args) 
+    })
+    .on('beforeImageLoad', (...args) => {
+      this.$emit('beforeImageLoad', ...args)
+    })
+    .on('imageLoad', (...args) => {
+      this.$emit('imageLoad', ...args)
+    })
+    .on('beforeDraw', (...args) => {
+      this.$emit('beforeDraw', ...args)
+    })
+    .updateCanvas()
+  }
+}
+</script>
+
+<style>
+</style>

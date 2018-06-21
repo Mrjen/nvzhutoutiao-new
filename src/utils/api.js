@@ -175,6 +175,18 @@ const oneshopgoods = `${domainUrl}/shop/oneshopgoods`
 // 积分兑换产品
 const goodexchange =`${domainUrl}/shop/goodexchange`
 
+// 订单列表
+const shoporderlist = `${domainUrl}/shop/shoporderlist`
+
+// 确认收货
+const changepost = `${domainUrl}/shop/changepost`
+
+// 获取物流
+const trace = `${domainUrl}/shop/trace`
+
+// 自定义每日物语
+const imgmerge = `${domainUrl}/calendar/imgmerge`
+
 export default {
   STATUS,
   domainUrl,
@@ -234,5 +246,9 @@ export default {
   shopList,
   companypay,
   oneshopgoods,
-  goodexchange
+  goodexchange,
+  shoporderlist,
+  changepost,
+  trace,
+  imgmerge
 };

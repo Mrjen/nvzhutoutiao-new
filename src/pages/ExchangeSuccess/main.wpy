@@ -1,0 +1,79 @@
+<template>
+<view class="exchang">
+   <image class="page-icon" src="https://gcdn.playonwechat.com/nvzhu/exchange-success-icon.png" mode="widthFix"/>
+   <view class="icon-text">兑换成功</view>
+   <view class="nav">
+      <navigator @tap="toExchangeList">查看订单</navigator>
+      <navigator @tap="toShop">返回商城</navigator>
+   </view>
+</view>  
+</template>
+
+<script>
+import wepy from 'wepy';
+import wxRequest from '../../utils/http.js';
+import api from '../../utils/api.js';
+export default class exchangeSuccess extends wepy.page {
+  config={
+    "navigationBarTitleText":"兑换成功"
+  }
+  data={}
+    methods = {
+        toExchangeList(){
+            wx.redirectTo({
+              url: '../ExchangeList/main'
+            })
+        },
+        toShop(){
+            wx.redirectTo({
+              url: '../shop/main'
+            })
+        }
+    }
+}
+</script>
+
+<style lang="less" scoped>
+.page-icon{
+  display: block;
+  width: 98rpx;
+  height: 98rpx;
+  margin:150rpx auto 50rpx auto;
+}
+.icon-text{
+    text-align: center;
+    color: #7c48c6;
+    font-size: 36rpx;
+    font-weight: bold;
+    margin:0 auto 50rpx auto;
+}
+.nav{
+   display: flex;
+   padding: 0 220rpx;
+   justify-content: space-between;
+   color: #007eff;
+   position: relative;
+}
+
+.nav navigator{
+    display: block;
+    flex: 1;
+    text-align: center;
+}
+
+.nav navigator:nth-of-type(1){
+  position: relative;
+  display: flex;
+}
+
+.nav navigator:nth-of-type(1)::after{
+    content: '';
+    display: block;
+    height: 30rpx;
+    border-right: 1px solid #007eff;
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+}
+</style>

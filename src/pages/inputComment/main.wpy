@@ -55,7 +55,7 @@ export default class inputComment extends wepy.page {
      console.log(options);
      this.options = options;
      this.is_announce = options.is_announce;
-     this.is_announce = 1;
+    //  this.is_announce = 1;
      if(options.comment_type!='文章'){
          console.log('从跟评来的')
         this.inputPlaceholder = wx.getStorageSync('InputTitle');

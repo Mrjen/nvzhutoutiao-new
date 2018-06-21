@@ -2,14 +2,8 @@
   <div class="chart-room">
     <view class="chatRoom">
         <!-- 时间信息 -->
-        <!-- <view v-if="item.who==0" class="timeInfo">
-          <view class="readBg timeDate">
-            <view>{{item.date}}</view>
-            <view>{{item.time}}</view>
-          </view>
-        </view> -->
         <view class="chart-list" wx:for="{{msgList}}" wx:key="{{item.id}}">
-          <view class="time" wx:if="{{item.is_show_time}}">{{item.create_time}}</view>
+          <view class="time" wx:if="{{item.is_show_time?true:false}}">{{item.create_time}}</view>
           <view class="mySay" wx:if="{{item.is_self===0?false:true}}">
             <image src="{{item.avatarUrl}}" class="myPotrait" />
             <view>
@@ -20,7 +14,7 @@
                 <view wx:if="{{item.owner}}" class="floorHost">楼主</view>
               </view>
               <view class="myPotraitContent">
-                {{item.msg}}
+                <text selectable>{{item.msg}}</text>
               </view>
             </view>
           </view>
@@ -35,7 +29,7 @@
                 <!-- <view v-if="item.owner" class="floorHost">楼主</view> -->
               </view>
               <view class="potraitContent">
-                {{item.msg}}
+                <text selectable>{{item.msg}}</text>
               </view>
             </view>
           </view>

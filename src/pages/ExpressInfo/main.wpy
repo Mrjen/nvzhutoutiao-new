@@ -1,0 +1,126 @@
+<template>
+<view class="express">
+  <view class="map">
+      <view class="car"></view>
+      <view>物流单号：{{orderInfo.post_sn}}</view>
+  </view>
+  <view class="express-view">
+      <view class="express-in">
+        <view wx:for="{{express}}" 
+              class="info-item {{index===0?'active':''}}" 
+                wx:key="{{index}}"><view class="content">{{item.status}}</view>
+                <view class="date">{{item.time}}</view>
+        </view>
+      </view>
+  </view>
+</view>
+</template>
+
+<script>
+import wepy from 'wepy';
+import wxRequest from "../../utils/http.js";
+import api from "../../utils/api.js";
+export default class Detail extends wepy.page {
+  data={
+    orderInfo:{},
+    express:[]
+  }
+  async onLoad(options){
+     let json = await wxRequest(api.trace,{order_id:options.order_id},'POST');
+     if(json.data.code===api.STATUS){
+         console.log(json)
+         this.orderInfo = json.data.data.order;
+         this.express = json.data.data.list;
+         this.$apply();
+     }
+  }
+}
+</script>
+
+<style lang="less" scoped>
+.map{
+    width: 750rpx;
+    height: 230rpx;
+    background: url('https://gcdn.playonwechat.com/nvzhu/express-map-bg.png');
+    background-size: 100% 100%;
+    display: flex;
+    align-items: center;
+    border-bottom: 20rpx solid #eeeeee;
+    .car{
+       width: 128rpx;
+       height: 128rpx;
+       background: url(https://gcdn.playonwechat.com/nvzhu/express-car-icon.png);
+       background-size: 100% 100%;
+       margin:0 20rpx 0 40rpx;
+    }
+}
+
+.express-view{
+    padding: 20rpx 0;
+}
+
+.express-in{
+    position: relative;
+}
+
+.express-in:after{
+    content: '';
+    display: block;
+    position: absolute;
+    height: 100%;
+    left: 48rpx;
+    top: 0;
+    border-left: 1px solid rgba(0, 0, 0, .1);
+}
+
+.info-item::before{
+    content: '';
+    display: block;
+    position: absolute;
+    width: 30rpx;
+    height: 30rpx;
+    background: #e5e5e5;
+    border-radius: 50%;
+    left: 34rpx;
+    top: 0;
+    z-index: 2;
+}
+.info-item::after{
+    content: '';
+    display: block;
+    position: absolute;
+    width: 15rpx;
+    height: 15rpx;
+    border-radius: 50%;
+    background: #fff;
+    left: 34rpx;
+    top: 10rpx;
+    z-index: 3;
+}
+
+.info-item{
+    padding: 0 20rpx 20rpx 80rpx;
+    position: relative;
+    .content{
+      font-size: 24rpx;
+      line-height: 1.5;
+      margin-bottom: 5rpx;
+      color: #999;
+    }
+    .date{
+        font-size: 24rpx;
+        padding-bottom: 30rpx;
+        color: #999;
+        border-bottom: 1px solid rgba(0, 0, 0, .1);
+    }
+}
+
+.active{
+    .content,.date{
+        color: #22ac38;
+    }
+}
+.active::before{
+    background: #22ac38;
+}
+</style>

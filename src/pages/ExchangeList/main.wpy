@@ -1,0 +1,249 @@
+<template>
+<view class="order-list">
+   <view class="nav">
+      <view wx:for="{{nav}}" 
+            wx:key="{{index}}" 
+            data-idx="{{index}}"
+            data-id="{{item.id}}"
+            @tap="changeNav"
+            class="nav-item {{item.active?'active':''}}">{{item.text}}</view>
+   </view>
+   <block>
+    <view class="list" wx:if="{{deLivered.length>0}}">
+        <view class="prouct" wx:for="{{deLivered}}" wx:key="{{index}}">
+          <view class="bar">订单编号:{{item.order_sn}}</view>
+          <view class="p-info">
+              <view class="cover">
+                  <image src="{{item.big_logo}}" mode="widthFix"/>
+              </view>
+              <view class="info">
+                  <view class="title">
+                      <text>{{item.name}}</text>
+                  </view>
+                  <view class="change-status">
+                      <text wx:if="{{item.post_status=='1'}}">已发货</text>
+                      <text wx:if="{{item.post_status=='2'}}">已收货</text>
+                      <text wx:if="{{item.post_status=='3'}}">兑换成功</text>
+                  </view>
+                  <view class="score">{{item.integral}}积分</view>
+              </view>
+          </view>
+          <view class="contact">
+              <navigator url="../feedback/main">问题反馈</navigator>
+              <navigator url="" 
+                wx:if="{{item.post_status=='1'}}"  
+                data-id="{{item.order_id}}"
+                data-idx="{{index}}"
+                @tap="changePost">确认收货</navigator>
+              <navigator url="../ExpressInfo/main?order_id={{item.order_id}}" wx:if="{{item.type!='virtual'}}">查看物流</navigator>
+          </view>
+      </view>
+    </view>
+    <view wx:else style="width:750rpx;height:500rpx;line-height:500rpx;text-align:center;background:#fff;margin-top:20rpx;">暂无记录</view>
+   </block>
+</view>  
+</template>
+
+<script>
+import wepy from 'wepy';
+import wxRequest from '../../utils/http.js';
+import api from '../../utils/api.js';
+import Pinfo from '../addressManage/components/product-item';
+export default class ExchangeList extends wepy.page {
+  data = {
+    nav: [
+      {
+        id: 5,
+        text: '全部',
+        active: true
+      },
+      {
+        id: 0,
+        text: '待发货',
+        active: false
+      },
+      {
+        id: 1,
+        text: '已发货',
+        active: false
+      }
+    ],
+    deLivered: [],
+    page: 2,
+    currentNav: ''
+  };
+
+  components = {
+    Pinfo
+  };
+
+  methods = {
+    //  切换导航
+    async changeNav(e) {
+      let nav = this.nav;
+      let dataset = e.currentTarget.dataset;
+      nav.map(el => {
+        el.active = false;
+      });
+      nav[dataset.idx].active = true;
+      this.nav = nav;
+      this.$apply();
+      this.page = 2;
+      this.currentNav = dataset.id.toString();
+      this.deLivered = await this.getOrderList(1, dataset.id.toString());
+      this.$apply();
+    }
+  }
+    // 确认收货
+    async changePost(e){
+        let dataset = e.currentTarget.dataset;
+        let json = await wxRequest(api.changepost,{order_id:dataset.id},'POST');
+        if(json.data.code===api.STATUS){
+            let deLivered = this.deLivered;
+            deLivered[dataset.idx].post_status = 2;
+            this.deLivered = deLivered;
+            this.$apply();
+        }
+    }
+
+  async getOrderList(page, status) {
+    let json = await wxRequest(
+      api.shoporderlist,
+      { page: page, post_status: status },
+      'POST'
+    );
+    if (json.data.code === api.STATUS) {
+      console.log(json);
+      this.page = this.page+1;
+      this.$apply();
+      return json.data.data;
+    }
+  }
+
+  async onLoad() {
+    this.deLivered = await this.getOrderList(1, '5');
+    this.$apply();
+  }
+
+  onShow() {}
+  
+  async onReachBottom(){
+     let oldList = this.deLivered;
+     let newList = await this.getOrderList(this.page, this.currentNav);
+     this.deLivered = [...oldList,...newList];
+     this.$apply();
+  }
+
+}
+</script>
+
+<style lang="less" scoped>
+.order-list {
+  background: #eee;
+  min-height: 100vh;
+}
+.nav {
+  display: flex;
+  height: 100rpx;
+  background: #fff;
+  .nav-item {
+    flex: 1;
+    text-align: center;
+    line-height: 100rpx;
+    height: 100rpx;
+    position: relative;
+  }
+  .nav-item.active {
+    color: #f8814a;
+  }
+  .nav-item.active:after {
+    content: '';
+    display: block;
+    width: 120rpx;
+    height: 2rpx;
+    background: #f8814a;
+    left: 50%;
+    position: absolute;
+    bottom: 0;
+    transform: translateX(-50%);
+  }
+}
+
+.bar {
+  background: #fff;
+  border-top: 20rpx solid #eee;
+  padding: 20rpx;
+  position: relative;
+  font-size: 28rpx;
+}
+
+.bar::before {
+  content: '';
+  display: block;
+  width: 100%;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  transform: scaleY(0.5);
+}
+
+.p-info {
+  display: flex;
+  padding: 20rpx;
+  position: relative;
+  background: #fff;
+  .cover {
+    width: 168rpx;
+    height: 168rpx;
+    margin-right: 40rpx;
+    image {
+      display: block;
+      width: 100%;
+    }
+  }
+  .info {
+    display: flex;
+    flex: 1;
+    justify-content: space-between;
+    flex-direction: column;
+    padding: 20rpx 0;
+    .score {
+      color: #d44143;
+    }
+  }
+}
+
+.p-info::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.contact {
+  width: 100%;
+  height: 100rpx;
+  background: #fff;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 20rpx;
+  navigator {
+    display: block;
+    padding: 10rpx 20rpx;
+    border: 1px solid #e4dcda;
+    border-radius: 10rpx;
+    margin:0 10rpx;
+  }
+}
+
+.change-status{
+  display: flex;
+//   justify-content: flex-end;
+  color: #2eb952;
+  align-items: center;
+}
+</style>

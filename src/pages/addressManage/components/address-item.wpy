@@ -1,15 +1,13 @@
 <template>
-<view class="address-item {{arrow?'address-arrow':''}}" 
-      data-id="{{item.id}}"
-      @tap="Exchange">
+<view class="address-item {{arrow?'address-arrow':''}}" >
     <view class="address">
-        <view class="name-info">
+        <view class="name-info" data-id="{{item.id}}" @tap="Exchange">
             <view class="name">{{item.name}}</view>
             <view class="tag" wx:if="{{item.is_default==1}}">默认</view>
         </view>
-        <view class="address-info">
+        <view class="address-info" data-id="{{item.id}}" @tap="Exchange">
             <view class="tell">{{item.phone}}</view>
-            <view class="address-desc">{{item.province}}{{item.city}}{{item.district}}</view>
+            <view class="address-desc">{{item.province}}{{item.city}}{{item.detail_addr}}</view>
         </view>
         <slot name="edit"></slot>
     </view>

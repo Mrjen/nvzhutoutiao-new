@@ -10,6 +10,9 @@
         <view class="scroll-in">
         
         <view class="chart-list" wx:for="{{commList}}" wx:key="{{item.id}}">
+          <view class="timeInfo">
+            <text>{{item.formtime}}</text>
+          </view>
           <view class="mySay" wx:if="{{item.send_id==0?false:true}}">
             <image src="{{item.avatarUrl}}" class="myPotrait" />
             <view>
@@ -25,12 +28,11 @@
             </view>
           </view>
 
-          <view class="timeInfo">
+          <!-- <view class="timeInfo">
             <view class="readBg timeDate">
               <view>{{item.formtime}}</view>
-              <!-- <view>{{item.time}}</view> -->
             </view>
-          </view>
+          </view> -->
 
           <!-- 别人说的消息 -->
           <view wx:if="{{item.send_id==0?true:false}}" class="say">
@@ -169,7 +171,17 @@ export default class messageDetail extends wepy.page {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 50rpx;
+  margin-top: 50rpx;
+  text{
+    display: inline-block;
+    padding: 6rpx 14rpx;
+    background: #e7e0f0;
+    border-radius: 10rpx;
+  }
+}
+
+.timeInfo:nth-of-type(1){
+  margin-top: none;
 }
 
 .timeDate {

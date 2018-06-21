@@ -17,10 +17,10 @@
   <!-- 商城主体 -->
 <block> 
   <view class="shop-main">
-    <!-- <view class="shop-nav">
-       <navigator class="my-gift" url=""></navigator>
-       <navigator class="my-address" url=""></navigator>
-    </view> -->
+    <view class="shop-nav">
+       <navigator class="my-gift" url="../ExchangeList/main"></navigator>
+       <navigator class="my-address" url="../addressManage/main?from=myaddress"></navigator>
+    </view>
     
     <view class="shop-bar"></view>
 
@@ -38,6 +38,7 @@
             <view class="p-exchange" 
                   data-type="{{item.type}}" 
                   data-id="{{item.id}}"
+                  data-score="{{item.integral}}"
                   @tap="Exchange">立即兑换</view>
          </view>
        </view>
@@ -150,7 +151,7 @@
                 <view class="desc">{{item.desc}}</view>
                 <view class="date">{{item.create_time}}</view>
               </view>
-              <view class="item-center">+{{item.integral}}</view>
+              <view class="item-center">{{item.integral>0?'+'+item.integral:item.integral}}</view>
               <view class="item-right">累计<text>{{item.history_integral}}</text>积分</view>
             </view>
           </view>
@@ -167,6 +168,7 @@
 import wepy from 'wepy';
 import wxRequest from '../../utils/http.js';
 import api from '../../utils/api.js';
+import tips from '../../utils/tips.js';
 export default class shop extends wepy.page {
   config={
     navigationBarTitleText:'积分商城'
@@ -190,32 +192,37 @@ export default class shop extends wepy.page {
   methods={
     // 兑换商品
     Exchange(e){
-      //  let dataset = e.currentTarget.dataset;
-      //  console.log(dataset)
-      //  if(dataset.type==='virtual'){
-      //       //  虚拟产品
-      //       wx.navigateTo({
-      //          url: `../exchangeType/main?type=virtual&id=${dataset.id}`
-      //       })
-      //  }else if(dataset.type==='product'){
-      //       //  真实产品
-      //       wx.navigateTo({
-      //          url: `../exchangeType/main?type=product&id=${dataset.id}`
-      //       })
-      //  }
-
-       wx.showModal({
-          title: '您的积分还不够兑换',
-          content: '评论/转发/点赞/签到都可以赚取哦~',
-          showCancel: false,
-          success: function(res) {
-            if (res.confirm) {
-              console.log('用户点击确定')
-            } else if (res.cancel) {
-              console.log('用户点击取消')
+       let dataset = e.currentTarget.dataset;
+       console.log(dataset.score)
+       console.log(this.integral)
+       console.log(Number(dataset.score)>Number(this.integral))
+       if(Number(dataset.score)>Number(this.integral)){
+          wx.showModal({
+            title: '您的积分还不够兑换',
+            content: '评论/转发/点赞/签到都可以赚取哦~',
+            showCancel: false,
+            success: function(res) {
+              if (res.confirm) {
+                console.log('用户点击确定')
+              } else if (res.cancel) {
+                console.log('用户点击取消')
+              }
             }
-          }
-        })
+          })
+         return;
+       }
+
+       if(dataset.type==='virtual'){
+            //  虚拟产品
+            wx.navigateTo({
+               url: `../exchangeType/main?type=virtual&pid=${dataset.id}`
+            })
+       }else if(dataset.type==='product'){
+            //  真实产品
+            wx.navigateTo({
+               url: `../exchangeType/main?type=product&pid=${dataset.id}`
+            })
+       }
     },
     // 打卡弹层
     openLvRule(){

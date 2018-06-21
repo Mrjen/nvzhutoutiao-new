@@ -1,6 +1,7 @@
 import wxRequest from './http'
 import api from './api';
-import tips from './tips'
+import tips from './tips';
+import qiniuUploader from './qiniuUploader';
 
 
 function formatTime(unixtime, withTime) {
@@ -185,7 +186,6 @@ async function shareTime(id){
 async function getPoster(id){
    let url = await wxRequest(api.poster,{article_id: id},'POST');
    if(url.data.code===api.STATUS){
-      // console.log('000000000000000000',url)
       wx.showLoading({ title: "生成中" });
       let image = await getImage(url.data.data);
       console.log('image', image)
@@ -226,112 +226,7 @@ async function getPoster(id){
    }
 }
 
-  // 合成海报
-// async function userDownloadPoster(ctx,title,that){
-async function userDownloadPoster(data = { ctx: null, title: "标题", that: null, qrcodePath: null }) {
-  wx.showLoading({ title: "生成中" });
-  // let bg = "https://gcdn.playonwechat.com/nvzhu/poster-bg.png";
-  let bg = 'https://gcdn.playonwechat.com/nvzhu/poster-bg2.png';
-  const canvas_bg = await getImage(bg);
-  let userInfo = await getUserInfo();
-  let avatarUrl =
-    userInfo.avatarUrl || "https://nvzhu.zealcdn.cn/public/img/icon.jpg";
-  data.ctx.drawImage(canvas_bg, 0, 0, 750, 1334);
-  // 画头像
-  data.ctx.save();
-  data.ctx.beginPath();
-  data.ctx.arc(80, 456, 50, 0, 2 * Math.PI);
-  // data.ctx.setFillStyle('#ff2cff')
-  // data.ctx.fill();
-  data.ctx.clip();
-  let _avatarUrl = await getImage(avatarUrl);
-  data.ctx.drawImage(_avatarUrl, 30, 406, 100, 100);
-  data.ctx.restore();
-
-  // 写入昵称
-  data.ctx.beginPath();
-  data.ctx.setFillStyle("#fff");
-  data.ctx.setFontSize(34);
-
-  let nickName = userInfo.nickName || "匿名";
-  data.ctx.fillText(nickName, 150, 446);
-  data.ctx.save();
-
-  data.ctx.beginPath();
-  data.ctx.setFillStyle("#999999");
-  data.ctx.setFontSize(30);
-  data.ctx.fillText("正在围观讨论这个话题", 150, 486);
-
-  // 写入标题
-  data.ctx.beginPath();
-  data.ctx.setFillStyle("#ffffff");
-  data.ctx.setTextAlign("left");
-  data.ctx.setFontSize(60);
-  let textArr = canvasWorkBreak(550, 60,' ' + data.title);
-  console.log('textArr',textArr);
-
-  let textH = textArr.length * 74;
-  let textMT = (300 - textH) / 2 + 690;
-  console.log("textH", textH, "textMT", textMT);
-
-  // 画左边冒号
-  data.ctx.beginPath()
-  let leftMH = await getImage('https://gcdn.playonwechat.com/nvzhu/left-maohao.png');
-  data.ctx.drawImage(leftMH, 30+100, textMT-80, 48,34)
-
-  
-  for (let i = 0; i < textArr.length; i++) {
-    if(i===0){
-      data.ctx.fillText(textArr[i], 66 + 120, textMT + i * 74);
-    }else{
-      data.ctx.fillText(textArr[i], 66, textMT + i * 74);
-    }
-  }
-
-  let lastItemLen = textArr[textArr.length-1].length;
-  console.log('lastItemLen', lastItemLen)
-
-  // 画右边冒号
-  data.ctx.beginPath()
-  let leftRH = await getImage('https://gcdn.playonwechat.com/nvzhu/right-maohao.png');
-  // if(textArr.length===1){
-  //   data.ctx.drawImage(leftRH, 30 + lastItemLen*60 + 170, 600 + textArr.length * 90 + 40, 48,34)
-  // }else{
-    data.ctx.drawImage(leftRH, 30 + lastItemLen*60 + 80, 600 + textArr.length * 90 + 20, 48,34)
-  // }
-  
-
-  // 画二维码
-  data.ctx.beginPath();
-  // let qr_code = "https://gcdn.playonwechat.com/nvzhu/qr-code.jpg";
-  let qr_code = data.qrcodePath;
-  let applet_qrcode = await getImage(qr_code);
-  data.ctx.drawImage(applet_qrcode, 52, 1104, 200, 200);
-  data.ctx.draw();
-
-  wx.canvasToTempFilePath({
-    canvasId: "mycanvas",
-    success(res) {
-      console.log("导出图片", res);
-      let image = res.tempFilePath;
-      saveImageToPhotosAlbum(image, getUserSetting(image));
-      data.that.popup = false;
-    },
-    fail(res) {
-      console.log("失败", res);
-      tips.success("保存失败");
-      data.that.popup = false;
-    },
-    complete() {
-      wx.showTabBar();
-      wx.hideLoading();
-      data.that.inputShow = true;
-    }
-  });
-}
-
 // 提交formid
-
 async function updateFormId(form_id=''){
    let form = await wxRequest(api.saveFormId,{formid:form_id},'post');
    return form;
@@ -362,6 +257,37 @@ function commentUnique(array) {
   })
 }
 
+// 上传图片到七牛
+async function upLoadImageQiNiu(imageArr) {
+  let upArr = [];
+  let len = imageArr.length;
+  let QiNiuToken = await getQiNiuToken();
+  let _qiniu_token = QiNiuToken.upload_token;
+  return new Promise((resolve,reject)=>{
+    for (let i = 0; i < len; i++) {
+    qiniuUploader.upload(imageArr[i], (res) => {
+        upArr.push('https://gcdn.playonwechat.com' + res.imageURL);
+        resolve(upArr);
+        wx.hideLoading();
+      }, (error) => {
+        console.log('error: ' + error);
+        wx.hideLoading();
+      }, {
+          region: 'SCN',
+          uptoken: _qiniu_token,
+          uptokenFunc: function () {
+            return '[yourTokenString]';
+          }
+        }, (res) => {
+          console.log('上传进度', res.progress)
+          console.log('已经上传的数据长度', res.totalBytesSent)
+          console.log('预期需要上传的数据总长度', res.totalBytesExpectedToSend)
+        });
+    }
+  })
+  
+}
+
 
 export default {
   formatTime,
@@ -373,12 +299,12 @@ export default {
   saveImageToPhotosAlbum,
   getUserSetting,
   shareTime,
-  userDownloadPoster,
   updateFormId,
   getPoster,
   getQueryString,
   formatRemainTime,
   getQiNiuToken,
   unique,
-  commentUnique
+  commentUnique,
+  upLoadImageQiNiu
 };

@@ -80,7 +80,7 @@
 
           <view class="article-info">
               <view class="info-item brower"><text>阅读</text>{{Article_readtimes}}</view>
-              <!-- <view class="info-item comment">{{Article_comments}}</view> -->
+              <view class="comment" wx:if="{{show_input_2}}">官方粉丝福利群，点击<button open-type="contact">回复1进群</button></view>
           </view>
         </view>
 
@@ -189,6 +189,7 @@
               <view class="commentsTxt" 
                     wx:else 
                     @tap="followCommentComment({{comm.id}}, {{cidx}}, {{comm.user_id}}, '最新评论一级', {{comm.nickName}}, {{comm.comment}})">{{comm.comment}}</view>
+                    <!-- style="border:1px solid red" -->
               <view class="comm-image">
                  <view class="c-image" 
                        wx:for="{{comm.image}}" 
@@ -267,15 +268,19 @@
               </button>
 
                 <view class="talker" 
-                      wx:else
-                      @tap="followFollowComment({{follow.user_id}}, {{comm.id}}, {{fidx}}, {{cidx}}, '精彩评论二级', {{follow.nickName}},{{follow.follow_comment}})">回复
-                      <text>@{{follow.renickName}}：</text>{{follow.follow_comment}}
+                      wx:else>回复
+                      <text>@{{follow.renickName}}：</text>
+                      <text @tap="followFollowComment({{follow.user_id}}, {{comm.id}}, {{fidx}}, {{cidx}}, '精彩评论二级', {{follow.nickName}},{{follow.follow_comment}})"  style="color:#333">{{follow.follow_comment}}</text>
                       <view class="f-image">
                          <view class="f-img" 
                                wx:for="{{follow.image}}" 
                                wx:key="{{index}}"
                                wx:for-item="simage">
-                           <image src="{{simage}}" mode="widthFix"/>
+                           <image src="{{simage}}" 
+                                  mode="widthFix" 
+                                  data-arr="{{follow.image}}"
+                                  data-idx="{{fidx}}"
+                                  @tap="prevImage"/>
                          </view>
                       </view>
                 </view>
@@ -466,15 +471,15 @@
                         <text>@{{follow.renickName}}：</text>{{follow.follow_comment}}
                     </button>
                     <view class="talker"
-                        wx:else
-                        @tap="followFollowComment({{follow.user_id}}, {{comm.id}}, {{fidx}}, {{cidx}}, '最新评论二级', {{follow.nickName}},{{follow.follow_comment}})">回复
-                        <text>@{{follow.renickName}}：</text>{{follow.follow_comment}}
+                        wx:else>回复
+                        <text>@{{follow.renickName}}：</text>
+                        <text @tap="followFollowComment({{follow.user_id}}, {{comm.id}}, {{fidx}}, {{cidx}}, '最新评论二级', {{follow.nickName}},{{follow.follow_comment}})" style="color:#333">{{follow.follow_comment}}</text>
                           <view class="f-image">
                               <view class="f-img" 
                                     wx:for="{{follow.image}}" 
                                     wx:key="{{index}}"
                                     wx:for-index="fidx"
-                                    wx:for-item="simage">
+                                    wx:for-item="simage">111111111111111111111111111111
                                 <image src="{{simage}}" 
                                         mode="widthFix" 
                                         data-arr="{{follow.image}}"
@@ -506,7 +511,7 @@
 
    <block>
 
-    <view class="botm-bar" wx:if="{{is_wechat}}">
+    <view class="botm-bar" wx:if="{{show_input_2}}">
       <block>
         <view class="is_userinfo">
           <button class="btn-input" wx:if="{{is_accredit=='1'}}" @tap="writeComment">评论有赏...</button>
@@ -549,7 +554,7 @@
   </form>
 
   <!-- 回复1入群 -->
-  <button open-type="contact" class="join_group" wx:if="{{is_wechat}}"></button>
+  <!-- <button open-type="contact" class="join_group" wx:if="{{is_wechat}}"></button> -->
 
 <view class="zhanwei" style="width:500rpx;height:150rpx;"></view>
 
@@ -724,7 +729,7 @@ export default class Detail extends wepy.page {
         active: false
       }],   
     
-    is_wechat: 0                     // 是否显示入群
+    show_input_2: 0                     // 是否显示入群
 
   };
 
@@ -791,7 +796,7 @@ export default class Detail extends wepy.page {
     // 这里数据字节过大，把数据拆分分次传递
     let _page_data = detail.data.data;
     this.is_story = _page_data.is_story;
-    this.is_wechat = _page_data.is_wechat;
+    this.show_input_2 = _page_data.show_input_2;
     let voteList = _page_data.votedata;
     if(voteList){
       // 是否存在投票
@@ -1225,6 +1230,7 @@ export default class Detail extends wepy.page {
     },
     // 评论预览图片
     prevImage(e){
+      console.log('预览图片')
       console.log(e.currentTarget.dataset);
       let dataset = e.currentTarget.dataset;
       wx.previewImage({
@@ -2292,6 +2298,7 @@ page {
 // 分享
 .article-info {
   display: flex;
+  justify-content:space-between;
   .info-item {
     min-width: 150rpx;
     display: flex;
@@ -2299,6 +2306,26 @@ page {
     position: relative;
     color: #999;
     font-size: 28rpx;
+  }
+  .comment{
+    color: #333;
+    font-size: 24rpx;
+    display: flex;
+    align-items: center;
+    margin-left: 40rpx;
+    button{
+      display: inline-block;
+      padding: 0 10rpx;
+      margin: 0;
+      font-size: 24rpx;
+      background: #ff9800;
+      color: #fff;
+      border-radius: 4rpx;
+      height: 40rpx;
+      line-height: 40rpx;
+      margin-left: 10rpx;
+      box-shadow: 0 0 6rpx rgba(0,0,0,.5);
+    }
   }
   text{
     display: inline-block;

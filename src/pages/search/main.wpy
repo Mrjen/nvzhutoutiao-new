@@ -232,13 +232,6 @@ export default class search extends wepy.page {
       'downloadPoster':()=>{
          console.log('下载海报');
          utils.getPoster(this.ArticleId)
-        //  const ctx = wx.createCanvasContext('mycanvas');
-        //  utils.userDownloadPoster({
-        //     ctx:ctx,
-        //     title:this.ArticleTtictle,
-        //     that:this,
-        //     qrcodePath: this.shareQrcode
-        // })
       }
   }
 

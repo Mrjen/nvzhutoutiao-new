@@ -1,21 +1,27 @@
 <template>
 <view class="address-manage">
   <view class="addr-main" wx:if="{{ShowAddressList}}">
+    <view wx:if="{{AddressList.length>0}}">
       <repeat for="{{AddressList}}" key="index" index="index" item="item">
-        <addressItem :item.sync="item" 
-           @selectAddress.user="selectAddress">
-           <view slot="edit" 
-                 class="edit-adress" 
-                 data-id="{{item.id}}" 
-                 data-province="{{item.province}}"
-                 data-city="{{item.city}}"
-                 data-district="{{item.district}}"
-                 data-phone="{{item.phone}}"
-                 data-detail="{{item.detail_addr}}"
-                 data-name="{{item.name}}"
-                 @tap="EditAddress"></view>
-        </addressItem>
+        <view class="addr-item">
+
+          <addressItem :item.sync="item" 
+            @selectAddress.user="selectAddress">
+            <view slot="edit" 
+                  class="edit-adress" 
+                  data-id="{{item.id}}" 
+                  data-province="{{item.province}}"
+                  data-city="{{item.city}}"
+                  data-district="{{item.district}}"
+                  data-phone="{{item.phone}}"
+                  data-detail="{{item.detail_addr}}"
+                  data-name="{{item.name}}"
+                  @tap="EditAddress"></view>
+          </addressItem>
+        </view>
       </repeat>
+    </view>
+    <view wx:else style="width:750rpx;height:500rpx;line-height:500rpx;text-align:center;background:#fff;margin-top:20rpx;">暂无记录</view>
     
     <view class="add-address" @tap="AddNewAddress">
       <view class="plus"></view>新建地址
@@ -82,6 +88,8 @@ export default class addressManage extends wepy.page  {
     pickerActive: false,
     setDefault: false,
     AddressList: [],                    // 地址列表
+    pid: '',                            // 商品id
+    from: '',                           // 页面来源
 
     // 地址信息
     name: '',                           // 姓名
@@ -111,16 +119,24 @@ export default class addressManage extends wepy.page  {
   }
 
   onLoad(options){
-    if(options.from==='address'){
-        this.ShowAddressList = !this.ShowAddressList;
-        this.$apply();
+    console.log(options)
+    this.pid = options.pid;
+    this.$apply();
+    if(options.from==='myaddress'){
+      this.from = options.from;
     }
+    // if(options.from==='address'){
+    //     this.ShowAddressList = !this.ShowAddressList;
+    //     this.$apply();
+    // }
   }
 
   methods = {
     // 选择地址
     selectAddress(id){
-      console.log('地址id', id)
+      console.log('地址id', id);
+      if(this.from==='myaddress') return;
+      wx.navigateTo({url:`../exchangeType/main?aid=${id}&pid=${this.pid}&type=product`})
     },
     // 编辑地址
     EditAddress(e){
@@ -137,6 +153,11 @@ export default class addressManage extends wepy.page  {
     },
     // 新建地址
     AddNewAddress(){
+      // wx.chooseAddress({
+      //   success(res){
+      //     console.log(res)
+      //   }
+      // })
       this.ShowAddressList = !this.ShowAddressList;
       this.$apply();
     },
@@ -182,6 +203,7 @@ export default class addressManage extends wepy.page  {
        if(json.data.code===api.STATUS){
           tips.success('保存成功')
           this.ShowAddressList = !this.ShowAddressList;
+          this.AddressList = json.data.data.list;
           this.addressType = 'create';
           this.$apply();
        }
@@ -238,6 +260,8 @@ export default class addressManage extends wepy.page  {
   left: 0;
   top: 20rpx;
 }
+
+
 
 .edit-adress{
   width: 44rpx;

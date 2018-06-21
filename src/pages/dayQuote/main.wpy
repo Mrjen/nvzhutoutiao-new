@@ -14,7 +14,9 @@
              </view>
           </view>
         </view>
-        <navigator class="submit" url="../details/main?id=1348">提交物语</navigator>
+        <navigator class="submit submit1" url="../details/main?id=1348">提交物语</navigator>
+
+        <navigator class="submit submit2" url="../EditDayQuote/main">自定义物语</navigator>
      </view>
 
      <action-sheet hidden="{{actionSheetHidden}}" catchchange="shareOpation">
@@ -45,6 +47,7 @@ export default class dayQuote extends wepy.page{
     actionSheetHidden: true,               // 分享给朋友弹层
     quoteList: '',                         // 每日物语列表
     currentQuote: '',                      // 今日物语
+    qrocdeList:[],                         // 带二维码的图
     showHome: false                        // 是否显示返回首页
   }
 
@@ -66,7 +69,7 @@ export default class dayQuote extends wepy.page{
     async downloadPoster(){
       this.actionSheetHidden = !this.actionSheetHidden;
       this.$apply();
-      let url = await utils.getImage(this.currentQuote.pic);
+      let url = await utils.getImage(this.currentQuote.qrpic);
       await utils.saveImageToPhotosAlbum(url);
 
       let quoteList = this.quoteList;
@@ -77,9 +80,7 @@ export default class dayQuote extends wepy.page{
     goHomego(e) {
        let formId = e.detail.formId;
        this.saveFormId(formId)
-        wx.switchTab({
-            url: '../index/main'
-        });
+        wx.switchTab({url: '../index/main'});
         wxRequest(api.clickbutton,{type:'index'},'POST');
     },
   }
@@ -104,11 +105,13 @@ export default class dayQuote extends wepy.page{
      }
       let quoteList = await this.getDayQuote(1);
       let _quoteList = [...quoteList];
+      let qrocdeList = JSON.parse(JSON.stringify(_quoteList));
+      console.log('qrocdeList', qrocdeList)
       this.currentQuote = _quoteList[0].list[0];
       quoteList[0].list.shift();
-      for(let i=0,len=quoteList.length;i<len;i++){
+      for(let i=0,len = quoteList.length;i<len;i++){
         quoteList[i].imageArr=[];
-        for(let j=0,leng=quoteList[i].list.length;j<leng;j++){
+        for(let j = 0,leng = quoteList[i].list.length; j<leng; j++){
            quoteList[i].imageArr.push(quoteList[i].list[j].pic);
         }
       }
@@ -131,8 +134,8 @@ export default class dayQuote extends wepy.page{
      let id = this.currentQuote.id;
      wxRequest(api.statisticsstroy,{id:id, type:'share'},'POST')
      return {
-       title: `${nickName}送你一段今日最佳物语，请查收！`,
-       path: '/pages/dayQuote/main?show_home=1'
+        title: `${nickName}送你一段今日最佳物语，请查收！`,
+        path: '/pages/dayQuote/main?show_home=1'
      }
   }
 
@@ -191,7 +194,11 @@ export default class dayQuote extends wepy.page{
   right: 40rpx;
   color: #647ffb;
   font-size: 26rpx;
-  top: 80rpx;
+  top: 60rpx;
+}
+
+.submit2{
+  top: 100rpx;
 }
 
 .item-main{
