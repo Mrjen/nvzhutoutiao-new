@@ -80,7 +80,7 @@
 
           <view class="article-info">
               <view class="info-item brower"><text>阅读</text>{{Article_readtimes}}</view>
-              <view class="comment" wx:if="{{show_input_1}}">官方粉丝福利群，点击<button open-type="contact">回复1进群</button></view>
+              <view class="comment" wx:if="{{show_input_2}}">官方粉丝福利群，点击<button open-type="contact">回复1进群</button></view>
           </view>
         </view>
 
@@ -511,7 +511,7 @@
 
    <block>
 
-    <view class="botm-bar" wx:if="{{show_input_1}}">
+    <view class="botm-bar" wx:if="{{show_input_2}}">
       <block>
         <view class="is_userinfo">
           <button class="btn-input" wx:if="{{is_accredit=='1'}}" @tap="writeComment">评论有赏...</button>
@@ -729,7 +729,7 @@ export default class Detail extends wepy.page {
         active: false
       }],   
     
-    show_input_1: 0                     // 是否显示入群
+    show_input_2: 0                     // 是否显示入群
 
   };
 
@@ -796,7 +796,7 @@ export default class Detail extends wepy.page {
     // 这里数据字节过大，把数据拆分分次传递
     let _page_data = detail.data.data;
     this.is_story = _page_data.is_story;
-    this.show_input_1 = _page_data.show_input_1;
+    this.show_input_2 = _page_data.show_input_2;
     let voteList = _page_data.votedata;
     if(voteList){
       // 是否存在投票

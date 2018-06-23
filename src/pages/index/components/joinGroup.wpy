@@ -1,0 +1,176 @@
+<template>
+  <view class="join">
+     <view class="main">
+         <view class="persion-list">
+             <view wx:for="{{persionList}}" 
+                   wx:key="{{index}}" 
+                   class="p-item">
+                <block wx:if="{{item.avatarUrl}}">
+                   <image class="avatar" src="{{item.avatarUrl}}"/>
+                   <view class="tag">已助力</view> 
+                </block>
+                <block wx:else>
+                    <view class="no-avatar"></view>
+                </block>
+             </view>
+         </view>
+         <view class="excess-time">剩余<view class="min time">25</view><text>分</text><view class="second time">54</view>秒失效</view>
+         <form>
+            <button open-type="share" class="form-btn" data-type="redpack">邀请好友助力</button>
+            <button open-type="getUserInfo" lang="zh_CN"  class="form-btn">没有授权</button>
+            <button class="form-btn">给TA助力</button>
+            <button class="has-join">已助力</button>
+         </form>
+     </view>
+     <view class="close"></view>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+export default class joinGroup extends wepy.component{
+  data={}
+  props={
+    persionList:{
+       type: Object,
+       default:[{
+           id: 1,
+           avatarUrl:'http://iph.href.lu/150x150',
+           text: '已助力'
+       },{
+           id: 2,
+           avatarUrl:'http://iph.href.lu/150x150',
+           text: '已助力'
+       },{
+           id: 3,
+           avatarUrl:'',
+           text: '已助力'
+       }]
+    }
+  }
+}
+</script>
+
+<style lang="less" scoped>
+.join{
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, .5);
+    .main{
+       width: 568rpx;
+       height: 788rpx;
+       background-image: url('https://gcdn.playonwechat.com/nvzhu/repack/group-bg.png');
+       background-size: 100% 100%;
+    }
+    .avatar{
+        width: 86rpx;
+        height: 86rpx;
+        border-radius: 50%;
+        position: relative;
+    }
+    .no-avatar{
+        width: 86rpx;
+        height: 86rpx;
+        border-radius: 50%;
+        border: 1px dashed #e45e48;
+        position: relative;
+    }
+    .no-avatar::before{
+        content: '';
+        display: block;
+        position: absolute;
+        width: 16px;
+        border-bottom: 2px solid #e45e48;
+        left: 50%;
+        top: 50%;
+        margin-left: -8px;
+        margin-top: -1px;
+    }
+    .no-avatar::after{
+        content: '';
+        display: block;
+        position: absolute;
+        height: 16px;
+        border-right: 2px solid #e45e48;
+        left: 50%;
+        top: 50%;
+        margin-top: -8px;
+        margin-left: -1px;
+    }
+    .tag{
+      width: 90rpx;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20rpx;
+      background-color: #f1a72a;
+      color: #fff;
+      border:1px solid #fff;
+      border-radius: 20rpx;
+      margin-top: -30rpx;
+      position: relative;
+      z-index: 2;
+    }
+    .persion-list{
+        display: flex;
+        width: 332rpx;
+        margin: 326rpx auto 50rpx auto;
+        justify-content: space-between;
+    }
+    .excess-time{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22rpx;
+        margin-bottom: 54rpx;
+        text{
+            color: #e45e48;
+        }
+        .time{
+          display: inline-block;
+          width: 40rpx;
+          height: 40rpx;
+          margin:0 10rpx;
+          text-align: center;
+          line-height: 40rpx;
+          font-size: 22rpx;
+          background: #e45e48;
+          color: #fff;
+          border-radius: 4rpx;
+        }
+    }
+    .form-btn{
+       width: 450rpx;
+       height: 66rpx;
+       background: #e45e48;
+       color: #fff;
+       display: flex;
+       justify-content: center;
+       align-items: center;
+       border-radius: 50rpx;
+       margin: 0 auto;
+    }
+    .has-join{
+       width: 450rpx;
+       height: 66rpx;
+       background: transparent;
+       border:1px solid #999;
+       color: #999;
+       border-radius: 50rpx;
+       line-height: 66rpx;
+    }
+    .close{
+        width: 50rpx;
+        height: 50rpx;
+        margin-top: 30rpx;
+        background: red;
+    }
+}
+</style>

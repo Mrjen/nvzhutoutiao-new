@@ -1,0 +1,82 @@
+<template>
+<view class="redpack-open">
+   <view class="main">
+     <view class="title"></view>
+     <view class="money">
+         <text>5.2</text>元
+     </view>
+     <view class="money-tips">“萤火虫亮了>>我的>>我的钱包”提现</view>
+     <view class="get-next"></view>
+   </view>
+   <view class="close"></view>
+</view>
+</template>
+
+<script>
+import wepy from 'wepy'
+export default class redPackOpen extends wepy.component{
+
+}
+</script>
+
+<style lang="less" scoped>
+.redpack-open{
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, .5);
+    .main{
+      width: 514rpx;
+      height: 624rpx;
+      background-image: url('https://gcdn.playonwechat.com/nvzhu/repack/red-pack-open-bg.png');
+      background-size: 100%;
+      background-repeat: no-repeat;
+    }
+    .title{
+      width: 216rpx;
+      height: 89rpx;
+      background-image: url('https://gcdn.playonwechat.com/nvzhu/repack/red-pack-open-text.png');
+      background-size: 100%;
+      margin: 134rpx auto 0 auto;
+    }
+    .money-tips{
+        font-size: 20rpx;
+        text-align: center;
+        color: #d92c2b;
+        margin:10rpx auto 108rpx auto;
+    }
+    .get-next{
+        width: 318rpx;
+        height: 74rpx;
+        margin:0 auto;
+        background-image: url('https://gcdn.playonwechat.com/nvzhu/repack/red-pack-open-btn.png');
+        background-size: 100%;
+    }
+    .money{
+      width: 100%;
+      height: 78rpx;
+      line-height: 1;
+      text-align: center;
+      color: #d92c2b;
+      margin: 36rpx 0 0 0;
+      text{
+        font-size: 78rpx; 
+        font-weight: bold;
+        margin-right: 4rpx;  
+      }
+      
+    }
+    .close{
+        width: 50rpx;
+        height: 50rpx;
+        margin-top: 30rpx;
+        background: red;
+    }
+}
+</style>

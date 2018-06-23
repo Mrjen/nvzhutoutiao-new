@@ -23,7 +23,7 @@
                   placeholder="请输入物语...(50字内)"></textarea>
     </view>
     <view class="author">
-        <input type="text" placeholder="请输入作者...(选填)" 
+        <input type="text" placeholder="请输入作者...(选填)" value="{{author}}"
         placeholder-style="color:#dbdbdb" @input="inputAuthor" maxlength="8"/>
     </view>
 

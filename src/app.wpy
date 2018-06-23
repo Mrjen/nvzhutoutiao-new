@@ -132,6 +132,7 @@ export default class extends wepy.app {
   }
 
   ApplyUpdate(){
+    if(!wx.canIUse('getUpdateManager')) return;
     const updateManager = wx.getUpdateManager()
     updateManager.onCheckForUpdate(function (res) {
       // 请求完新版本信息的回调

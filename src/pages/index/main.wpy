@@ -98,14 +98,19 @@
                :Experence.sync="toastJingyan" 
                :toastShow.sync="toastShow"></myToast>
 
-      <!-- 签到 -->
-      <!-- <view class="to_sign" wx:if="{{showSignIcon}}" @tap="toSign">
-         <view class="close-sign" catchtap="closeSign"></view>
-      </view> -->
-      
+
       <!-- 签到弹层 -->
-      <check></check>
-     
+      <!-- <check></check> -->
+
+      <!-- 红包未拆开 -->
+      <!-- <redPack></redPack> -->
+
+      <!-- 红包打开 -->
+      <!-- <redPackOpen></redPackOpen> -->
+      
+      <!-- 红包组团中 -->
+      <!-- <joinGrop></joinGrop> -->
+
 
       <view class="sign_pop" wx:if="{{showSignIcon}}">
          <view class="main">
@@ -127,6 +132,9 @@ import utils from '../../utils/utils';
 import userAuth from '../../utils/userMethod/userAuth.js';
 import myToast from '../../components/myToast';
 import check from './components/check';
+import redPack from './components/redpack';
+import redPackOpen from './components/redpackOpen';
+import joinGrop from './components/joinGroup';
 
 export default class Index extends wepy.page {
   config = {
@@ -156,7 +164,10 @@ export default class Index extends wepy.page {
 
   components = {
     myToast,
-    check
+    check,
+    redPack,
+    redPackOpen,
+    joinGrop
   };
   // 获取首页数据
   async getHomeData(data = {}) {
@@ -230,12 +241,22 @@ export default class Index extends wepy.page {
   }
 
   // 分享
-  onShareAppMessage(res) {
+  onShareAppMessage(e) {
     let that = this;
-    return {
-      title: '热门的女性话题都在这里',
-      path: '/pages/index/main'
-    };
+    let dataset = e.target.dataset;
+    if(dataset.type==='redpack'){
+       return {
+          title:'@你，只差一个助力就能领红包，拜托帮助力一下！',
+          path: '/pages/index/main',
+          imageUrl: 'https://gcdn.playonwechat.com/nvzhu/repack/share-poster.jpg'
+       }
+    }else{
+      return {
+        title: '热门的女性话题都在这里',
+        path: '/pages/index/main'
+      };
+    }
+    
   }
 
   async onPullDownRefresh() {
