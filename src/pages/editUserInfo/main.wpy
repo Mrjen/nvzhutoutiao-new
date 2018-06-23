@@ -67,7 +67,7 @@ export default class editUserInfo extends wepy.page {
     nickName:''
   }
 
-  async onLoad() {
+  async onLoad(options) {
     let arr = new Array(0);
     for (let i = 0, len = 100; i < len; i++) {
       arr.push(i)
@@ -93,6 +93,12 @@ export default class editUserInfo extends wepy.page {
         console.log('保密')
       }
     }
+    
+    if(options.avatar){
+       let userInfo = this.userInfo;
+       userInfo.avatarUrl = options.avatar;
+    }
+
     this.$apply()
   }
   onShow() {
@@ -143,8 +149,9 @@ export default class editUserInfo extends wepy.page {
           success(res) {
             var filePath = res.tempFilePaths[0];
             wx.navigateTo({
-              url:`../wxCropper/wxCropper?url=${filePath}`
+              url:`../cropper/main?cover=${filePath}&w=300&h=300&type=avatar`
             })
+
             // qiniuUploader.upload(filePath, (res) => {
             //   that.imageURL = 'https://gcdn.playonwechat.com' + res.imageURL;
             //   that.userInfo.avatarUrl = that.imageURL;

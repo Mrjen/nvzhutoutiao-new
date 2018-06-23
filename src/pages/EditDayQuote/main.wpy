@@ -15,22 +15,25 @@
        
     </view>
     <view class="dayquote">
-        <textarea maxlength="30"
+        <textarea maxlength="50"
                   @input="inputQuote"
                   value="{{quote}}"
-                  placeholder="请输入物语..."></textarea>
+                  show-confirm-bar="{{0}}"
+                  placeholder-style="color:#dbdbdb"
+                  placeholder="请输入物语...(50字内)"></textarea>
     </view>
     <view class="author">
-        <input type="text" placeholder="请输入作者...(选填)" @input="inputAuthor" maxlength="8"/>
+        <input type="text" placeholder="请输入作者...(选填)" 
+        placeholder-style="color:#dbdbdb" @input="inputAuthor" maxlength="8"/>
     </view>
 
     <view class="tag">
         <radio-group>
             <label class="radio" @tap="showQuoteTag" data-type="show">
-                <radio value="1" checked="{{checkedTag?'':true}}" color="#7c48c6"/><text>显示左上角"每日物语"</text>
+                <radio value="1" checked="{{checkedTag===1?true:false}}" color="#7c48c6"/><text>显示左上角"每日物语"</text>
             </label>
             <label class="radio" @tap="showQuoteTag" data-type="logo">
-                <radio value="1" checked="{{checkedTag?'checked':''}}" color="#7c48c6" />
+                <radio value="1" checked="{{checkedTag===2?true:''}}" color="#7c48c6" />
                 <text>使用自有logo替代"每日物语"</text>
                 <block>
                     <view wx:if="{{logo}}" class="haslogo">
@@ -47,7 +50,7 @@
     <view class="typesetting">
         <radio-group>
             <label class="radio" @tap="quoteAlignTag">
-                <radio value="1" checked="{{quoteAlign?'checked':''}}"  color="#7c48c6"/><text>物语排版局左</text>
+                <radio value="1" checked="{{quoteAlign?'checked':''}}"  color="#7c48c6"/><text>物语排版居左</text>
             </label>
             <label class="radio" @tap="quoteAlignTag">
                 <radio value="1" checked="{{quoteAlign?'':'checked'}}" color="#7c48c6"/><text>物语排版居右</text>
@@ -56,7 +59,8 @@
     </view>
 
     <button class="takeit" @tap="getPoster">生成海报</button>
-     <view style="width:750rpx;height:100rpx;"></view>
+    <view class="set-tips">预览可以直接保存或转发</view>
+     <view style="width:750rpx;height:100rpx;" wx:if="{{cover}}"></view>
  </view>   
 </template>
 
@@ -68,12 +72,13 @@ import utils from '@/utils/utils';
 import tips from '../../utils/tips.js';
 export default class EditDayQuote extends wepy.page{
   data = {
-     checkedTag: 0,                 // 是否显示“今日物语”
+     checkedTag: 1,                 // 是否显示“今日物语”
      showDate: true,                // 是否显示日期
      quoteAlign: 1,                 // 物语对齐方式 默认 左对齐
      cover: '',                     // 物语封面
      logo: '',                      // 物语logo
      quote: '',                     // 物语内容
+     copyQuote:'',
      author: ''                     // 物语作者
   }
   
@@ -98,7 +103,7 @@ export default class EditDayQuote extends wepy.page{
      }
   }
 
-  onShow(){
+  async onShow(){
      if(wx.getStorageSync('dayCover')){
         this.cover = wx.getStorageSync('dayCover');
      }
@@ -107,12 +112,20 @@ export default class EditDayQuote extends wepy.page{
      }
      if(wx.getStorageSync('dayQuote')){
         this.quote = wx.getStorageSync('dayQuote');
+        this.copyQuote = wx.getStorageSync('dayQuote').split('\n').join('|');
      }
      if(wx.getStorageSync('dayAuthor')){
          this.author = wx.getStorageSync('dayAuthor');
      }
      this.$apply();
-     
+     if(!this.logo){
+        let json = await wxRequest(api.getstorylogo,{},'post');
+        if(json.data.code===api.STATUS){
+            console.log(json)
+            this.logo = json.data.data.story_logo;
+            this.$apply();
+        }
+     }
   }
 
   onPullDownRefresh(){
@@ -123,19 +136,36 @@ export default class EditDayQuote extends wepy.page{
     // 选择图片
     upLoadImage(e){
         let dataset = e.currentTarget.dataset;
+        let that = this;
        wx.chooseImage({
             count: 1, 
             sizeType: ['original'],
             sourceType: ['album', 'camera'], 
             success: function (res) {
                 var tempFilePaths = res.tempFilePaths[0];
-                let url = '';
-                if(dataset.type==='cover'){ // 上传封面
-                   url = `${tempFilePaths}&w=688&h=908&type=cover`
-                }else if(dataset.type==='logo'){ // 上传logo
-                   url = `${tempFilePaths}&w=500&h=200&type=logo`
-                }
-                wx.navigateTo({url:`../cropper/main?cover=${url}`})
+                wx.getImageInfo({
+                    src: tempFilePaths,
+                    success: function (res) {
+                        console.log(res.width)
+                        console.log(res.height)
+                        if(res.width/res.height===2.5){
+                            let imageArr = [tempFilePaths];
+                            utils.upLoadImageQiNiu(imageArr).then(res=>{
+                                that.logo = res[0];
+                                that.$apply();
+                            })
+                            return;
+                        }
+                        let url = '';
+                        if(dataset.type==='cover'){ // 上传封面
+                           url = `${tempFilePaths}&w=688&h=908&type=cover`
+                        }else if(dataset.type==='logo'){ // 上传logo
+                           url = `${tempFilePaths}&w=500&h=200&type=logo`
+                        }
+                        wx.navigateTo({url:`../cropper/main?cover=${url}`})
+                    }
+                })
+                
             }
         })
     },
@@ -153,7 +183,9 @@ export default class EditDayQuote extends wepy.page{
     },
     // 输入物语
     inputQuote(e){
-      this.quote = e.detail.value;
+      let quote = e.detail.value;
+      this.quote = quote;
+      this.copyQuote = quote.split('\n').join('|');
       wx.setStorage({key:'dayQuote', data:e.detail.value});
       this.$apply();
     },
@@ -167,9 +199,18 @@ export default class EditDayQuote extends wepy.page{
     showQuoteTag(e){
       let dataset = e.currentTarget.dataset;
       if(dataset.type==='show'){
-          this.checkedTag = 0;
+          if(this.checkedTag===1){
+             this.checkedTag = 0; 
+          }else{
+             this.checkedTag=1;
+          }
+          
       }else if(dataset.type==='logo'){
-          this.checkedTag = 1;
+          if(this.checkedTag===2){
+              this.checkedTag = 0;
+          }else{
+              this.checkedTag = 2;
+          }
       }
       this.$apply();
     },
@@ -191,10 +232,10 @@ export default class EditDayQuote extends wepy.page{
     // 合成海报
     async getPoster(){
       let data = {
-         stroy: this.quote,
+         stroy: this.copyQuote,
          stroyimg: this.cover,
          show_date: this.showDate?1:0,
-         type: this.quoteAlign==='1'?'left':'right'
+         type: this.quoteAlign===1?'left':'right'
       };
       // 检查是否上传封面
       if(!this.cover){
@@ -207,7 +248,7 @@ export default class EditDayQuote extends wepy.page{
           return;
       }
       // 检查是否选中logo
-      if(this.checkedTag===1){
+      if(this.checkedTag===2){
           if(!this.logo){
               tips.alert('请上传logo');
               return;
@@ -218,6 +259,14 @@ export default class EditDayQuote extends wepy.page{
       if(this.author){
           data.author = this.author;
       }   
+
+      if(this.checkedTag===1){
+          data.show_logo = 2;
+      }else if(this.checkedTag===2){
+          data.show_logo = 1;
+      }else{
+          data.show_logo = 3;
+      }
  
     
       let json = await wxRequest(api.imgmerge,data,'POST');
@@ -230,6 +279,8 @@ export default class EditDayQuote extends wepy.page{
       }else{
         tips.alert('生成失败')
       }
+
+      wxRequest(api.clickbutton,{type:'imgmerge'},'POST');
 
     }
 
@@ -308,7 +359,7 @@ export default class EditDayQuote extends wepy.page{
 // 输入框
 .dayquote{
   width: 650rpx;
-  height: 300rpx;
+  height: 200rpx;
   border:1px solid #dfdfdf;
   margin:0 auto 30rpx auto;
   textarea{
@@ -379,11 +430,18 @@ export default class EditDayQuote extends wepy.page{
     }
 }
 
+.set-tips{
+    text-align: center;
+    color: #999;
+    font-size: 26rpx;
+    margin-top: 10rpx;
+}
+
 .takeit{
    width: 650rpx;
    margin: 0 auto;
    background: #7c48c6;
    color: #fff;
-   margin:50rpx auto;
+   margin:50rpx auto 0 auto;
 }
 </style>

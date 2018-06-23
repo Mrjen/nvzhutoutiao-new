@@ -1,9 +1,9 @@
 <template>
 <view>
-<cropper :options.sync="cropperOpt" @beforeImageLoad="bl"></cropper>
+    <cropper :options.sync="cropperOpt" @beforeImageLoad="bl"></cropper>
     <view class="cropper-buttons">
-        <view class="upload" @tap="uploadTap">上传图片</view>
-        <view class="getCropperImage" @tap="getCropperImage">生成图片</view>
+        <view class="upload" @tap="uploadTap">重新选择</view>
+        <view class="getCropperImage" @tap="getCropperImage">确定</view>
     </view>
 </view>
 </template>
@@ -12,18 +12,19 @@
 import wepy from 'wepy';
 import cropper from '@/components/wepy-com-cropper';
 import utils from '@/utils/utils.js';
+import tips from '../../utils/tips.js';
 const device = wx.getSystemInfoSync();
 const dpr = device.pixelRatio;
 const width = device.windowWidth
-const height = device.windowHeight - 50;
+const height = device.windowHeight-50;
 export default class wxcropper extends wepy.page{
   config={
      disableScroll: true
   }
   data={
      cropperOpt: {
-        width,
-        height,
+        width:width,
+        height:height,
         scale: 2.5,
         zoom: 8,
         cut: {
@@ -98,9 +99,14 @@ export default class wxcropper extends wepy.page{
                      url = `../EditDayQuote/main?cover=${upImageArr[0]}&from=copper`
                  }else if(that.options.type==='logo'){
                      url = `../EditDayQuote/main?logo=${upImageArr[0]}&from=copper`
+                 }else if(that.options.type==='avatar'){
+                     url = `../editUserInfo/main?avatar=${upImageArr[0]}`
                  }
                  console.log('url', url)
                  wx.redirectTo({url:url})
+             }).catch(res=>{
+                 wx.hideLoading();
+                 tips.alert('上传失败');
              });
              
           } else {
@@ -115,18 +121,31 @@ export default class wxcropper extends wepy.page{
 <style lang="less" scoped>
 .cropper-buttons{
     display: flex;
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    height: 100rpx;
+    background: transparent;
+    width: 750rpx;
+    border:1px solid transparent;
     .upload{
        flex: 1;
        text-align: center;
        height: 100rpx;
+       background: #fff;
        line-height: 100rpx;
        border-right: 1px solid #eee;
+       z-index: 1000;
+       position: relative;
     }
     .getCropperImage{
         flex: 1;
         text-align: center;
         height: 100rpx;
+        background: #fff;
         line-height: 100rpx;
+        position: relative;
+        z-index: 1000;
     }
 
 }

@@ -50,19 +50,6 @@
         <block wx:for="{{likeList}}" wx:for-index="idx" wx:key="{{idx}}">
             <!-- <likeItem :itemData="item" @toDetail="toLikeItemDetail"></likeItem> -->
              <view class="time">{{item.date}}</view>
-              <!-- <view class="in-item" wx:for="{{item.list}}" wx:for-item="lis" wx:key="{{lis.article_id}}" @tap="toDetail({{lis.article_id}})">
-                <view class="item-left">
-                  <view class="title">{{lis.title}}</view>
-                  <view class="like-list-info">
-                    <view class="info-icon">转发{{lis.sharetimes}}</view>
-                    <view class="info-icon">评论{{lis.commenttimes}}</view>
-                    <view class="info-icon">喜欢{{lis.liketimes}}</view>
-                  </view>
-                </view>
-                <view class="in-right">
-                  <image src="{{lis.cover}}" mode="widthFix"/>
-                </view>
-              </view> -->
                <button class="form-view" formType="submit" wx:for="{{item.list}}" wx:for-item="lis" wx:key="{{lis.article_id}}" @tap="toDetail({{lis.article_id}})">
                 <view class="article-item">
                     <view class="tag">#{{lis.type}}</view>
@@ -203,12 +190,19 @@ export default class otherUserCenter extends wepy.page{
   }
 
   async onReachBottom(){
-    let oldList = this.likeList;
+    console.log('触底了');
+    let oldList = '';
     let newList = await this.getLikeList(this.page,this.user_id, this.currentTab);
-    if(newList){
+    if(this.currentTab==='comment'){
+       oldList = this.commentList;
+       this.commentList = [...oldList,...newList];
+    }else if(this.currentTab==='like'){
+       oldList = this.likeList;
        this.likeList = [...oldList,...newList];
-       this.$apply();
     }
+    this.page = this.page+1;
+    this.$apply();
+  
   }
 
   // 获取列表数据
@@ -375,9 +369,6 @@ export default class otherUserCenter extends wepy.page{
      height: 140rpx;
      flex-direction: column;
      justify-content: space-around;
-     .title{
-       font-size: 28rpx;
-     }
      .like-list-info{
        display: flex;
        justify-content: space-between;
@@ -393,6 +384,10 @@ export default class otherUserCenter extends wepy.page{
      min-height: 100rpx;
      .title{
        margin-bottom: 10rpx;
+       text-overflow: ellipsis;
+       white-space: nowrap;
+       overflow: hidden;
+       max-width: 680rpx;
      }
    }
    .in-right{

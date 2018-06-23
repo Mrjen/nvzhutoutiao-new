@@ -1,0 +1,235 @@
+<template>
+<view class="check">
+  <view class="check-in">
+      <view class="title"></view>
+      <view class="check-text">已累计签到<text>7</text>天</view>
+      <block>
+        <view class="check-tips" wx:if="{{1}}">签到连续签到<text>3天/7天</text>可额外获得大礼包</view>
+        <view class="check-tips" wx:else>恭喜你今天签到获得<text>积分+100</text></view>
+      </block>
+      <view class="check-list">
+         <view wx:for="{{checkList}}" 
+               wx:key="{{index}}" 
+               class="check-item">
+            <view class="main">
+              <view class="normal {{item.active?'active':''}}" wx:if="{{item.gift?0:1}}">
+                <view class="score">+{{item.score}}</view>
+                <view class="score-icon"></view>
+              </view>
+              <view class="gift" wx:if="{{item.gift?1:0}}">
+                <view class="score">+{{item.score}}</view>
+                <view class="score-icon"></view>
+              </view>
+              <view class="day">{{item.text}}</view>
+            </view>
+         </view>
+      </view>
+      <form class="check-form" report-submit="true" bindsubmit="dayCheck">
+         <button class="check-btn" wx:if="{{0}}">立即签到</button>
+         <block wx:else>
+            <button class="check-btn">去兑换礼品</button>
+            <view class="close-sign">进入首页</view>
+         </block>
+         
+      </form>
+  </view>
+</view>   
+</template>
+
+<script>
+import wepy from 'wepy'
+export default class beforeCheck extends wepy.component {
+  data = {
+    checkList:[{
+      id: 1,
+      score: 20,
+      gift: false,
+      text: '第1天',
+      active: true
+    },{
+      id: 2,
+      score: 30,
+      gift: false,
+      text: '第2天',
+      active: false
+    },{
+      id: 3,
+      score: 40,
+      gift: true,
+      text: '第3天',
+      active: false
+    },{
+      id: 4,
+      score: 50,
+      gift: false,
+      text: '第4天',
+      active: false
+    },{
+      id: 5,
+      score: 60,
+      gift: false,
+      text: '第5天',
+      active: false
+    },{
+      id: 6,
+      score: 80,
+      gift: false,
+      text: '第6天',
+      active: false
+    },{
+      id: 7,
+      score: 100,
+      gift: true,
+      text: '第7天',
+      active: false
+    }]
+  }
+}
+</script>
+
+<style lang="less" scoped>
+.check{
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, .5);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  .check-in{
+    width: 514rpx;
+    height: 613rpx;
+    background-image: url('https://gcdn.playonwechat.com/nvzhu/check-bg.png');
+    background-size: 100% 100%;
+    padding: 134rpx 0 0 0;
+  }
+  .title{
+    width: 194rpx;
+    height: 46rpx;
+    background-image: url('https://gcdn.playonwechat.com/nvzhu/checkcheck-text1.png');
+    background-size: 100%;
+    margin:0 auto 26rpx auto;
+  }
+  .check-text{
+    width: 195rpx;
+    height: 40rpx;
+    text-align: center;
+    color: #fff;
+    line-height: 40rpx;
+    background: #222;
+    border-radius: 30rpx;
+    font-size: 18rpx;
+    margin:0 auto 50rpx auto;
+    text{
+      color: #ffcc43;
+      display: inline-block;
+      margin:0 10rpx;
+    }
+  }
+  .check-tips{
+    font-size: 18rpx;
+    color: #666666;
+    text-align: center;
+    margin-bottom: 20rpx;
+    text{
+      font-size: 24rpx;
+      color: #fc8359;
+      display: inline-block;
+      margin: 0 5rpx;
+    }
+  }
+
+  // 连续签到
+  .check-list{
+    padding: 0 18rpx;
+    display: flex;
+    justify-content: space-between;
+    .check-item{
+      display: flex;
+    }
+    .main{
+      display: flex;
+      height: 112rpx;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+    .score{
+      font-size: 18rpx;
+      color: #222222;
+      text-align: center;
+      line-height: 1;
+      padding:18rpx 0 0 0;
+    }
+    .day{
+      font-size: 16rpx;
+      color: rgb(2, 1, 1);
+      text-align: center;
+      margin-top: 10rpx;
+      color: #666;
+    }
+    .normal{
+      width: 62rpx;
+      height: 74rpx;
+      background-color: #edf1f1;
+      border-radius: 14rpx;
+      .score{
+        margin-bottom: 10rpx;
+      }
+      .score-icon{
+        width: 30rpx;
+        height: 23rpx;
+        margin: 0 auto;
+        background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAXCAMAAAAr4Q9YAAAAe1BMVEUAAAD/zEP/v0b/sUr/s0n/sUr/zEP/skn/zEP/sUr/sUr/sUr/sUr/skr/zEP/t0j/zEP/xkT/xEX/sUr/zEP/zEP/yET/sUr/zEP/tEn/sUr/zEP/89//y4b/ul7/2aL/x3z/79X/0JD/6sv/4bf/5sH/vmj/3a3/tVQwigfJAAAAGnRSTlMA6hDtY723Utf35dewpohsZFNGxMCkln1wPVS8ngkAAADaSURBVCjPhZLZDoMgEEVBrVpbu68DCrj//xdWHCguiZ4HEnIymcswBPGCYwLg39+3kDJGw4tHRpx9sKQvpqGfv/R2MMI/U6Z5eMYeYMI+QB+jt7Wu/soGQm0DWLA7ob/0OgGNlPrMs3y4RRTzERJhQaGa/mzLbrgdTfmVpIDUFYDk0qS7oX4SG7tRGdQtGL6oYwIWoQqFnV1zZrUsS85VWZlrEDuNmbOKF5mcVdvejRA1F6KY904n1YvkkcvGMdnk3SRZaDe18cy7fDHz9R/b+O/1bdnetY1N/QFUfzgm1huI7wAAAABJRU5ErkJggg==');
+        background-size: 100%;
+      }
+    }
+    .active {
+      background: #ffca43;
+    }
+    .active .score-icon{
+       width: 24rpx;
+       height: 20rpx;
+       background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAUCAMAAACgaw2xAAAAclBMVEUAAAD///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////9eWEHEAAAAJXRSTlMA+XEG6tCzSyL1mntCEd7d2KQ+OjEcFwPsyL6olIh2amdcUTcq7k+qewAAAJdJREFUGNNtzlkOhCAQRdECbUXFeep5fvvfokKRGJH7QzgJRVGwSMqgdw1eIS8E8A2MabHWHz2BafB9ZkdKXjm4h+dvuK577wXzqXPwv0fmKCvLopiZVQsU2wexZh5z8z5TRNp6rdhlBltCUWPHT+RKL25zab2krU9sqIo9X5sScPVIXk9h91F0KM0AoSnQ7wxJwYbb7roAU1USqe9MBnwAAAAASUVORK5CYII=');
+       background-size: 100%;
+    }
+    .gift{
+      width: 60rpx;
+      height: 86rpx;
+      background-image:url('data:image/png;base64,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');
+      background-size: 100%;
+      .score{
+        color: #fff;
+        margin-top: 18rpx;
+      }
+    }
+    
+  }
+  .check-form{
+    .check-btn{
+      width: 360rpx;
+      height: 64rpx;
+      line-height: 64rpx;
+      border-radius: 32rpx;
+      color: #f27551;
+      font-size: 24rpx;
+      border: solid 1px #f27551;
+      margin: 44rpx auto 0 auto;
+      background: #f8f8f8;
+    }
+    .close-sign{
+      text-align: center;
+      color: #999;
+      margin-top: 10rpx;
+      font-size: 22rpx;
+    }
+  }
+}
+
+
+
+
+</style>

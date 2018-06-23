@@ -31,7 +31,6 @@ export default class extends wepy.app {
       'pages/myWallet/main',
       'pages/shop/main',
       'pages/gradeDetail/main',
-      'pages/wxCropper/wxCropper',
       'pages/exchangeType/main',
       'pages/addressManage/main',
       'pages/inputComment/main',

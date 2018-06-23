@@ -102,9 +102,10 @@
       <!-- <view class="to_sign" wx:if="{{showSignIcon}}" @tap="toSign">
          <view class="close-sign" catchtap="closeSign"></view>
       </view> -->
-
-      <!-- 入群 -->
-      <!-- <button open-type="contact" class="join_group"></button>-->
+      
+      <!-- 签到弹层 -->
+      <check></check>
+     
 
       <view class="sign_pop" wx:if="{{showSignIcon}}">
          <view class="main">
@@ -125,6 +126,7 @@ import api from '../../utils/api.js';
 import utils from '../../utils/utils';
 import userAuth from '../../utils/userMethod/userAuth.js';
 import myToast from '../../components/myToast';
+import check from './components/check';
 
 export default class Index extends wepy.page {
   config = {
@@ -153,7 +155,8 @@ export default class Index extends wepy.page {
   };
 
   components = {
-    myToast
+    myToast,
+    check
   };
   // 获取首页数据
   async getHomeData(data = {}) {
@@ -632,25 +635,9 @@ page {
   bottom: 0;
 }
 
-// 签到图标
-.to_sign{
-  display: block;
-  position: fixed;
-  left: 30rpx;
-  bottom: 80rpx;
-  width: 200rpx;
-  height: 200rpx;
-  background-image:url('http://p766oymet.bkt.clouddn.com/nvzhu/index-sign-icon1.png');
-  background-size: 100% 100%;
-  .close-sign{
-    width: 60rpx;
-    height: 60rpx;
-    position: absolute;
-    right: 0;
-    top: 0;
-  }
-}
 
+
+// 签到图标
 .sign_pop{
   position: fixed;
   left: 0;

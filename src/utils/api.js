@@ -187,6 +187,9 @@ const trace = `${domainUrl}/shop/trace`
 // 自定义每日物语
 const imgmerge = `${domainUrl}/calendar/imgmerge`
 
+// 获取物语logo
+const getstorylogo = `${domainUrl}/calendar/getstorylogo`
+
 export default {
   STATUS,
   domainUrl,
@@ -250,5 +253,6 @@ export default {
   shoporderlist,
   changepost,
   trace,
-  imgmerge
+  imgmerge,
+  getstorylogo
 };
