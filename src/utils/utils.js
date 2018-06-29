@@ -54,7 +54,7 @@ async function getUserInfo() {
 /**
  * 格式化现在距${endTime}的剩余时间
  */
-function formatRemainTime(endTime) {
+function formatRemainTime(endTime, day) {
   var startDate = new Date(); //开始时间
   var endDate = new Date(endTime); //结束时间
   var t = endDate.getTime() - startDate.getTime(); //时间差
@@ -70,8 +70,9 @@ function formatRemainTime(endTime) {
       m = Math.floor(t / 1000 / 60 % 60);
       if(m<10){ m = '0'+ m }
       s = Math.floor(t / 1000 % 60);
-      if(s<10){ s = '0'+s }
+      if(s<10){ s = '0'+ s }
   }
+  if(day) return {h,m,s}
   return d + "天 " + h + ":" + m + ":" + s;
 }
 
@@ -265,9 +266,13 @@ async function upLoadImageQiNiu(imageArr) {
   let _qiniu_token = QiNiuToken.upload_token;
   return new Promise((resolve,reject)=>{
     for (let i = 0; i < len; i++) {
+
     qiniuUploader.upload(imageArr[i], (res) => {
         upArr.push('https://gcdn.playonwechat.com' + res.imageURL);
-        resolve(upArr);
+        if(upArr.length===len){
+          console.log('完成了')
+          resolve(upArr);
+        }
         wx.hideLoading();
       }, (error) => {
         console.log('error: ' + error);
@@ -280,12 +285,39 @@ async function upLoadImageQiNiu(imageArr) {
           }
         }, (res) => {
           console.log('上传进度', res.progress)
-          console.log('已经上传的数据长度', res.totalBytesSent)
-          console.log('预期需要上传的数据总长度', res.totalBytesExpectedToSend)
+          // console.log('已经上传的数据长度', res.totalBytesSent)
+          // console.log('预期需要上传的数据总长度', res.totalBytesExpectedToSend)
         });
     }
   })
   
+}
+
+// 更新小程序
+function ApplyUpdate(){
+  if(!wx.canIUse('getUpdateManager')) return;
+  const updateManager = wx.getUpdateManager()
+  updateManager.onCheckForUpdate(function (res) {
+    // 请求完新版本信息的回调
+    console.log('有没有新版',res.hasUpdate)
+  })
+  updateManager.onUpdateReady(function () {
+    wx.showModal({
+      title: '更新提示',
+      showCancel: false,
+      content: '新版本已经准备好，是否重启应用？',
+      success: function (res) {
+        if (res.confirm) {
+          // 新的版本已经下载好，调用 applyUpdate 应用新版本并重启
+          updateManager.applyUpdate()
+        }
+      }
+    })
+  })
+  updateManager.onUpdateFailed(function () {
+    // 新的版本下载失败
+    console.log('新版下载失败');
+  })
 }
 
 
@@ -306,5 +338,6 @@ export default {
   getQiNiuToken,
   unique,
   commentUnique,
-  upLoadImageQiNiu
+  upLoadImageQiNiu,
+  ApplyUpdate
 };

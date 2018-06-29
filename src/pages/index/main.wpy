@@ -1,20 +1,5 @@
 <template>
   <view class="main">
-    <!-- header -->
-     <!-- <view class="header">
-        <view class="title-nav">
-          <view class="title">
-             每日物语
-            <image mode="widthFix" 
-            src="http://p766oymet.bkt.clouddn.com/nvzhu/nz-index-logo-text.png" style="height:38rpx"/>
-            </view>
-          <navigator class="search" url="../search/main">
-             <view class="search-icon"></view>
-             搜索相关话题
-          </navigator>
-        </view>
-     </view> -->
-
      <!-- 轮播 -->
      <view class="swiper-out">
         <swiper class="swiper" 
@@ -64,6 +49,7 @@
          </navigator>
       </view>
 
+
       <!-- 文章列表 -->
       <view class="article">
           <form report-submit="true"
@@ -90,6 +76,9 @@
                 </view>
              </button>
           </form>
+          <block wx:if="{{loadEnd}}">
+            <Loading></Loading>
+          </block>
       </view>
 
       <!-- 提示弹层 -->
@@ -100,27 +89,53 @@
 
 
       <!-- 签到弹层 -->
-      <!-- <check></check> -->
-
+      <block wx:if="{{show_check===1?1:''}}">
+        <check :continue.sync="continue_sign"
+              :total.sync="total_sign"
+              :checkList.sync="checkList"
+              :todayIsCheck.sync="todayIsCheck"
+              :showCheck.sync="showCheck"
+              :integral.sync="integral"
+              @checkTap.user="checkTap"
+              @getRedPack.user="getRedPack"
+              @closePopup.user="closePopup"></check>
+      </block>
       <!-- 红包未拆开 -->
-      <!-- <redPack></redPack> -->
+      <redPack :redPackIsShow.sync="redPackIsShow"
+               @openRedPack.user="openRedPack"
+               @closePopup.user="closePopup"></redPack>
 
-      <!-- 红包打开 -->
-      <!-- <redPackOpen></redPackOpen> -->
+      <!-- 红包已打开 -->
+      <redPackOpen :redPackIsOpen.sync="redPackIsOpen"
+                   :getMoney.sync="openRedPackMoney"
+                   :isSecondRedPack.sync="isSecondRedPack"
+                   @getNextRedPack.user="getNextRedPack"
+                   @closePopup.user="closePopup"></redPackOpen>
       
       <!-- 红包组团中 -->
-      <!-- <joinGrop></joinGrop> -->
+      <joinGrop :joinGroup.sync="joinGroup"
+                :persionList.sync="persionList"
+                :isSelfRedPack.sync="isSelfRedPack"
+                :hsaIjoin.sync="hsaIjoin"
+                :redPackCountDown.sync="redPackCountDown"
+                :hasIuserInfo.sync="hasIuserInfo"
+                :redpackStatus.sync="redpackStatus"
+                :isHelp.sync="is_help"
+                @helpFriend.user="helpFriend"
+                @createdMySelf.user="createdMySelf"
+                @closePopup.user="closePopup"></joinGrop>
 
+      <!-- 邀请朋友拆红包入口 -->
+      <form report-submit="true" 
+            wx:if="{{showJoinPopup}}"
+            bindsubmit="openJoinGroup">
+         <button formType="submit" class="open-join">
+            <view class="count-down">
+              <text class="time-text">{{redPackCountDown.h}}</text>:<text class="time-text">{{redPackCountDown.m}}</text>:<text class="time-text">{{redPackCountDown.s}}</text>
+            </view>
+         </button>
+      </form>
 
-      <view class="sign_pop" wx:if="{{showSignIcon}}">
-         <view class="main">
-            <view class="close" catchtap="closeSign"></view>
-            <view class="jifen jifen1"><text>+2 </text>经验值</view>
-            <view class="jifen"><text>+20 </text>积分</view>
-            <view class="to_sign_btn" @tap="toSign"></view>
-         </view>
-      </view>
- 
   </view>
 </template>
 
@@ -135,6 +150,10 @@ import check from './components/check';
 import redPack from './components/redpack';
 import redPackOpen from './components/redpackOpen';
 import joinGrop from './components/joinGroup';
+import tips from '../../utils/tips.js';
+import Loading from '../../components/loading';
+
+const app = getApp();
 
 export default class Index extends wepy.page {
   config = {
@@ -143,15 +162,13 @@ export default class Index extends wepy.page {
 
   data = {
     page: 2,
-    loadMore: true,
-    requestEnd: true,
+    loadEnd: false,                         // 请求完成
     bannerData: [],
-    typeNav: [], // 类型标签
-    currentTypeId: '', // 当前所在标签id
-    article_list: [], // 文章列表
+    typeNav: [],                           // 类型标签
+    currentTypeId: '',                     // 当前所在标签id
+    article_list: [],                      // 文章列表
     loadCount: 1,
-
-    showSignIcon: false,   // 是否显示签到图标
+    pagefrom: '',                          // 页面来源 
 
     token: '',
 
@@ -159,7 +176,45 @@ export default class Index extends wepy.page {
     toastTitle: '',
     toastJiFen: '',
     toastJingyan: '',
-    toastShow: false
+    toastShow: false,
+
+    // 签到                      
+    show_check: 0,                         // 是否显示签到弹层
+    continue_sign: 0,                      // 连续签到天数
+    total_sign: 0,                         // 总签到天数
+    todayIsCheck: 0,                       // 今天是否已签到
+    showCheck: false,                      // 是否显示签到弹层
+    redPackIsOpen: false,                  // 签到红包被拆开
+    redPackIsShow: false,                  // 是否显示未拆开的红包
+    openRedPackMoney: 0,                   // 拆红包的金额
+    redpackType: 'common',                 // 红包类型 common/签到红包   task/任务红包
+    joinGroup: false,                      // 拼团红包
+    isSelfRedPack: 0,                      // 是否是我自己组团的红包
+    isSecondRedPack: true,                 // 是否显示再拆一个红包按钮
+    hsaIjoin: 0,                           // 我是否已助力
+    is_help: 0,                            // 我今天是否已助力过
+    hasIuserInfo:{},                       // 我的信息
+    checkList: [],                         // 签到列表
+    integral: 0,                           // 签到获得的积分
+    redPacketInfo: {},                     // 我的组团红包信息 
+    redpackStatus: '',                     // 红包状态
+    showJoinPopup: 0,                      // 是否显示红包入口
+    redPackCountDown: {},                  // 红包图标倒计时
+    redPackInCountDown: {},                // 红包助力弹层倒计时  
+    packet_task_id: '',                    // 被助力的红包id
+    persionList: [{                        // 助力列表
+        id: '',
+        avatarUrl:'',
+        text: '已助力'
+    },{
+        id: '',
+        avatarUrl:'',
+        text: '已助力'
+    },{
+        id: '',
+        avatarUrl:'',
+        text: '已助力'
+    }]                       
   };
 
   components = {
@@ -167,20 +222,18 @@ export default class Index extends wepy.page {
     check,
     redPack,
     redPackOpen,
-    joinGrop
+    joinGrop,
+    Loading
   };
+
   // 获取首页数据
   async getHomeData(data = {}) {
-    let json = await wxRequest(
-      api.articleindex,
-      {
+    let json = await wxRequest(api.articleindex,{
         page: data.page,
         page_size: 10,
         type_id: data.type_id,
         slide_view: data.slide_view
-      },
-      'POST'
-    );
+      },'POST');
     if (json.data.code === api.STATUS) {
       return json.data.data;
     }
@@ -188,6 +241,7 @@ export default class Index extends wepy.page {
 
   async onLoad(options) {
     let that = this;
+    console.log('首页数据',options)
     const code = await utils.getToken();
     wx.setStorage({ key: 'token', data: code.data.data.token });
     this.token = code.data.data.token;
@@ -196,7 +250,7 @@ export default class Index extends wepy.page {
     // 获取文章标签
     let tag = await wxRequest(api.articletype, {token:code.data.data.token}, 'POST');
     if (tag.data.code === api.STATUS) {
-      console.log(tag.data.data);
+      // console.log(tag.data.data);
       if (tag.data.data.length > 0) {
         tag.data.data.map(el => {
           el.active = false;
@@ -207,129 +261,304 @@ export default class Index extends wepy.page {
       this.typeNav = tag.data.data;
       this.$apply();
     }
+
+    // 判断用户是否从别人分享红包进入
+    if(options.packet_task_id){
+       this.packet_task_id = options.packet_task_id;
+       this.pagefrom = options.from;
+       this.$apply();
+       console.log('options.packet_task_id', options.packet_task_id)
+       let json = await wxRequest(api.onepackettask,{packet_task_id:options.packet_task_id},'POST');
+       console.log('别人的红包信息', json);
+       if(json.data.code===api.STATUS){
+          let data = json.data.data;
+          if(data.status==='0'){
+            //  组团中 红包未过期
+            this.joinGroup = true;
+            this.showJoinPopup = false;
+            this.is_help = data.is_help;
+            this.isSelfRedPack = data.is_self_redpacket;
+            this.$apply();
+            let persionList = this.persionList;
+            let myid = wx.getStorageSync('userInfo').id;
+            for(let i=0;i<3;i++){
+              persionList[i] = data.list[i]?{...data.list[i],text:'已助力'}:persionList[i];
+              if(persionList[i].user_id===data.insert_user_id){
+                 console.log('我已助力11');
+                 this.hsaIjoin = 1;
+                 this.$apply();
+              }
+            }
+
+            this.persionList = persionList;
+            this.$apply();
+            // 红包倒计时
+            let endTime = data.deadline*1000;
+            if(this.timer) clearTimeout(this.timer);
+            this.timer = setTimeout(function countDown(){
+              if(endTime>new Date().getTime()){
+                  that.redPackCountDown = utils.formatRemainTime(endTime, 1);
+                  that.$apply()
+              }else{
+                  clearTimeout(that.timer);
+                  that.showJoinPopup = false;
+                  that.$apply();
+              }
+              that.timer = setTimeout(countDown,1000)
+            })
+          }else if(data.status==='1'){
+            //  红包被瓜分完成
+            console.log('红包被瓜分完了');
+            let endTime = data.deadline*1000;
+            if(endTime===0){
+              this.showJoinPopup = false;
+              this.$apply();
+              return;
+            }
+
+            if(data.user_id===wx.getStorageSync('userInfo').id){
+               console.log('我自己进来，组团成功了')
+               this.showJoinPopup = true;
+               this.isSecondRedPack = false;
+               this.$apply();
+               return;
+            }
+            this.joinGroup = true;
+            this.persionList = data.list;
+            this.redpackStatus = data.status;
+            this.$apply();
+          }
+       }
+    }
+
+    // 签到红包相关
+    let checkinfo = await wxRequest(api.signlist,{},'POST');
+    console.log('checkinfo', checkinfo);
+    if(checkinfo.data.code===api.STATUS){
+      let checkList = checkinfo.data.data.list;
+      let continue_sign = checkinfo.data.data.continue_sign;
+      checkList.map(el=>{
+        el.active = false;
+      })
+      let lost = continue_sign%7;
+      for(let i=0;i<lost;i++){
+         checkList[i].active = true;
+      }
+      this.continue_sign = continue_sign;
+      this.checkList = checkList;
+      this.show_check = checkinfo.data.data.show_check;
+      this.total_sign = checkinfo.data.data.total_sign;
+      this.$apply();
+    }
   }
 
-  onHide() {}
-
-  async onShow() {
+ methods = {
+  //  我也要拆红包
+  async createdMySelf(){
+     console.log('我也要拆红包');
+     let checkinfo = await wxRequest(api.signlist,{},'POST');
+     if(checkinfo.data.code===api.STATUS){
+        console.log('checkinfo', checkinfo)
+        let data = checkinfo.data.data;
+        this.continue_sign = data.continue_sign;
+        this.total_sign = data.total_sign;
+        this.todayIsCheck = data.is_signin;
+     }
+     this.joinGroup = false;
+     this.showCheck = true;
+     this.$apply();
+  },
+  //  给好友助力
+  async helpFriend(){
+     let json = await wxRequest(api.createhelp,{packet_task_id:this.packet_task_id},'POST');
+     if(json.data.code===api.STATUS){
+       console.log('助力', json);
+       let persionList = this.persionList;
+       let data = json.data.data;
+       for(let i=0;i<3;i++){
+         persionList[i] = data.list[i]?{...data.list[i],text:'已助力'}: persionList[i];
+       }
+       this.persionList = persionList;
+       this.hsaIjoin = 1;
+       this.$apply();
+     }else{
+       tips.alert(json.data.data)
+     }
+  },
+  //  已创建红包，查看红包状态
+  async openJoinGroup(){
     let that = this;
-    // 获取用户是否有未读信息
-    console.log('this.token', this.token)
-    let token = '';
-    setTimeout(async ()=>{
-        let msg = await wxRequest(api.getUserInfo,{token:wx.getStorageSync('token')}, 'POST');
-      if (msg.data.code === api.STATUS) {
-        wx.setStorage({key:'userInfo', data: msg.data.data})
-        
-        if (msg.data.data.msgNum) {
-          let _msg = msg.data.data.msgNum.toString();
-          if (_msg > 0) {
-            wx.setTabBarBadge({ index: 1, text: _msg });
-          } else {
-            wx.removeTabBarBadge({ index: 2 });
-          }
-        }
-
-        if(msg.data.data.sign_view=='1'){
-          this.showSignIcon = true;
+    let json = await wxRequest(api.onepackettask,{packet_task_id:this.packet_task_id},'POST');
+    this.hasIuserInfo = wx.getStorageSync('userInfo');
+    this.showJoinPopup = false;
+    this.redpackType = 'task';
+    this.isSecondRedPack = false;
+    this.$apply();
+    if(json.data.code===api.STATUS){
+       console.log('json', json);
+       let data = json.data.data;
+       let endTime = data.deadline*1000;
+       if(data.status==='1'){
+          // 组团成功可以直接拆红包
+          this.redPackIsShow = true;
           this.$apply();
+       }else if(data.status==='0'){
+        //  组团中，展示组团列表
+        let list = data.list;
+        let persionList = this.persionList;
+        let myid = data.user_id;
+        for(let i=0;i<3;i++){
+          persionList[i] = {...list[i], text:'已助力'};
         }
-        // this.showSignIcon = true;
+        if(that.timer) clearTimeout(that.timer);
+        that.timer = setTimeout(function countDown(){
+          if(new Date().getTime()<endTime){
+            that.redPackCountDown = utils.formatRemainTime(endTime, 1);
+            that.$apply()
+          }else{
+            clearTimeout(that.timer)
+          }
+          that.timer = setTimeout(countDown,1000);
+        })
+        
+          if(myid==wx.getStorageSync('myid')){
+            // 是我自己的组团红包
+            this.isSelfRedPack = 1;
+          }
+          this.persionList = persionList;
+          this.joinGroup = true;
+          this.$apply();
+       }
+    }
+  },
+  //  再拆一个红包
+  async getNextRedPack(){
+    console.log('获取一个新红包');
+    let that = this;
+    let type = this.continue_sign;
+    let json = await wxRequest(api.createpackettask,{type:type.toString()},'POST');
+    if(json.data.code===api.STATUS){
+      console.log('再另一红包',json);
+      if(json.data.data.list.length===0){
+        //  此时创建任务成功，没有人参与
+        let data = json.data.data;
+        let endTime = data.deadline*1000;
+        if(this.timer) clearTimeout(this.timer);
+        this.timer = setTimeout(function countDown(){
+           if(new Date().getTime()<endTime){
+             that.redPackCountDown = utils.formatRemainTime(endTime, 1);
+             that.$apply()
+           }else{
+             clearTimeout(this.timer)
+           }
+           that.timer = setTimeout(countDown,1000);
+        });
+        this.redpackStatus = '0';
+        this.isSelfRedPack = 1;
+        this.packet_task_id = data.packet_task_id;
         this.$apply();
       }
-    },1000)
-  }
-
-  // 分享
-  onShareAppMessage(e) {
-    let that = this;
-    let dataset = e.target.dataset;
-    if(dataset.type==='redpack'){
-       return {
-          title:'@你，只差一个助力就能领红包，拜托帮助力一下！',
-          path: '/pages/index/main',
-          imageUrl: 'https://gcdn.playonwechat.com/nvzhu/repack/share-poster.jpg'
-       }
-    }else{
-      return {
-        title: '热门的女性话题都在这里',
-        path: '/pages/index/main'
-      };
     }
-    
-  }
-
-  async onPullDownRefresh() {
-    let that = this;
-    this.getHomeData({
-      page: 1,
-      slide_view: 1,
-      type_id: this.currentTypeId
-    }).then(res => {
-      console.log('下拉刷新', res);
-      if(res.slide_list.length<3){
-        res.slide_list = [...res.slide_list,...res.slide_list,...res.slide_list];
-      }
-      that.article_list = res.article_list;
-      that.bannerData = res.slide_list;
-      that.loadCount = 0;
-      that.$apply();
-      wx.stopPullDownRefresh();
-    });
-  }
-
-  async onReachBottom() {
-    console.log('触底了');
-    let that = this;
-    let json = await this.getHomeData({
-      page: this.page,
-      slide_view: 0,
-      type_id: this.currentTypeId
-    });
-    console.log('json', json);
-    let oldList = that.article_list;
-    that.article_list = [...oldList, ...json.article_list];
-    that.page++;
-    that.$apply();
-  }
-
-  events = {};
-
-  watch = {
-    currentTypeId:async function(newValue, oldValue) {
+    this.joinGroup = true;
+    this.redPackIsOpen = false;
+    this.$apply();
+  },
+  //  点击红包拆开红包
+   async openRedPack(){
+      console.log('领取红包');
       let that = this;
-      let slide_view = that.loadCount === 1 ? 1 : 0;
-      let token = wx.getStorageSync('token');
-      if(!this.token){
-        const code = await utils.getToken();
-        token = code.data.data.token;
+      let data = {
+        kind: this.redpackType
       }
-      if (newValue) {
-        this.getHomeData({
-          page: 1,
-          slide_view: slide_view,
-          type_id: newValue,
-          token: token
-        }).then(res => {
-          console.log('切换导航数据', res);
-          that.article_list = res.article_list;
-          if (that.loadCount === 1) {
-            let slider = [];
-            if(res.slide_list.length<3){
-              slider = [...res.slide_list,...res.slide_list,...res.slide_list];
-            }else{
-              slider = res.slide_list;
-            }
-            that.bannerData = slider;
-          }
-          that.loadCount = 0;
+      let type = this.continue_sign;
+      if(this.redpackType==='task'){
+        data.packet_task_id = this.packet_task_id
+      }
+      if(this.redpackType!=='task'){
+        data.type = type.toString();
+      }
+      
+      let json = await wxRequest(api.openpacket,data,'POST');
+      console.log('json', json)
+      if(json.data.code===api.STATUS){
+         this.openRedPackMoney = json.data.data.rmb/100;
+      }
+      setTimeout(()=>{
+          that.redPackIsShow = false;
+          that.redPackIsOpen = true;
           that.$apply();
-        });
-      }
-    }
-  };
-
-  methods = {
+      },1000);
+      this.getSignList();
+      this.$apply();
+   },
+  //  点击签到弹层中的红包
+   getRedPack(){
+      console.log('点击签到弹层红包');
+      this.showCheck = false;
+      this.redPackIsShow = true;
+      this.$apply();
+   },
+  //  关闭弹层
+    async closePopup(type){
+      console.log('关闭', type)
+       if(type==='check'){
+          this.showCheck = false;
+          wxRequest(api.closesign,{},'POST')
+       }else if(type==='redpack'){
+          this.getSignList();
+          this.redPackIsShow = false;
+       }else if(type==='redpackopen'){
+          this.redPackIsOpen = false;
+       }else if(type==='joingruop'){
+          this.joinGroup = false;
+          if(this.pagefrom==='redpack'){
+              this.showJoinPopup = false;
+              return;
+          }
+          this.showJoinPopup = true;
+          this.$apply();
+       }
+       this.$apply();
+    },
+    //  签到
+    async checkTap(e){
+       console.log('点击签到', this.continue_sign);
+       if(e==='toshop'){
+         this.showCheck = false;
+         this.$apply();
+         return;
+       }
+       let check = await wxRequest(api.chunk,{},'POST');
+       if(check.data.code===api.STATUS){
+          let checkList = this.checkList;
+          let lost = Number(this.continue_sign)%7+1;
+          console.log('this.continue_sign', this.continue_sign, lost)
+          for(let i=0;i<lost;i++){
+            checkList[i].active = true;
+          }
+          if(lost===3){
+             console.log('今天有红包');  
+             checkList[2].is_redpacket = 1;
+             checkList[2].open_redpacket = 1;
+             this.showCheck = false;
+             this.redPackIsShow = true;
+          }else if(lost===7){
+             checkList[6].is_redpacket = 1;
+             checkList[6].open_redpacket = 1;
+             this.showCheck = false;
+             this.redPackIsShow = true;
+          }
+          console.log('checkList', checkList);
+          this.todayIsCheck = 1;
+          this.checkList = checkList;
+          this.integral = check.data.data.todayintegral;
+          this.continue_sign = Number(this.continue_sign)+1;
+          this.total_sign = Number(this.total_sign)+1;
+          this.$apply();
+       }
+       
+      
+    },
     // 跳转签到页面
     async toSign(){
       let json = await wxRequest(api.chunk,{},'POST')
@@ -337,18 +566,11 @@ export default class Index extends wepy.page {
           wx.navigateTo({
             url: `../checkIn/main?title=签到成功`
           })
-          this.showSignIcon = !this.showSignIcon;
           this.$apply();
         }
       // 统计点击
       wxRequest(api.clickbutton,{type:'sign'},'POST');
       wxRequest(api.closesign,{},'POST')
-    },
-    // 关闭签到弹层
-    closeSign(){
-       this.showSignIcon = !this.showSignIcon;
-       this.$apply();
-       wxRequest(api.closesign,{},'POST')
     },
     // 切换导航
     async changeNav(e) {
@@ -396,6 +618,199 @@ export default class Index extends wepy.page {
       });
     }
   };
+  onHide() {}
+
+  async onShow() {
+    let that = this;
+    // 获取用户是否有未读信息
+    console.log('this.token', this.token)
+    let token = '';
+    setTimeout(async ()=>{
+      let msg = await wxRequest(api.getUserInfo,{token:wx.getStorageSync('token')}, 'POST');
+      console.log('getUserInfo',msg)
+      if (msg.data.code === api.STATUS) {
+        wx.setStorage({key:'userInfo', data: msg.data.data});
+        // 用户是否有未读通知
+        let data = msg.data.data;
+        if (data.msgNum) {
+          let _msg = data.msgNum.toString();
+          if (_msg > 0) {
+            wx.setTabBarBadge({ index: 1, text: _msg });
+          } else {
+            wx.removeTabBarBadge({ index: 2 });
+          }
+        }
+        // 是否显示签到弹层
+        if(data.sign_view===0){
+          that.showCheck = false;
+        }else if(data.is_signin===0){
+          that.showCheck = true;
+        }
+        that.todayIsCheck = data.is_signin;
+        that.$apply()
+
+        // 用户是否有组团红包正在进行
+        let redPacketInfo = msg.data.data.redpacket;
+        if(!redPacketInfo) return;
+        if(this.pagefrom==='redpack') return;
+        console.log('redPacketInfo', redPacketInfo)
+        let now = new Date().getTime();
+        if(now<redPacketInfo.deadline*1000){
+          //  红包没有过期
+          console.log('红包没有过期');
+          let endTime = redPacketInfo.deadline*1000;
+          if(that.timer) clearTimeout(that.timer);
+          that.timer = setTimeout(function countDown(){
+             if(endTime>new Date().getTime()){
+                that.redPackCountDown = utils.formatRemainTime(endTime, 1);
+                that.$apply()
+             }else{
+                clearTimeout(that.timer);
+                that.showJoinPopup = 0;
+                that.$apply()
+             }
+             that.timer = setTimeout(countDown,1000)
+          });
+          that.showJoinPopup = 1;
+          that.packet_task_id = redPacketInfo.id;
+          that.$apply();
+        }else{
+          //  红包已过期
+          console.log('红包已过期');
+          that.showJoinPopup = 0;
+        }
+        console.log('now', now)
+        that.redPacketInfo = redPacketInfo;
+        that.$apply();
+      }
+    },1000)
+  }
+
+  async getSignList(){
+    let checkinfo = await wxRequest(api.signlist,{},'POST');
+    console.log('checkinfo', checkinfo);
+    if(checkinfo.data.code===api.STATUS){
+      let checkList = checkinfo.data.data.list;
+      let continue_sign = checkinfo.data.data.continue_sign;
+      checkList.map(el=>{
+        el.active = false;
+      })
+      let lost = continue_sign%7;
+      if(lost===0) lost =7;
+      for(let i=0;i<lost;i++){
+        checkList[i].active = true;
+      }
+      this.continue_sign = continue_sign;
+      this.checkList = checkList;
+      this.integral = checkinfo.data.data.todayintegral;
+      this.total_sign = checkinfo.data.data.total_sign;
+      this.is_signin = checkinfo.data.data.is_signin;
+      this.$apply();
+    }
+  }
+
+  // 分享
+  onShareAppMessage(e) {
+    let that = this;
+    let dataset = e.target.dataset;
+    console.log('packet_task_id', this.packet_task_id)
+    if(dataset.type==='redpack'){
+       return {
+          title:'@你，只差一个助力就能领红包，拜托帮助力一下！',
+          path: `/pages/index/main?packet_task_id=${this.packet_task_id}&from=redpack`,
+          imageUrl: 'https://gcdn.playonwechat.com/nvzhu/repack/share-poster.jpg'
+       }
+    }else{
+      return {
+        title: '热门的女性话题都在这里',
+        path: '/pages/index/main'
+      };
+    }
+    
+  }
+
+  async onPullDownRefresh() {
+    console.log('下拉刷新')
+    let that = this;
+    this.getHomeData({
+      page: 1,
+      slide_view: 1,
+      type_id: this.currentTypeId
+    }).then(res => {
+      // console.log('下拉刷新', res);
+      if(res.slide_list.length<3){
+        res.slide_list = [...res.slide_list,...res.slide_list,...res.slide_list];
+      }
+      that.article_list = res.article_list;
+      that.bannerData = res.slide_list;
+      that.loadCount = 0;
+      that.$apply();
+      wx.stopPullDownRefresh();
+
+      //  判断是否是网络太差没法加载页面，重启小程序
+      if(that.article_list.length===0){
+        utils.ApplyUpdate();
+      }
+      
+    });
+  }
+
+  async onReachBottom() {
+    console.log('触底了');
+    let that = this;
+    this.loadEnd = true;
+    this.$apply();
+    let json = await this.getHomeData({
+      page: this.page,
+      slide_view: 0,
+      type_id: this.currentTypeId
+    });
+    this.loadEnd = false;
+    this.$apply();
+    console.log('json', json);
+    let oldList = that.article_list;
+    that.article_list = [...oldList, ...json.article_list];
+    that.page++;
+    that.$apply();
+  }
+
+  events = {};
+
+  watch = {
+    currentTypeId:async function(newValue, oldValue) {
+      let that = this;
+      let slide_view = that.loadCount === 1 ? 1 : 0;
+      let token = wx.getStorageSync('token');
+      if(!this.token){
+        const code = await utils.getToken();
+        token = code.data.data.token;
+      }
+      if (newValue) {
+        this.getHomeData({
+          page: 1,
+          slide_view: slide_view,
+          type_id: newValue,
+          token: token
+        }).then(res => {
+          console.log('切换导航数据', res);
+          that.article_list = res.article_list;
+          if (that.loadCount === 1) {
+            let slider = [];
+            if(res.slide_list.length<3){
+              slider = [...res.slide_list,...res.slide_list,...res.slide_list];
+            }else{
+              slider = res.slide_list;
+            }
+            that.bannerData = slider;
+          }
+          that.loadCount = 0;
+          that.$apply();
+        });
+      }
+    }
+  };
+
+ 
 }
 </script>
 <style lang="less" scoped>
@@ -503,11 +918,11 @@ page {
       text-align: justify;
       -webkit-box-orient: vertical;
       -webkit-line-clamp: 2;
-      // overflow: hidden;
       line-height: 1.4;
       padding: 20rpx;
       background: rgba(0, 0, 0, 0.05);
       border-radius: 0 0 20rpx 20rpx;
+      text-shadow:0 0 8rpx rgba(0, 0, 0, 0.7);
     }
   }
 }
@@ -656,51 +1071,26 @@ page {
   bottom: 0;
 }
 
-
-
-// 签到图标
-.sign_pop{
+// 红包入口
+.open-join{
   position: fixed;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.3);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  .close{
-    width: 68rpx;
-    height: 68rpx;
-    position: absolute;
-    right: 0;
-    top: -100rpx;
-    background-image: url('http://p766oymet.bkt.clouddn.com/nvzhu/sign-close-bg.png');
-    background-size: 100% 100%;
+  width: 185rpx;
+  height: 222rpx;
+  background-image: url('https://gcdn.playonwechat.com/nvzhu/repack/red-pack-count.png');
+  background-size: 100% 100%;
+  right: 20rpx;
+  bottom: 100rpx;
+  padding: 177rpx 0 0 84rpx;
+  background-color: transparent;
+  z-index: 5;
+  .count-down{
+     color: #df3121;
+     font-size: 20rpx;
   }
-  .main{
-    width: 590rpx;
-    height: 780rpx;
-    background-color: transparent;
-    background-image: url('http://p766oymet.bkt.clouddn.com/nvzhu/sign-bg.png');
-    background-size: 100% 100%;
-    position: relative;
-  }
-  .jifen1{
-    margin-top: 196rpx;
-  }
-  .jifen{
-    font-size: 40rpx;
-    color: #f03e3d;
+  .time-text{
+    min-width: 24rpx;
     text-align: center;
-  }
-  .to_sign_btn{
-    width: 410rpx;
-    height: 96rpx;
-    background-image: url('http://p766oymet.bkt.clouddn.com/nvzhu/sign-btn-bg.png');
-    background-size: 100% 100%;
-    margin: 304rpx auto 0 auto;
+    display: inline-block;
   }
 }
 

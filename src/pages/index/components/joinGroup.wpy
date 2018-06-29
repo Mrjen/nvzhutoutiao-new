@@ -1,6 +1,6 @@
 <template>
-  <view class="join">
-     <view class="main">
+  <view class="join" wx:if="{{joinGroup}}">
+     <view class="main {{joinGroup?'check_active':''}}">
          <view class="persion-list">
              <view wx:for="{{persionList}}" 
                    wx:key="{{index}}" 
@@ -14,15 +14,45 @@
                 </block>
              </view>
          </view>
-         <view class="excess-time">剩余<view class="min time">25</view><text>分</text><view class="second time">54</view>秒失效</view>
-         <form>
-            <button open-type="share" class="form-btn" data-type="redpack">邀请好友助力</button>
-            <button open-type="getUserInfo" lang="zh_CN"  class="form-btn">没有授权</button>
-            <button class="form-btn">给TA助力</button>
-            <button class="has-join">已助力</button>
-         </form>
+         
+            
+            <block>
+                <view class="noplace" wx:if="{{redpackStatus==='1'}}">助力名额已满</view>
+                <view class="excess-time" wx:else>剩余
+                    <view class="min time">{{redPackCountDown.h}}</view><text>时</text>
+                    <view class="min time">{{redPackCountDown.m}}</view><text>分</text>
+                    <view class="min time">{{redPackCountDown.s}}</view><text>秒</text>失效</view>
+            </block>
+         
+         <block>
+            <button wx:if="{{isSelfRedPack===1?1:0}}" open-type="share" 
+                        class="form-btn" 
+                        wx:if="{{isSelfRedPack===1?1:0}}"
+                        data-type="redpack">邀请好友助力</button>
+            <view wx:elif="{{isHelp===1?1:0}}">
+                <view class="has_help">无法助力,一天只能为一个用户助力哦~</view>
+                <button class="form-btn icon-btn" wx:if="{{isSelfRedPack===1?0:1}}" @tap="createdMySelf">
+                    <view class="red-pack-icon"></view>我也要玩</button>
+            </view>
+            <form wx:else>
+                <button open-type="share" 
+                        class="form-btn" 
+                        wx:if="{{isSelfRedPack===1?1:0}}"
+                        data-type="redpack">邀请好友助力</button>
+                <button open-type="getUserInfo" 
+                        lang="zh_CN"  
+                        wx:elif="{{isSelfRedPack===0&&hasIuserInfo.is_accredit=='0'?0:0}}"
+                        class="form-btn">没有授权</button>
+                <button class="form-btn help" 
+                        @tap="helpFriend"
+                        wx:elif="{{isSelfRedPack===0&&hsaIjoin==0&&redpackStatus!=='1'?1:0}}">给TA助力</button>
+                <button wx:elif="{{isSelfRedPack===0&&hsaIjoin==1?1:0}}" class="has-join">已助力</button>
+                <button class="form-btn icon-btn" wx:if="{{isSelfRedPack===1?0:1}}" @tap="createdMySelf">
+                    <view class="red-pack-icon"></view>我也要玩</button>
+            </form>
+         </block>
      </view>
-     <view class="close"></view>
+     <view class="close" @tap="closePopup"></view>
   </view>
 </template>
 
@@ -31,21 +61,41 @@ import wepy from 'wepy'
 export default class joinGroup extends wepy.component{
   data={}
   props={
-    persionList:{
+    joinGroup: Boolean,            // 是否显示红包
+    persionList:{                  // 助力列表
        type: Object,
-       default:[{
-           id: 1,
-           avatarUrl:'http://iph.href.lu/150x150',
-           text: '已助力'
-       },{
-           id: 2,
-           avatarUrl:'http://iph.href.lu/150x150',
-           text: '已助力'
-       },{
-           id: 3,
-           avatarUrl:'',
-           text: '已助力'
-       }]
+       default:[]
+    },
+    isSelfRedPack: Number,         // 是否是自己的红包
+    hsaIjoin: Number,              // 当前用户是否加入助力
+    hasIuserInfo: Object,          // 用户信息
+    redPackCountDown: Object,      // 倒计时
+    redpackStatus: String,         // 红包状态
+    isHelp: Number
+  }
+
+  onLoad () {
+    this.$data['persionList'] = null;   //  将 myprop 加入到脏检查中。
+  }
+
+  watch = {
+    'persionList':function(newValue, oldValue){
+        console.log(newValue, oldValue)
+        let myid = wx.getStorageSync('userInfo').id;
+    }
+  }
+  methods = {
+    // 关闭弹窗
+    closePopup(){
+      this.$emit('closePopup', 'joingruop')
+    }, 
+    // 给好友助力红包
+    helpFriend(){
+       this.$emit('helpFriend');
+    },
+    // 我也要玩
+    createdMySelf(){
+        this.$emit('createdMySelf');
     }
   }
 }
@@ -63,10 +113,11 @@ export default class joinGroup extends wepy.component{
     justify-content: center;
     align-items: center;
     background: rgba(0, 0, 0, .5);
+    z-index: 100;
     .main{
        width: 568rpx;
        height: 788rpx;
-       background-image: url('https://gcdn.playonwechat.com/nvzhu/repack/group-bg.png');
+       background-image: url('https://gcdn.playonwechat.com/nvzhu/repack/group-bg01.png');
        background-size: 100% 100%;
     }
     .avatar{
@@ -129,7 +180,7 @@ export default class joinGroup extends wepy.component{
         align-items: center;
         justify-content: center;
         font-size: 22rpx;
-        margin-bottom: 54rpx;
+        margin-bottom: 44rpx;
         text{
             color: #e45e48;
         }
@@ -157,6 +208,29 @@ export default class joinGroup extends wepy.component{
        border-radius: 50rpx;
        margin: 0 auto;
     }
+    .help{
+        margin-bottom: 20rpx;
+    }
+    .red-pack-icon{
+        width: 29rpx;
+        height: 34rpx;
+        margin-right: 10rpx;
+        background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB0AAAAiCAMAAACUYSJFAAAAe1BMVEUAAADkXkjkXkjkXkjkXkjkXkjkXkjkXkjkXkjkXkjkXkjkXkjkXkjkXkjkXkjkXkjkXkjkXkjkXkjkXkjkXkjkXkjkXkjkXkjkXkjkXkjkXkjkXkjkXkjkXkjkXkjkXkjkXkjkXkjkXkjkXkjkXkjkXkjkXkjkXkjkXkhG45aMAAAAKHRSTlMAD3D6F/bgy2Ai6uXSvbiMZBzDj1qzr6RzalESDQcDqpl7eG1INis/X29WMwAAAPlJREFUKM+d09lugzAQBdBrMHsAQ9gSluzp/P8X1vOQWm1tS8l9sGSdQTPCGkDsc7Il3wuNO3JlJ1CTOzUKjxYoPVoC8tZaqb1JjQCaIPlDSdCAjUo1c8GUGJqYZlUS9C2slACQXROmawZAqCokYuWEfccFMpNMXc9klAuGbtG0dAPTj5pE1VBF5mrU5CM9l8QpRlvfaNtGfhiJ1qJUYztRK3Cw971gvSyMVqUDgNQ98wNfZNcqCIIMWZqmvUUbvDJb9Mzf4qnP0dH3aIZ6R8OHEGLFqs/7f40kXnna/nMcx3cc9Rk6+ipMnqnyU/RbvZvi3zL/hvq3+xvoaX2bmo6d/AAAAABJRU5ErkJggg==');
+        background-size: 100% 100%;
+    }
+    .noplace{
+        text-align: center;
+        font-size: 42rpx;
+        color: #a24e5f;
+        margin-bottom: 30rpx;
+    }
+    .icon-btn{
+        display: flex;
+        align-items: center;
+        background: transparent;
+        border:1px solid #e45e48;
+        color: #e45e48;
+    }
     .has-join{
        width: 450rpx;
        height: 66rpx;
@@ -165,12 +239,61 @@ export default class joinGroup extends wepy.component{
        color: #999;
        border-radius: 50rpx;
        line-height: 66rpx;
+       margin-bottom: 20rpx;
     }
     .close{
-        width: 50rpx;
-        height: 50rpx;
+        width: 70rpx;
+        height: 70rpx;
         margin-top: 30rpx;
-        background: red;
+        background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEkAAABJCAMAAABGrfvuAAAAbFBMVEUAAAD///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8+T+BWAAAAI3RSTlMA8Tf31yD0t1hBBd7RvamfZAyw6ufJwYqAe3RcT0wwKxwKaHQSHBcAAAI4SURBVFjDnJTrgoIgEIUnERDWe/e00nj/d1wHM9RdB+38sBT4YM7MAJR4dS7jAzPGsENcnisO36iIsh8z108WFRs5KmXmf7FUbeBEsVspwmNSJsdQuE9xtJJzDweIvKkGBjXqJgdceAe/uDRWu0xpmEurbGespNf9XPTW5u3ChDbvEyFyOmFpf/iItrEPPy2IyOwUdtVAS1+Z3XAxwmCP4ye+xs0TTt0HCyBr5kXDGumLTUuwCGI1rFXNFlB8v7gHEDHs+Z+shQh6whY9ERXOM5hiaAFsU4ABprOCRP9q2Koal+UTkwRmDbYLMyjGVkmsIw3bpbGu5Kj70SQO34ijVe5mwLxdRzmRyYNY/EjkKMdXzN+nI/FFT2LdBWQZyVF8eIyh42P73ykxiKLqMQGUO0cMVgrvo8nxd8uowI5Ngsf7Sn2KMp9PdyjvSD6UZ8G6sZZcQH9vu4+seMeZEUv8G2To8/tX0bvTIGt01hsmNOGI3z0tbMp4X+4EigK5ZuNQdc8bECg/CG7dUAVnaxOFokDOqDOU3bMBEuUDQdMNltgqAoBGkSCUwIY5YCt7UC8aZC+TAzBjjuBBGQ8IjsYwsJ1NokiQuz3AmkXpZUm/rdhJDQAwDAPBYAl/kJYJ+DVFUDWpj/1bp2Nzd3Lv5Gbn9sntuPt3TgucPjHNdDruvMX5HfNglwtYVnH5iWU6lzNZ9nV5nHUE1ltcl2L9jnVO1oNZN2e8gDEMxVUY61H8STIxz+k8O3Q8M8EmgNjQoOZlAAAAAElFTkSuQmCC');
+        background-size: 100% 100%;
     }
 }
+
+.has_help{
+    font-size: 26rpx;
+    color: #a24e5f;
+    text-align: center;
+    margin-bottom: 20rpx;
+}
+
+.check_active{
+  // border:1px solid red;
+  animation: bounceIn .8s forwards;
+}
+
+@keyframes bounceIn {
+  0%, 100%, 20%, 40%, 60%, 80% {
+    -webkit-transition-timing-function: cubic-bezier(0.215, .61, .355, 1);
+    transition-timing-function: cubic-bezier(0.215, .61, .355, 1)
+  }
+  0% {
+    opacity: 0;
+    -webkit-transform: scale3d(.3, .3, .3);
+    transform: scale3d(.3, .3, .3)
+  }
+  20% {
+    -webkit-transform: scale3d(1.1, 1.1, 1.1);
+    transform: scale3d(1.1, 1.1, 1.1)
+  }
+  40% {
+    -webkit-transform: scale3d(.9, .9, .9);
+    transform: scale3d(.9, .9, .9)
+  }
+  60% {
+    opacity: 1;
+    -webkit-transform: scale3d(1.03, 1.03, 1.03);
+    transform: scale3d(1.03, 1.03, 1.03)
+  }
+  80% {
+    -webkit-transform: scale3d(.97, .97, .97);
+    transform: scale3d(.97, .97, .97)
+  }
+  100% {
+    opacity: 1;
+    -webkit-transform: scale3d(1, 1, 1);
+    transform: scale3d(1, 1, 1)
+  }
+}
+
 </style>

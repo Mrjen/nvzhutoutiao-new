@@ -16,7 +16,7 @@
                 class="pop-textarea"></textarea>
     <view class="comm-addimage" wx:if="{{is_announce=='1'?true:false}}">
         <view class="add-comm-image" wx:for="{{commImageArr}}" wx:key="{{index}}">
-            <image src="{{item}}" mode="aspectFill"/>
+            <image src="{{item}}" mode="aspectFill" data-img="{{item}}" @tap="prewImage"/>
             <view class="delete-image" @tap="deleteAddImage" data-idx="{{index}}">+</view>
         </view>
         <view class="add-icon" wx:if="{{commImageArr.length<9}}"  @tap="addCommImage"></view>
@@ -233,6 +233,14 @@ export default class inputComment extends wepy.page {
           }
 
         }
+      })
+    },
+
+    prewImage(e){
+      let dataset = e.currentTarget.dataset;
+      wx.previewImage({
+        current: dataset.img, // 当前显示图片的http链接
+        urls: this.commImageArr // 需要预览的图片http链接列表
       })
     },
 

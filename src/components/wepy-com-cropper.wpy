@@ -8,6 +8,7 @@
     style="width:{{width}}px;height:{{height}}px;background-color: rgba(0, 0, 0, .8);position: relative;z-index:2"
     @error="canvasError"
     canvas-id="cropper">
+    <slot></slot>
   </canvas>
 </template>
 
@@ -109,5 +110,6 @@ export default class Cropper extends wepy.component {
 }
 </script>
 
-<style>
+<style lang="less" scoped>
+
 </style>

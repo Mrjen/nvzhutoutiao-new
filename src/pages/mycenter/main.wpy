@@ -172,13 +172,12 @@ export default class myCenter extends wepy.page{
     },
     // 签到
     async checkIn(e){
-      let json = await wxRequest(api.chunk,{},'POST')
-      console.log('json', json)
-      if(json.data.code === api.STATUS){
-        wx.navigateTo({
-           url: `../checkIn/main?title=${e}`
-        })
-      }
+      wx.navigateTo({url: `../checkIn/main?title=${e}`})
+      // let json = await wxRequest(api.chunk,{},'POST')
+      // console.log('json', json)
+      // if(json.data.code === api.STATUS){
+        
+      // }
     }
   }
   
@@ -189,6 +188,7 @@ export default class myCenter extends wepy.page{
       let _info = info.data.data;
       let listNav = this.listNav;
       let listData = this.listData;
+      this.todaySign = _info.is_signin;
       listNav[0].num = _info.likeNum;
       listNav[1].num = _info.commentNum;
       listNav[2].num = _info.attentionNum;
@@ -210,16 +210,6 @@ export default class myCenter extends wepy.page{
       }
       this.lvIconArr = lvIconArr;
       this.$apply();
-
-      // 最后签到的时间戳
-      let time = _info.last_sign_time*1000;
-      let now = new Date();
-      now.setHours(0, 0, 0, 0);
-      let _time = now.getTime();
-      if(time>_time){
-         this.todaySign = 1;
-         this.$apply();
-      }
     }
   }
 

@@ -151,23 +151,6 @@ export default class editUserInfo extends wepy.page {
             wx.navigateTo({
               url:`../cropper/main?cover=${filePath}&w=300&h=300&type=avatar`
             })
-
-            // qiniuUploader.upload(filePath, (res) => {
-            //   that.imageURL = 'https://gcdn.playonwechat.com' + res.imageURL;
-            //   that.userInfo.avatarUrl = that.imageURL;
-            // }, (error) => {
-            //   console.log('error: ' + error);
-            // }, {
-            //   region: 'SCN',
-            //   uptoken: _upload_token, 
-            //   uptokenFunc: function() {
-            //     return '[yourTokenString]';
-            //   }
-            // }, (res) => {
-            //   console.log('上传进度', res.progress)
-            //   console.log('已经上传的数据长度', res.totalBytesSent)
-            //   console.log('预期需要上传的数据总长度', res.totalBytesExpectedToSend)
-            // });
           }
         })
       },

@@ -8,6 +8,7 @@
           <input class="searchInputContent" 
                  confirm-type="search" 
                  @input="inputWord" 
+                 focus
                  value="{{inputValue}}"
                  @confirm="searchArticle"
                  placeholder="搜索相关内容" 

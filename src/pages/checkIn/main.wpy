@@ -1,27 +1,100 @@
 <template>
-  <view class="check-in">
-      <view class="check">连续签到{{continue_sign}}天，累计签到{{total_sign}}天</view>
-      <view class="main">
-        <view class="check-status">{{title}}</view>
-        <view class="sign-list">
-          <view class="sign-item" 
-                wx:for="{{signList}}" 
-                wx:key="{{index}}">
-                <view class="sign-icon {{item.active?'active-icon':''}}">{{item.count}}</view>
-                <view class="date">{{item.text}}</view>
-          </view>
-        </view>
-        <view class="op-check">
-            <view class="btn" @tap="toMyCenter">返回个人中心</view>
-            <view class="btn" @tap="toShop">去兑换礼品</view>
-        </view>
+  <view class="check">
+      <view class="check-in {{showCheck?'check_active':''}}">
+      <view class="title"></view>
+      <view class="check-text">已累计签到<text>{{total_sign}}</text>天</view>
+      <block>
+        <view class="check-tips" wx:if="{{is_signin=='0'}}">签到连续签到<text>3天/7天</text>可额外获得大礼包</view>
+        <view class="check-tips" wx:else>恭喜你今天签到获得<text>积分+{{integral}}</text></view>
+      </block>
+      <view class="check-list">
+         <view wx:for="{{checkList}}" 
+               wx:key="{{index}}" 
+               class="check-item">
+            <view class="main">
+              <!-- {{item.open_redpacket}}{{item.is_redpacket}} -->
+              <view class="normal {{item.active?'active':''}}" 
+                    wx:if="{{item.is_redpacket===0?1:0}}">
+                <view class="score">+{{item.integral}}</view>
+                <view class="score-icon"></view>
+              </view>
 
-        <view class="rules">
-            <view class="title">签到积分说明</view>
-            <view class="text">1. 第7天后连续签到将持续获得100积分</view>
-            <view class="text">2. 如果中断签到，将重新开始计算积分</view>
-        </view>
+              <view class="close-gift {{item.open_redpacket===1?'active_redpack':''}}" 
+                    data-open="{{item.open_redpacket}}"
+                    data-day="{{item.day}}"
+                    @tap="getRedPack"
+                    wx:elif="{{item.is_redpacket===1&&item.open_redpacket===1?1:0}}"></view>
+              <view class="close-gift" 
+                    @tap="getRedPack" 
+                    data-open="{{item.open_redpacket}}"
+                    data-day="{{item.day}}"
+                    wx:elif="{{item.open_redpacket===0?1:0}}"></view>
+              <view class="gift" 
+                    wx:elif="{{item.is_redpacket&&item.open_redpacket===2?1:0}}"
+                    data-open="{{item.open_redpacket}}" 
+                    data-day="{{item.day}}"
+                    @tap="getRedPack">
+                <view class="score">+{{item.integral}}</view>
+                <view class="score-icon"></view>
+              </view>
+
+              <view class="day">第{{item.day}}天</view>
+            </view>
+         </view>
       </view>
+      <form class="check-form" report-submit="true" bindsubmit="dayCheck">
+         <button class="check-btn" 
+                 wx:if="{{is_signin===0?1:0}}"  
+                 data-type="check"
+                 formType="submit">立即签到</button>
+         <block wx:else>
+             <view class="check-btn close-sign">今日已签到</view>
+             <view class="btn-flex">
+               <button class="goshop goshop2" 
+                      data-type="gohome" 
+                      formType="submit">返回首页</button>
+                <button class="goshop goshop1" 
+                      data-type="goshop" 
+                      formType="submit">去兑换礼品</button>
+             </view>
+             
+         </block>
+      </form>
+  </view>
+
+     <view class="rules">
+        <view class="header">签到积分说明</view>
+        <veiw class="text">1. 每个签到周期为7天，7天后重新计算</veiw>
+        <veiw class="text">2. 连续签到3天/7天可额外获得大礼包</veiw>
+        <veiw class="text">3. 连续签到积分会不断增加，日上限100</veiw>
+        <veiw class="text">4. 如果中断签到，将重新开始计算积分</veiw>
+     </view>
+
+     <!-- 红包未拆开 -->
+      <redPack :redPackIsShow.sync="redPackIsShow"
+               @openRedPack.user="openRedPack"
+               @closePopup.user="closePopup"></redPack>
+      
+      <!-- 红包已打开 -->
+      <redPackOpen :redPackIsOpen.sync="redPackIsOpen"
+                   :getMoney.sync="openRedPackMoney"
+                   :isSecondRedPack.sync="isSecondRedPack"
+                   @getNextRedPack.user="getNextRedPack"
+                   @closePopup.user="closePopup"></redPackOpen>
+      
+      <!-- 红包组团中 -->
+      <joinGrop :joinGroup.sync="joinGroup"
+                :persionList.sync="persionList"
+                :isSelfRedPack.sync="isSelfRedPack"
+                :hsaIjoin.sync="hsaIjoin"
+                :redPackCountDown.sync="redPackCountDown"
+                :hasIuserInfo.sync="hasIuserInfo"
+                :redpackStatus.sync="redpackStatus"
+                @helpFriend.user="helpFriend"
+                @createdMySelf.user="createdMySelf"
+                @closePopup.user="closePopup"></joinGrop>
+
+      <view style="position:fixed;width:100vw;height:100vh;background:#9446c1;left:0;top:0;z-index:-1;"></view>
   </view>
 </template>
 
@@ -30,69 +103,56 @@ import wepy from 'wepy';
 import wxRequest from "../../utils/http.js";
 import api from "../../utils/api.js";
 import utils from '../../utils/utils';
+import tips from '../../utils/tips.js';
+
+import redPack from '../index/components/redpack';
+import redPackOpen from '../index/components/redpackOpen';
+import joinGrop from '../index/components/joinGroup';
 export default class checkIn extends wepy.page{
   config = {
     // disableScroll: true
   }
+  components = {
+    redPack,
+    redPackOpen,
+    joinGrop
+  }
   data = {
-    signList:[{
-       icon:'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-bg.png',
-       text: "第1天",
-       active: true,
-       count: 20
-     },{
-       icon:'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-bg.png',
-       text: "第2天",
-       active: false,
-       count: 30
-     },{
-       icon:'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-bg.png',
-       text: "第3天",
-       active: false,
-       count: 40
-     },{
-       icon:'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-bg.png',
-       text: "第4天",
-       active: false,
-       count: 50
-     },{
-       icon:'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-bg.png',
-       text: "第5天",
-       active: false,
-       count: 60
-     },{
-       icon:'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-bg.png',
-       text: "第6天",
-       active: false,
-       count: 80
-     },{
-       icon:'http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-bg.png',
-       text: "第7天及以上",
-       active: false,
-       count: 100
-     }],
-     title: '今日已签到',
-     continue_sign:'0',
-     total_sign: '0'
-
+     continue_sign:'0',              // 连续签到天数
+     total_sign: '0',                // 总签到天数
+     checkList:[],                   // 签到列表
+     is_signin: 0,                   // 今天是否签到
+     redPackIsShow: false,           // 是否显示红包
+     redPackIsOpen: false,           // 拆开的红包是否显示    
+     openRedPackMoney: 0,            // 拆红包获取的金额    
+     isSecondRedPack: true,          // 是否已拆过一次红包  
+     packet_task_id: '',             // 红包id
+     integral: '',                   // 签到获得的积分
+     
+     joinGroup: false,                // 拼团红包
+     isSelfRedPack: 0,                // 是否是我自己组团的红包
+     hsaIjoin: 0,                     // 我是否已助力
+     redPacketInfo: {},               // 我的组团红包信息 
+     redpackStatus: '',               // 红包状态
+     redPackCountDown: {},            // 红包图标倒计时
+     persionList: [{                  // 助力列表
+        id: 1,
+        avatarUrl:'',
+        text: '已助力'
+    },{
+        id: 2,
+        avatarUrl:'',
+        text: '已助力'
+    },{
+        id: 3,
+        avatarUrl:'',
+        text: '已助力'
+    }]  
   }
 
   async onShow(){
-    let chunk = await wxRequest(api.chunk,{},'POST');
-    if(chunk.data.code===api.STATUS){
-        console.log('chunk', chunk)
-        let signList = this.signList;
-        for(let i=0;i<chunk.data.data.continue_sign;i++){
-            if(signList[i]){
-               signList[i].active = true;
-            }
-        }
-        this.jiFenPop = !this.jiFenPop;
-        this.signList = signList;
-        this.continue_sign = chunk.data.data.continue_sign;
-        this.total_sign = chunk.data.data.total_sign;
-        this.$apply();
-    }
+    // 签到红包相关
+    this.getSignList();
   }
 
   onLoad(options){
@@ -101,157 +161,416 @@ export default class checkIn extends wepy.page{
   }
 
   methods = {
-    // 去个人中心
-    toMyCenter(){
-      wx.switchTab({
-        url: '../mycenter/main'
-      })
+  //  点击签到弹层中的红包
+   getRedPack(e){
+      console.log('点击签到弹层红包');
+      console.log(e.currentTarget.dataset);
+      let dataset = e.currentTarget.dataset;
+      if(dataset.open===2){
+        tips.alert('已领取');
+        return;
+      }else if(dataset.open===0){
+        tips.alertText(`连续签到${dataset.day}天才可以拆开此礼包哦`);
+        return;
+      }
+      this.showCheck = false;
+      this.redPackIsShow = true;
+      this.$apply();
+   },
+     //  再拆一个红包
+  async getNextRedPack(){
+    console.log('获取一个新红包');
+    let that = this;
+    let type = this.continue_sign;
+    let json = await wxRequest(api.createpackettask,{type:type.toString()},'POST');
+    if(json.data.code===api.STATUS){
+      console.log('再另一红包',json);
+      if(json.data.data.list.length===0){
+        //  此时创建任务成功，没有人参与
+        let data = json.data.data;
+        let endTime = data.deadline*1000;
+        if(this.timer) clearTimeout(this.timer);
+        this.timer = setTimeout(function countDown(){
+           if(new Date().getTime()<endTime){
+             that.redPackCountDown = utils.formatRemainTime(endTime, 1);
+             that.$apply()
+           }else{
+             clearTimeout(this.timer)
+           }
+           that.timer = setTimeout(countDown,1000);
+        });
+        this.redpackStatus = '0';
+        this.isSelfRedPack = 1;
+        this.packet_task_id = data.packet_task_id;
+        this.$apply();
+      }
+    }
+    this.joinGroup = true;
+    this.redPackIsOpen = false;
+    this.$apply();
+  },
+    //  点击红包拆开红包
+   async openRedPack(){
+      console.log('领取红包');
+      let that = this;
+      let data = {
+        kind: this.redpackType
+      }
+      let type = this.continue_sign;
+      if(this.redpackType==='task'){
+        data.packet_task_id = this.packet_task_id
+      }
+      if(this.redpackType!=='task'){
+        data.type = type.toString();
+      }
+      
+      let json = await wxRequest(api.openpacket,data,'POST');
+      console.log('json', json)
+      if(json.data.code===api.STATUS){
+         this.openRedPackMoney = json.data.data.rmb/100;
+      }
+      setTimeout(()=>{
+          that.redPackIsShow = false;
+          that.redPackIsOpen = true;
+          that.$apply();
+      },1000);
+      this.getSignList();
+      this.$apply();
+   },
+    // 去商城或签到
+    async dayCheck(e){
+      let dataset = e.detail.target.dataset;
+      if(dataset.type==='goshop'){
+         wx.navigateTo({url:'../shop/main'});
+         this.$emit('checkTap', 'toshop')
+      }else if(dataset.type==='check'){
+          let check = await wxRequest(api.chunk,{},'POST');
+          if(check.data.code===api.STATUS){
+              let checkList = check.data.data.list;
+              this.is_signin = 1;
+              this.integral = check.data.data.integral;
+              this.$apply();
+              let lost = Number(this.continue_sign)%7+1;
+              console.log('this.continue_sign', this.continue_sign, lost)
+              for(let i=0;i<lost;i++){
+                checkList[i].active = true;
+              }
+              if(lost===3){
+                console.log('今天有红包');  
+                checkList[2].is_redpacket = 1;
+                checkList[2].open_redpacket = 1;
+                this.showCheck = false;
+                this.redPackIsShow = true;
+              }else if(lost===7){
+                checkList[6].is_redpacket = 1;
+                checkList[6].open_redpacket = 1;
+                this.showCheck = false;
+                this.redPackIsShow = true;
+              }
+              console.log('checkList', checkList);
+              this.todayIsCheck = 1;
+              this.checkList = checkList;
+              this.continue_sign = Number(this.continue_sign)+1;
+              this.total_sign = Number(this.total_sign)+1;
+              this.$apply();
+          }
+      }else if(dataset.type==='gohome'){
+        wx.switchTab({url:'../index/main'})
+      }
     },
-    // 去商城
-    toShop(){
-      wx.navigateTo({
-        url: '../shop/main'
+    // 关闭弹层
+    async closePopup(type){
+      console.log('关闭', type)
+       if(type==='check'){
+          this.showCheck = false;
+          wxRequest(api.closesign,{},'POST')
+       }else if(type==='redpack'){
+          console.log('关闭红包');
+          this.getSignList();
+          this.redPackIsShow = false;
+       }else if(type==='redpackopen'){
+          this.redPackIsOpen = false;
+       }else if(type==='joingruop'){
+          this.joinGroup = false;
+          if(this.pagefrom==='redpack'){
+              this.showJoinPopup = false;
+              return;
+          }
+          this.showJoinPopup = true;
+          this.$apply();
+       }
+       this.$apply();
+    },
+    onShareAppMessage(e){
+      let that = this;
+      let dataset = e.target.dataset;
+      if(dataset.type==='redpack'){
+       return {
+          title:'@你，只差一个助力就能领红包，拜托帮助力一下！',
+          path: `/pages/index/main?packet_task_id=${this.packet_task_id}&from=redpack`,
+          imageUrl: 'https://gcdn.playonwechat.com/nvzhu/repack/share-poster.jpg'
+       }
+      }else{
+        return {
+          title: '热门的女性话题都在这里',
+          path: '/pages/index/main'
+        };
+      }
+    }
+  }
+  async getSignList(){
+    let checkinfo = await wxRequest(api.signlist,{},'POST');
+    console.log('checkinfo', checkinfo);
+    if(checkinfo.data.code===api.STATUS){
+      let checkList = checkinfo.data.data.list;
+      let continue_sign = checkinfo.data.data.continue_sign;
+      checkList.map(el=>{
+        el.active = false;
       })
+      let lost = continue_sign%7;
+      if(lost===0) lost=7;
+      for(let i=0;i<lost;i++){
+        checkList[i].active = true;
+      }
+      this.continue_sign = continue_sign;
+      this.checkList = checkList;
+      this.integral = checkinfo.data.data.todayintegral;
+      this.total_sign = checkinfo.data.data.total_sign;
+      this.is_signin = checkinfo.data.data.is_signin;
+      this.$apply();
     }
   }
 }
 </script>
 
 <style lang="less" scoped>
-.check-in{
-  background: #fe5047;
-  background-image: url('http://p766oymet.bkt.clouddn.com/nvzhu/check-in-top.png');
-  background-size: 750rpx 223rpx;
-  background-repeat: no-repeat;
-  padding: 252rpx 0;
-  .main{
-    width: 712rpx;
-    height: 786rpx;
-    background: url('http://p766oymet.bkt.clouddn.com/nvzhu/main-bg.png');
-    background-size: 100% 100%;
-    margin:0 auto;
-  }
-  .check{
-    text-align: center;
-    color: #fff4bd;
-  }
-  .check-status{
-      text-align: center;
-      color: #bc5a28;
-      font-size: 50rpx;
-      padding-top: 30rpx;
-  }
-  .sign-list{
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    padding-top: 100rpx;
-    .sign-item{
-       margin:20rpx;
-       text-align: center;
-    }
-    .sign-item:nth-of-type(1){
-      margin-left: 100rpx;
-    }
-    .sign-item:nth-of-type(3){
-      margin-right: 100rpx;
-    }
-    .date{
-        font-size: 20rpx;
-        color: #bc5a28;
-    }
-    .sign-icon{
-      width: 120rpx;
-      height: 120rpx;
-      font-size: 40rpx;
-    //   font-weight: bold;
-      color: #ffeebe;
-      text-align: center;
-      line-height: 100rpx;
-      margin:0 auto 20rpx auto;
-      background-image: url(http://p766oymet.bkt.clouddn.com/nvzhu/shop-sign-bg.png);
-      background-size: 100% 100%;
-      border:3px solid #fe5047;
-      border-radius: 20rpx;
-      position: relative;
-    }
-    .active-icon::before{
-      content: '';
-      display: block;
-      width: 120rpx;
-      height: 120rpx;
-      position: absolute;
-      background: rgba(0, 0, 0, .5);
-      left: -5rpx;
-      top: -5rpx;
-      border-radius: 10rpx;
-    }
-    .active-icon:after{
-        content:'';
-        display: block;
-        width: 28rpx;
-        height: 28rpx;
-        background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAkFBMVEUAAAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD//////f3/CQn/+Pj/6+v/dHT/a2v/8vL/zc3/uLj/ZGT/Vlb/5ub/3d3/09P/w8P/v7//sbH/q6v/p6f/m5v/l5f/jo7/ior/hYX/Xl7/Tk7/PT3/ODj/ICD/FRXyAWBsAAAAEHRSTlMA+QLpPtzLxGLziUgniyFAyWntVAAAAORJREFUKM+Fk+mawiAMRaFAabE6ubV1GWffx/X9306sFLHYev6ej3zJTWAeabTgXGgjWYckU+RRWRK6SUpXpJOLexDUQfjaI04RfHR2RU43yIuml5Rukp66yqiHzErVJ5WdnXqRzFDMT/VHFsN07L6ABVk0i+affgKYNUkwF8Dv4t+5j9YRb2WFcte4R6Cck5Ou7Dew7DgSbUOHGljR9N26FTm0H2UO1Ps369bUYi4hLIFn657CEHx82xJAFTiVBMHPXl/qTRj84MqGlj18Js7m0TvvbOXuaRb3jjrUcnz+DmPp1RFhqie55DwYXwAAAABJRU5ErkJggg==');
-        background-size: 100% 100%;
-        position: absolute;
-        right: -10rpx;
-        bottom: -10rpx;
-    }
-  }
-  .op-check{
-    display: flex;
-    justify-content: space-between;
-    width: 600rpx;
-    margin:20rpx auto 0 auto;
-    .btn{
-        width: 260rpx;
-        height: 80rpx;
-        text-align: center;
-        line-height: 70rpx;
-        color: #fff;
-        background-image: url(http://p766oymet.bkt.clouddn.com/nvzhu/sign-btn.png);
-        background-size: 100% 100%;
-    }
-  }
-  .rules{
-      padding-top: 100rpx;
-      color: #fef4a4;
-    .title{
-      text-align: center;
-      position: relative;
-      width: 366rpx;
-      margin: 0 auto 40rpx auto;
-    }
-    .title:before{
-        content: '';
-        display: block;
-        width: 65rpx;
-        height: 1px;
-        background: #fef4a4;
-        position: absolute;
-        left: 0;
-        top: 50%;
-        opacity: .6;
-    }
-    .title:after{
-        content: '';
-        display: block;
-        width: 65rpx;
-        height: 1px;
-        background: #fef4a4;
-        position: absolute;
-        right: 0;
-        top: 50%;
-        opacity: .6;
-    }
-    .text{
-        text-align: center;
-        margin-bottom: 20rpx;
-    }
-  } 
+page{
+  background: red;
 }
 
+.check{
+  background: #fe5047;
+  background-image: url('https://gcdn.playonwechat.com/nvzhu/repack/check-page-bg.png');
+  background-size: 750rpx 1206rpx;
+  background-repeat: no-repeat;
+  min-height: 1206rpx;
+  display: flex;
+  justify-content: center;
+  padding: 150rpx 0 0 0;
+  flex-direction: column;
+  align-items: center;
+  .check-in{
+    width: 514rpx;
+    height: 613rpx;
+    background-image: url('https://gcdn.playonwechat.com/nvzhu/check-bg.png');
+    background-size: 100% 100%;
+    padding: 134rpx 0 0 0;
+  }
+  .title{
+    width: 194rpx;
+    height: 46rpx;
+    background-image: url('https://gcdn.playonwechat.com/nvzhu/checkcheck-text1.png');
+    background-size: 100%;
+    margin:0 auto 26rpx auto;
+  }
+  .check-text{
+    width: 195rpx;
+    height: 40rpx;
+    text-align: center;
+    color: #fff;
+    line-height: 40rpx;
+    background: #222;
+    border-radius: 30rpx;
+    font-size: 18rpx;
+    margin:0 auto 50rpx auto;
+    text{
+      color: #ffcc43;
+      display: inline-block;
+      margin:0 10rpx;
+    }
+  }
+  .check-tips{
+    font-size: 18rpx;
+    color: #666666;
+    text-align: center;
+    margin-bottom: 20rpx;
+    text{
+      font-size: 24rpx;
+      color: #fc8359;
+      display: inline-block;
+      margin: 0 5rpx;
+    }
+  }
+  .btn-flex{
+    display: flex;
+  }
+  .goshop{
+    flex: 1;
+    font-size: 26rpx;
+    color: #8245c6;
+    height: 50px;
+    line-height: 100rpx !important;
+    background: #fff;
+  }
 
+  .goshop1{
+    border-radius: 0 0 10rpx 0;
+  }
+
+  .goshop2{
+    border-radius: 0 0 0 10rpx;
+  }
+
+  // 连续签到
+  .check-list{
+    padding: 0 18rpx;
+    display: flex;
+    justify-content: space-between;
+    .check-item{
+      display: flex;
+    }
+    .main{
+      display: flex;
+      height: 112rpx;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+    .score{
+      font-size: 18rpx;
+      color: #222222;
+      text-align: center;
+      line-height: 1;
+      padding:18rpx 0 0 0;
+    }
+    .day{
+      font-size: 16rpx;
+      color: rgb(2, 1, 1);
+      text-align: center;
+      margin-top: 10rpx;
+      color: #666;
+    }
+    .normal{
+      width: 62rpx;
+      height: 74rpx;
+      background-color: #edf1f1;
+      border-radius: 14rpx;
+      .score{
+        margin-bottom: 10rpx;
+      }
+      .score-icon{
+        width: 30rpx;
+        height: 23rpx;
+        margin: 0 auto;
+        background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAXCAMAAAAr4Q9YAAAAe1BMVEUAAAD/zEP/v0b/sUr/s0n/sUr/zEP/skn/zEP/sUr/sUr/sUr/sUr/skr/zEP/t0j/zEP/xkT/xEX/sUr/zEP/zEP/yET/sUr/zEP/tEn/sUr/zEP/89//y4b/ul7/2aL/x3z/79X/0JD/6sv/4bf/5sH/vmj/3a3/tVQwigfJAAAAGnRSTlMA6hDtY723Utf35dewpohsZFNGxMCkln1wPVS8ngkAAADaSURBVCjPhZLZDoMgEEVBrVpbu68DCrj//xdWHCguiZ4HEnIymcswBPGCYwLg39+3kDJGw4tHRpx9sKQvpqGfv/R2MMI/U6Z5eMYeYMI+QB+jt7Wu/soGQm0DWLA7ob/0OgGNlPrMs3y4RRTzERJhQaGa/mzLbrgdTfmVpIDUFYDk0qS7oX4SG7tRGdQtGL6oYwIWoQqFnV1zZrUsS85VWZlrEDuNmbOKF5mcVdvejRA1F6KY904n1YvkkcvGMdnk3SRZaDe18cy7fDHz9R/b+O/1bdnetY1N/QFUfzgm1huI7wAAAABJRU5ErkJggg==');
+        background-size: 100%;
+      }
+    }
+    .active {
+      background: #ffca43;
+    }
+    .active .score-icon{
+       width: 24rpx;
+       height: 20rpx;
+       background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAUCAMAAACgaw2xAAAAclBMVEUAAAD///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////9eWEHEAAAAJXRSTlMA+XEG6tCzSyL1mntCEd7d2KQ+OjEcFwPsyL6olIh2amdcUTcq7k+qewAAAJdJREFUGNNtzlkOhCAQRdECbUXFeep5fvvfokKRGJH7QzgJRVGwSMqgdw1eIS8E8A2MabHWHz2BafB9ZkdKXjm4h+dvuK577wXzqXPwv0fmKCvLopiZVQsU2wexZh5z8z5TRNp6rdhlBltCUWPHT+RKL25zab2krU9sqIo9X5sScPVIXk9h91F0KM0AoSnQ7wxJwYbb7roAU1USqe9MBnwAAAAASUVORK5CYII=');
+       background-size: 100%;
+    }
+    .gift{
+      width: 60rpx;
+      height: 86rpx;
+      background-image:url('data:image/png;base64,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');
+      background-size: 100%;
+      .score{
+        color: #fff;
+        margin-top: 18rpx;
+      }
+    }
+    .close-gift{
+      width: 62rpx;
+      height: 72rpx;
+      background-image: url('data:image/png;base64,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');
+      background-size: 100% 100%;
+    }
+    .active_redpack{
+      animation: redpack 1s infinite;
+    }
+    @keyframes redpack {
+       0%,100%{
+         transform: scale(1.1,1.1);
+       }
+       50%{
+         transform: scale(.9,.9);
+       }
+    }
+    
+  }
+  .check-form{
+    .check-btn{
+      width: 360rpx;
+      height: 64rpx;
+      line-height: 64rpx;
+      border-radius: 32rpx;
+      color: #f27551;
+      font-size: 24rpx;
+      border: solid 1px #f27551;
+      margin: 34rpx auto 0 auto;
+      background: #f8f8f8;
+    }
+    .close-sign{
+      text-align: center;
+      color: #999;
+      font-size: 22rpx;
+      color: #666;
+      border-color: #666;
+      margin-top: 30rpx;
+    }
+  }
+  .close{
+      width: 70rpx;
+      height: 70rpx;
+      margin-top: 30rpx;
+      background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEkAAABJCAMAAABGrfvuAAAAbFBMVEUAAAD///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8+T+BWAAAAI3RSTlMA8Tf31yD0t1hBBd7RvamfZAyw6ufJwYqAe3RcT0wwKxwKaHQSHBcAAAI4SURBVFjDnJTrgoIgEIUnERDWe/e00nj/d1wHM9RdB+38sBT4YM7MAJR4dS7jAzPGsENcnisO36iIsh8z108WFRs5KmXmf7FUbeBEsVspwmNSJsdQuE9xtJJzDweIvKkGBjXqJgdceAe/uDRWu0xpmEurbGespNf9XPTW5u3ChDbvEyFyOmFpf/iItrEPPy2IyOwUdtVAS1+Z3XAxwmCP4ye+xs0TTt0HCyBr5kXDGumLTUuwCGI1rFXNFlB8v7gHEDHs+Z+shQh6whY9ERXOM5hiaAFsU4ABprOCRP9q2Koal+UTkwRmDbYLMyjGVkmsIw3bpbGu5Kj70SQO34ijVe5mwLxdRzmRyYNY/EjkKMdXzN+nI/FFT2LdBWQZyVF8eIyh42P73ykxiKLqMQGUO0cMVgrvo8nxd8uowI5Ngsf7Sn2KMp9PdyjvSD6UZ8G6sZZcQH9vu4+seMeZEUv8G2To8/tX0bvTIGt01hsmNOGI3z0tbMp4X+4EigK5ZuNQdc8bECg/CG7dUAVnaxOFokDOqDOU3bMBEuUDQdMNltgqAoBGkSCUwIY5YCt7UC8aZC+TAzBjjuBBGQ8IjsYwsJ1NokiQuz3AmkXpZUm/rdhJDQAwDAPBYAl/kJYJ+DVFUDWpj/1bp2Nzd3Lv5Gbn9sntuPt3TgucPjHNdDruvMX5HfNglwtYVnH5iWU6lzNZ9nV5nHUE1ltcl2L9jnVO1oNZN2e8gDEMxVUY61H8STIxz+k8O3Q8M8EmgNjQoOZlAAAAAElFTkSuQmCC');
+      background-size: 100% 100%;
+  }
+}
+
+// 规则
+.rules{
+   margin-top: 110rpx;
+   position: relative;
+  .header{
+    text-align: center;
+    color: #fff;
+    margin-bottom: 40rpx;
+    position: relative;
+    font-size: 30rpx;
+  }
+  .text{
+    font-size: 24rpx;
+    color: #fff;
+    display: block;
+    margin: 10rpx 0;
+  }
+}
+
+.header:before{
+  content: '';
+  display: block;
+  width: 60rpx;
+  border-bottom: 1px solid #fff;
+  position: absolute;
+  left: 30rpx;
+  top: 50%;
+}
+
+.header:after{
+  content: '';
+  display: block;
+  width: 60rpx;
+  border-bottom: 1px solid #fff;
+  position: absolute;
+  right: 30rpx;
+  top: 50%;
+}
 
 
 </style>

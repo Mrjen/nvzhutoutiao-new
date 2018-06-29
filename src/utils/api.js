@@ -185,10 +185,28 @@ const changepost = `${domainUrl}/shop/changepost`
 const trace = `${domainUrl}/shop/trace`
 
 // 自定义每日物语
-const imgmerge = `${domainUrl}/calendar/imgmerge`
+const imgmerge = `${domainUrl}/calendar/imgmergenew`
 
 // 获取物语logo
 const getstorylogo = `${domainUrl}/calendar/getstorylogo`
+
+// 获取签到信息接口
+const signlist = `${domainUrl}/sign/signlist`
+
+// 拆红包
+const openpacket = `${domainUrl}/packet/openpacket`
+
+// 再领取一个红包
+const createpackettask = `${domainUrl}/packet/createpackettask`
+
+// 获取红包组团情况
+const onepackettask = `${domainUrl}/packet/onepackettask`
+
+// 帮助好友助力红包
+const createhelp = `${domainUrl}/packet/createhelp`
+
+// 保存解忧内容
+const saveletter = `${domainUrl}/letter/saveletter`
 
 export default {
   STATUS,
@@ -254,5 +272,11 @@ export default {
   changepost,
   trace,
   imgmerge,
-  getstorylogo
+  getstorylogo,
+  signlist,
+  openpacket,
+  createpackettask,
+  onepackettask,
+  createhelp,
+  saveletter
 };

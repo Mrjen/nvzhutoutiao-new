@@ -28,25 +28,30 @@
     </view>
 
     <view class="tag">
-        <radio-group>
+        <block  wx:if="{{is_nuzhu=='1'?false:true}}">
             <label class="radio" @tap="showQuoteTag" data-type="show">
-                <radio value="1" checked="{{checkedTag===1?true:false}}" color="#7c48c6"/><text>显示左上角"每日物语"</text>
+                <radio value="1" checked="{{checkedTag}}" color="#7c48c6"/><text>显示左上角"每日物语"</text>
             </label>
-            <label class="radio" @tap="showQuoteTag" data-type="logo">
-                <radio value="1" checked="{{checkedTag===2?true:''}}" color="#7c48c6" />
-                <text>使用自有logo替代"每日物语"</text>
-                <block>
-                    <view wx:if="{{logo}}" class="haslogo">
-                        <image src="{{logo}}"/>
-                        <view class="delete-cover" @tap="DeleteLogo"></view>
-                    </view>
-                    <view wx:else class="uplogo" data-type="logo" @tap="upLoadImage">上传logo</view>
-                </block>
-            </label>
-        </radio-group>
+        </block>
+        <block wx:if="{{is_nuzhu=='1'?true:false}}">
+            <label hidden="{{is_nvzhu=='1'?true:false}}" class="show_logo" @tap="showQuoteTag"><radio value="" checked="{{checkedTag}}"  color="#7c48c6"/>显示女主logo</label>
+        </block>
         <label class="date" @tap="showDateTag"><radio value="" checked="{{showDate}}"  color="#7c48c6"/>显示今天日历</label>
+        <view class="qrcode">
+            <label class="qrlabel"  @tap="showQrcode" data-type="logo">
+            <radio value="1" checked="{{showqrcode}}" color="#7c48c6" />
+            <text>自定义二维码</text>
+            </label>  
+            <block>
+                <view wx:if="{{logo}}" class="haslogo">
+                    <image src="{{logo}}" mode="widthFix"/>
+                    <view class="delete-cover" @tap="DeleteLogo"></view>
+                </view>
+                <view wx:else class="uplogo" data-type="logo" @tap="upLoadImage">上传</view>
+            </block>
+        </view>
     </view>
-
+    
     <view class="typesetting">
         <radio-group>
             <label class="radio" @tap="quoteAlignTag">
@@ -72,13 +77,16 @@ import utils from '@/utils/utils';
 import tips from '../../utils/tips.js';
 export default class EditDayQuote extends wepy.page{
   data = {
-     checkedTag: 1,                 // 是否显示“今日物语”
+     checkedTag: true,                 // 是否显示“今日物语”
      showDate: true,                // 是否显示日期
      quoteAlign: 1,                 // 物语对齐方式 默认 左对齐
      cover: '',                     // 物语封面
      logo: '',                      // 物语logo
      quote: '',                     // 物语内容
      copyQuote:'',
+     showqrcode: false,             // 是否显示二维码
+     isShowNvZhu: false,            // 是否显示女主logo
+     is_nuzhu: '',                  // 是否是女主
      author: ''                     // 物语作者
   }
   
@@ -91,7 +99,7 @@ export default class EditDayQuote extends wepy.page{
      }else if(options.logo){
         console.log('裁切的logo是',options)
         this.logo = options.logo;
-        this.checkedTag = 1;
+        this.checkedTag = true;
         wx.setStorage({key:"dayLogo", data: options.logo});
         this.$apply();
      }
@@ -122,7 +130,8 @@ export default class EditDayQuote extends wepy.page{
         let json = await wxRequest(api.getstorylogo,{},'post');
         if(json.data.code===api.STATUS){
             console.log(json)
-            this.logo = json.data.data.story_logo;
+            this.logo = json.data.data.stroy_qrcode;
+            this.is_nuzhu = json.data.data.is_nuzhu;
             this.$apply();
         }
      }
@@ -133,6 +142,11 @@ export default class EditDayQuote extends wepy.page{
   }
 
   methods={
+    // 显示女主
+    showNvzhu(){
+       this.isShowNvZhu = !this.isShowNvZhu;
+       this.$apply();
+    },
     // 选择图片
     upLoadImage(e){
         let dataset = e.currentTarget.dataset;
@@ -159,8 +173,8 @@ export default class EditDayQuote extends wepy.page{
                         let url = '';
                         if(dataset.type==='cover'){ // 上传封面
                            url = `${tempFilePaths}&w=688&h=908&type=cover`
-                        }else if(dataset.type==='logo'){ // 上传logo
-                           url = `${tempFilePaths}&w=500&h=200&type=logo`
+                        }else if(dataset.type==='logo'){ // 上传二维码
+                           url = `${tempFilePaths}&w=300&h=300&type=logo`
                         }
                         wx.navigateTo({url:`../cropper/main?cover=${url}`})
                     }
@@ -195,23 +209,15 @@ export default class EditDayQuote extends wepy.page{
       wx.setStorage({key:'dayAuthor', data:e.detail.value});
       this.$apply();
     },
+    // 是否显示二维码
+    showQrcode(){
+       this.showqrcode = !this.showqrcode;
+       this.$apply();
+    },
     // 是否显示“今日物语”
     showQuoteTag(e){
       let dataset = e.currentTarget.dataset;
-      if(dataset.type==='show'){
-          if(this.checkedTag===1){
-             this.checkedTag = 0; 
-          }else{
-             this.checkedTag=1;
-          }
-          
-      }else if(dataset.type==='logo'){
-          if(this.checkedTag===2){
-              this.checkedTag = 0;
-          }else{
-              this.checkedTag = 2;
-          }
-      }
+      this.checkedTag = !this.checkedTag;
       this.$apply();
     },
     // 是否要显示日期
@@ -234,6 +240,7 @@ export default class EditDayQuote extends wepy.page{
       let data = {
          stroy: this.copyQuote,
          stroyimg: this.cover,
+         show_logo: this.checkedTag?1:0,
          show_date: this.showDate?1:0,
          type: this.quoteAlign===1?'left':'right'
       };
@@ -247,28 +254,20 @@ export default class EditDayQuote extends wepy.page{
           tips.alert('请填写物语');
           return;
       }
-      // 检查是否选中logo
-      if(this.checkedTag===2){
-          if(!this.logo){
-              tips.alert('请上传logo');
-              return;
-          }
-          data.logo = this.logo;
-      }
       // 检查是否填写作者
       if(this.author){
           data.author = this.author;
-      }   
+      }  
 
-      if(this.checkedTag===1){
-          data.show_logo = 2;
-      }else if(this.checkedTag===2){
-          data.show_logo = 1;
-      }else{
-          data.show_logo = 3;
+      if(this.showqrcode){
+          if(!this.logo){
+              tips.alert('请上传二维码');
+              return;
+          }
+          data.qrcode = this.logo;
       }
- 
-    
+
+
       let json = await wxRequest(api.imgmerge,data,'POST');
       if(json.data.code===api.STATUS){
           console.log(json)
@@ -281,7 +280,6 @@ export default class EditDayQuote extends wepy.page{
       }
 
       wxRequest(api.clickbutton,{type:'imgmerge'},'POST');
-
     }
 
   }
@@ -390,13 +388,13 @@ export default class EditDayQuote extends wepy.page{
     width: 650rpx;
     margin: 0 auto;
     radio-group{
-        label{
+        .radio{
          display: block;
          font-size: 28rpx;
          display: flex;
          align-items: center;
-         margin:30rpx 0;
          color: #444;
+         margin: 16rpx 0;
         }
     }
     .uplogo{
@@ -409,14 +407,17 @@ export default class EditDayQuote extends wepy.page{
        font-size: 28rpx;
     }
     .haslogo{
-      width: 176rpx;
+      width: 70rpx;
       height: 70rpx;
       margin-left: 20rpx;
       position: relative;
+      background: #f7f7f7;
+      display: flex;
+      align-items: center;
       image{
+          width: 70rpx;
+          height: 70rpx;
           display: block;
-          width: 100%;
-          height: 100%;
       }
     }
 }
@@ -443,5 +444,22 @@ export default class EditDayQuote extends wepy.page{
    background: #7c48c6;
    color: #fff;
    margin:50rpx auto 0 auto;
+}
+
+.qrcode{
+    display: flex;
+    align-items: center;
+    margin: 16rpx 0;
+}
+
+.show_logo{
+    width: 650rpx;
+    margin: 16rpx auto;
+    display: block;
+}
+
+.date{
+    display: block;
+    margin: 16px 0 0 0;
 }
 </style>

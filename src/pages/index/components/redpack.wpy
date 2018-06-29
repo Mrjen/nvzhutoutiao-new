@@ -1,16 +1,36 @@
 <template>
-  <view class="redpack">
-      <view class="main">
-          <view class="open"></view>
+  <view class="redpack " wx:if="{{redPackIsShow}}">
+      <view class="main {{redPackIsShow?'check_active':''}}">
+          <view class="open {{tapOpen?'active-btn':''}}" @tap="openRedPack"></view>
       </view>
-      <view class="close"></view>
+      <view class="close" @tap="closePopup"></view>
   </view>
 </template>
 
 <script>
 import wepy from 'wepy'
 export default class redPack extends wepy.component{
-
+  data = {
+    tapOpen: false
+  }
+  props = {
+    redPackIsShow: Boolean
+  }
+  methods = {
+    //  拆红包
+    openRedPack(){
+      if(this.tapOpen){
+        this.tapOpen = false;
+        this.$apply();
+      }
+      this.tapOpen = true;
+      this.$emit('openRedPack')
+    },
+    // 关闭红包
+    closePopup(){
+      this.$emit('closePopup', 'redpack');
+    }
+  }
 }
 </script>
 
@@ -26,6 +46,7 @@ export default class redPack extends wepy.component{
     justify-content: center;
     align-items: center;
     flex-direction: column;
+    z-index: 100;
     .main{
       width: 483rpx;
       height: 644rpx;
@@ -41,10 +62,62 @@ export default class redPack extends wepy.component{
         margin:346rpx auto 0 auto;
     }
     .close{
-        width: 50rpx;
-        height: 50rpx;
+        width: 70rpx;
+        height: 70rpx;
         margin-top: 30rpx;
-        background: red;
+        background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEkAAABJCAMAAABGrfvuAAAAbFBMVEUAAAD///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8+T+BWAAAAI3RSTlMA8Tf31yD0t1hBBd7RvamfZAyw6ufJwYqAe3RcT0wwKxwKaHQSHBcAAAI4SURBVFjDnJTrgoIgEIUnERDWe/e00nj/d1wHM9RdB+38sBT4YM7MAJR4dS7jAzPGsENcnisO36iIsh8z108WFRs5KmXmf7FUbeBEsVspwmNSJsdQuE9xtJJzDweIvKkGBjXqJgdceAe/uDRWu0xpmEurbGespNf9XPTW5u3ChDbvEyFyOmFpf/iItrEPPy2IyOwUdtVAS1+Z3XAxwmCP4ye+xs0TTt0HCyBr5kXDGumLTUuwCGI1rFXNFlB8v7gHEDHs+Z+shQh6whY9ERXOM5hiaAFsU4ABprOCRP9q2Koal+UTkwRmDbYLMyjGVkmsIw3bpbGu5Kj70SQO34ijVe5mwLxdRzmRyYNY/EjkKMdXzN+nI/FFT2LdBWQZyVF8eIyh42P73ykxiKLqMQGUO0cMVgrvo8nxd8uowI5Ngsf7Sn2KMp9PdyjvSD6UZ8G6sZZcQH9vu4+seMeZEUv8G2To8/tX0bvTIGt01hsmNOGI3z0tbMp4X+4EigK5ZuNQdc8bECg/CG7dUAVnaxOFokDOqDOU3bMBEuUDQdMNltgqAoBGkSCUwIY5YCt7UC8aZC+TAzBjjuBBGQ8IjsYwsJ1NokiQuz3AmkXpZUm/rdhJDQAwDAPBYAl/kJYJ+DVFUDWpj/1bp2Nzd3Lv5Gbn9sntuPt3TgucPjHNdDruvMX5HfNglwtYVnH5iWU6lzNZ9nV5nHUE1ltcl2L9jnVO1oNZN2e8gDEMxVUY61H8STIxz+k8O3Q8M8EmgNjQoOZlAAAAAElFTkSuQmCC');
+        background-size: 100% 100%;
     }
+}
+.active-btn{
+    animation: flip 1s linear forwards;
+}
+
+@keyframes flip{
+  0% {
+    transform: rotateY(0deg);
+  }
+  100% {
+    transform: rotateY(360deg);
+  }
+}
+
+.check_active{
+  // border:1px solid red;
+  animation: bounceIn .8s forwards;
+}
+
+@keyframes bounceIn {
+  0%, 100%, 20%, 40%, 60%, 80% {
+    -webkit-transition-timing-function: cubic-bezier(0.215, .61, .355, 1);
+    transition-timing-function: cubic-bezier(0.215, .61, .355, 1)
+  }
+  0% {
+    opacity: 0;
+    -webkit-transform: scale3d(.3, .3, .3);
+    transform: scale3d(.3, .3, .3)
+  }
+  20% {
+    -webkit-transform: scale3d(1.1, 1.1, 1.1);
+    transform: scale3d(1.1, 1.1, 1.1)
+  }
+  40% {
+    -webkit-transform: scale3d(.9, .9, .9);
+    transform: scale3d(.9, .9, .9)
+  }
+  60% {
+    opacity: 1;
+    -webkit-transform: scale3d(1.03, 1.03, 1.03);
+    transform: scale3d(1.03, 1.03, 1.03)
+  }
+  80% {
+    -webkit-transform: scale3d(.97, .97, .97);
+    transform: scale3d(.97, .97, .97)
+  }
+  100% {
+    opacity: 1;
+    -webkit-transform: scale3d(1, 1, 1);
+    transform: scale3d(1, 1, 1)
+  }
 }
 </style>

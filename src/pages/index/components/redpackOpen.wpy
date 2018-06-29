@@ -1,21 +1,39 @@
 <template>
-<view class="redpack-open">
+ 
+<view class="redpack-open" wx:if="{{redPackIsOpen}}">
    <view class="main">
      <view class="title"></view>
      <view class="money">
-         <text>5.2</text>元
+         <text>{{getMoney}}</text>元
      </view>
      <view class="money-tips">“萤火虫亮了>>我的>>我的钱包”提现</view>
-     <view class="get-next"></view>
+     <view class="get-next" @tap="getNextRedPack" wx:if="{{isSecondRedPack}}"></view>
    </view>
-   <view class="close"></view>
+   <view class="close" @tap="closePopup"></view>
 </view>
 </template>
 
 <script>
 import wepy from 'wepy'
 export default class redPackOpen extends wepy.component{
+  props = {
+    redPackIsOpen: Boolean,
+    getMoney: Number,
+    isSecondRedPack: Boolean
+  }
+  onLoad(){
 
+  }
+  methods={
+    // 关闭弹窗
+    closePopup(){
+      this.$emit('closePopup', 'redpackopen')
+    },
+    // 领取下一红包
+    getNextRedPack(){
+      this.$emit('getNextRedPack')
+    }
+  }
 }
 </script>
 
@@ -31,6 +49,7 @@ export default class redPackOpen extends wepy.component{
     justify-content: center;
     align-items: center;
     background: rgba(0, 0, 0, .5);
+    z-index: 100;
     .main{
       width: 514rpx;
       height: 624rpx;
@@ -73,10 +92,11 @@ export default class redPackOpen extends wepy.component{
       
     }
     .close{
-        width: 50rpx;
-        height: 50rpx;
+        width: 70rpx;
+        height: 70rpx;
         margin-top: 30rpx;
-        background: red;
+        background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEkAAABJCAMAAABGrfvuAAAAbFBMVEUAAAD///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8+T+BWAAAAI3RSTlMA8Tf31yD0t1hBBd7RvamfZAyw6ufJwYqAe3RcT0wwKxwKaHQSHBcAAAI4SURBVFjDnJTrgoIgEIUnERDWe/e00nj/d1wHM9RdB+38sBT4YM7MAJR4dS7jAzPGsENcnisO36iIsh8z108WFRs5KmXmf7FUbeBEsVspwmNSJsdQuE9xtJJzDweIvKkGBjXqJgdceAe/uDRWu0xpmEurbGespNf9XPTW5u3ChDbvEyFyOmFpf/iItrEPPy2IyOwUdtVAS1+Z3XAxwmCP4ye+xs0TTt0HCyBr5kXDGumLTUuwCGI1rFXNFlB8v7gHEDHs+Z+shQh6whY9ERXOM5hiaAFsU4ABprOCRP9q2Koal+UTkwRmDbYLMyjGVkmsIw3bpbGu5Kj70SQO34ijVe5mwLxdRzmRyYNY/EjkKMdXzN+nI/FFT2LdBWQZyVF8eIyh42P73ykxiKLqMQGUO0cMVgrvo8nxd8uowI5Ngsf7Sn2KMp9PdyjvSD6UZ8G6sZZcQH9vu4+seMeZEUv8G2To8/tX0bvTIGt01hsmNOGI3z0tbMp4X+4EigK5ZuNQdc8bECg/CG7dUAVnaxOFokDOqDOU3bMBEuUDQdMNltgqAoBGkSCUwIY5YCt7UC8aZC+TAzBjjuBBGQ8IjsYwsJ1NokiQuz3AmkXpZUm/rdhJDQAwDAPBYAl/kJYJ+DVFUDWpj/1bp2Nzd3Lv5Gbn9sntuPt3TgucPjHNdDruvMX5HfNglwtYVnH5iWU6lzNZ9nV5nHUE1ltcl2L9jnVO1oNZN2e8gDEMxVUY61H8STIxz+k8O3Q8M8EmgNjQoOZlAAAAAElFTkSuQmCC');
+        background-size: 100% 100%;
     }
 }
 </style>

@@ -5,8 +5,6 @@
      scroll-into-view="{{toView}}" 
      enable-back-to-top
      style="width:100vw;height:100vh;box-sizing:border-box" @scrolltolower="LoadMore">
-     <!-- @touchstart="scrollTouchStart"
-     @touchend="scrolltouchEnd" -->
     <import src="../../wxparse/wxParse.wxml"/>
         <!-- 话题主题 -->
       <view class="topic" id="topic" 
@@ -29,6 +27,18 @@
           </view>
           <navigator wx:if="{{is_story=='1'?true:false}}" url="../dayQuote/main" style="text-align:center;color:#647ffb;margin-bottom:50rpx" hover-class="none">>>每日物语海报下载</navigator>
         </form>
+
+        <!-- 解忧栏 -->
+          <view class="solve-problems" wx:if="{{is_letter}}">
+              <button lang="zh_CN"
+                      wx:if="{{is_accredit=='1'?false:true}}"
+                      @getuserinfo="getUserInfo"
+                      class="write-email"
+                      open-type="getUserInfo">
+                <view class="solve-btn"></view>
+              </button>
+              <button class="write-email" @tap="toWriteSolveProblems" wx:else><view class="solve-btn"></view></button>
+          </view>
 
           <!-- 投票 -->
           <view class="vote" wx:if="{{voteList.length}}">
@@ -729,7 +739,8 @@ export default class Detail extends wepy.page {
         active: false
       }],   
     
-    show_input_2: 0                     // 是否显示入群
+    show_input_2: 0,                     // 是否显示入群
+    is_letter: 0                         // 文章类型是解忧
 
   };
 
@@ -832,6 +843,7 @@ export default class Detail extends wepy.page {
     this.article_Show_type = _page_data.article_type;
     this.comment_view = _page_data.comment_view;
     this.is_announce = _page_data.is_announce;
+    this.is_letter = _page_data.is_letter;
 
     this.systemInfo = wx.getStorageSync('systemInfo');
     this.$apply();
@@ -1011,6 +1023,7 @@ export default class Detail extends wepy.page {
     this.Article_comments = _page_data.commenttimes;
     this.Article_likestatus = _page_data.likestatus;
     this.comment_view = _page_data.comment_view;
+    this.is_letter = _page_data.is_letter;
     this.page = 2;
     this.$apply();
     wx.stopPullDownRefresh();
@@ -1099,6 +1112,10 @@ export default class Detail extends wepy.page {
   }
 
   methods = {
+    // 书写解忧
+    toWriteSolveProblems(){
+       wx.navigateTo({url:`/pages/subPackages01/pages/writeSolveProblems/main?id=${this.ArticleId}`})
+    },
     // 点击打赏图标
     RewardBtn(e){
        if(e){
@@ -2549,6 +2566,50 @@ page {
   top: -2rpx;
   z-index: 2;
 }
+
+// 解忧栏目
+.solve-problems{
+  width: 680rpx;
+  overflow: hidden;
+  background: #fff;
+  position: relative;
+  padding-top: 20rpx;
+  margin-bottom: 40rpx;
+  .write-email{
+    background-color: transparent;
+    width: 700rpx;
+    height: 310rpx;
+    padding: 220rpx 0 0 0;
+    margin: 0 auto;
+    color: #fff;
+    font-size: 24rpx;
+    position: relative;
+    transform: translateX(-50%);
+    left: 50%;
+    background-image: url('https://gcdn.playonwechat.com/nvzhu/repack/letter.png');
+    background-size: 100% 100%;
+  }
+  .solve-btn{
+    width: 112rpx;
+    height: 46rpx;
+    position: absolute;
+    left:50%;
+    margin-left: -66rpx;
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHAAAAAuCAMAAADHum3+AAAAn1BMVEUAAAA0bQE0bQE0bQE0bQE0bQE0bQE0bQE0bQE0bQFtsi9apTxiqzY0bQH+/v5eqDlpsDFlrTRnrjPC3LOmzYru9eqcxY+917Xt9OuhyY2cyHtGhRG62KWkzItdoy9mqSlBgRPm8ODL4b7H3cCOwWxur016uEbc6tW006h3smJPkyZZmyBLjR5UlBv2+fTT5cuFvVqoy5yu0JmRv4FUnTPlNoxxAAAACnRSTlMA4lT4qwbaiVuUFCaGOgAABFBJREFUWMO9mGlz2jAQhoFAmi5r7a5sEgKEK1ebo+n1/39bpbUOOwZnJjP0+QDMIOnRvpIF9kCZjMbDs+KEnJ2PR5NBYnRebJ/W6GCQqYMIiYSmhAyA0yYkgooVUupu7AAA/Y6mHf4+bYvzUfR9KbZr7SccR3e9XD8LjnZ3ZMEgEtfWvzrCJMSJJRi7zm3xJfpeBP3MGUDiuIJ1fUzv6gMARj+9MBXCRFZOD/JSG0fFi86J/VDTgPbxZbR9mp7DJ1r7QpEZndFhI70ULtXJcCvWixA4l0NxfB9gylDE1QZqJLB5Gi10StS1kbW4HU4GF8UmJIlC7xvpdhDLbB3+1TltXSNQs/BOrs1ByCGay7q4GIyXMUnqBqFLxX7WGXRKRyqwayQMWaX9EMeR7XgwfGZLx4SWMRQJHuuXDlQr2BLaVoVi20aPgPc+DQdna+yImgORukQA6sSJazW1sodkFJ+9z68Zqse3oPXZoOheNu2moAilVgy2c61xKFzfwMGNBiQ57GJQSL/QgmLd51ih9m/HIhBgyzF9Svsz+VTY49PrLgnZjeaHQ+oKER6CL4itjk/e1hR4IfcWKBCFU4rhYha+/brX9287s+CGr7GmwZeF9oCIkvCxDFxdXZXKIyq6hb4bc6stfxnzhn63RDj5WqOSj7QrjJNy7U0XDPjCzI/QZXf7W8+7BAayT6d4UIhCcXexMZVyc+lx71GojR7N7aWZB2az+Xw3a5eY89RaVXjo4sN0zhgDsKgewmFkQZww4hO9uzQtkrC9l/1BTEeE1qcRT1IVzsw+CAmwLDFxZcz0PlyIahB4eLeK9Uma3F0hWeCQhG7RqvLCVVVdKtX1ffbd/3DC6Z8rT1mzgIzkX6vjQgoNKRTo8MIGmCmNF7YyraBBFAILodBRIXrSIaPC0hEKyb5ro8LvWvpNde35CQ04jqFFdoR5LcIpxBAwBhzWVw2tQMt+IVhMg8gxIbLDiuhFnIXhPBbAzLed+8Yei1RBiqMcrZDy5dsQzhLzefSR3Pmp2D+3edPcLqAFS/zQK9Q0MwvTAiNc1y71UrDOATp8LFSgwUOzYxZyCPvnPle4vzsmlA+Enal2hWl1TYPPVpgXe78vE48ruDPzVGAWVtdul97cVMeFcFQo7E8oib72RV9CFYUWklBfov8Ycuxog3esfleJVQWrWkgILaGnX8h4+PBG6OfNlCnQ7hr2Cn2J3d9D7pEtVuXOmG/Jl4WzQI8QhCT84nPrKO1hZRz7pm/RjbS3RCJxQqD+AjO7Wblg9UXhbAZw514CVfXQYyR0OGHznsnCRzA53+ewtfBsA5z/hX4sFIbPYgndX/3z53gcojjhSbH4NNTbNcB4xMBp4eU43JAS4f8QbooLd8u9zH/MBU7LcjjxDxVegdOJfFJei5E+NvFG+g/C1/ig5mux3PDJE90si6+NR1/L5zWdsMDN89I/+kpMLk79cG84vpio6h+t7PegIf3+6AAAAABJRU5ErkJggg==');
+    background-size: 100% 100%;
+    animation: shan 2s linear infinite;
+    transition: 1.5s;
+  }
+  @keyframes shan {
+    0%,100%{
+      opacity: .9;
+    }
+    50%{
+      opacity: .2;
+    }
+  }
+}
+
 
 
 

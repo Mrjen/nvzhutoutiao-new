@@ -119,8 +119,13 @@ export default class dayQuote extends wepy.page{
   }
 
   onLoad(options){
+    console.log('页面参数',options)
     if(options.show_home){
       this.showHome = true;
+      this.$apply();
+    }else if(options.scene){
+      let scene = decodeURIComponent(options.scene);
+      this.showHome = utils.getQueryString('show_home', scene);
       this.$apply();
     }
   }

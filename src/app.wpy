@@ -37,12 +37,18 @@ export default class extends wepy.app {
       'pages/checkIn/main',
       'pages/dayQuote/main',
       'pages/ExchangeSuccess/main',
-      'pages/webView/main',
       'pages/ExchangeList/main',
       'pages/ExpressInfo/main',
       'pages/EditDayQuote/main',
       'pages/cropper/main'
     ],
+    subPackages:[{
+      root:'pages/subPackages01',
+      pages:[
+        'pages/webView/main',
+        'pages/writeSolveProblems/main'
+      ]
+    }],
     window: {
       backgroundTextStyle: "light",
       navigationBarBackgroundColor: "#7c48c6",
@@ -90,20 +96,16 @@ export default class extends wepy.app {
 
   onLaunch() {
     let that = this;
-    // wx.login({
-    //   success(res){
-    //      wxRequest(api.getToken,{code:res.code}).then((res)=>{
-    //       //  console.log('获取token', res)
-    //       wx.setStorage({ key:'myid',data:res.data.data.id });
-    //       wx.setStorage({ key:'token',data: res.data.data.token});
-    //     })
-    //   }
-    // })
+    wx.getNetworkType({
+      success: function(res) {
+        wx.setStorage({key:'networkType', data: res.networkType})
+      }
+    })
 
     // 获取设备
     wx.getSystemInfo({
       success: function(res) {
-        console.log('model',res)
+        // console.log('model',res)
         if(res.model.indexOf('iphone X')){
           wx.setStorage({key:'systemInfo',data:'iPhone X'});
         }
@@ -120,7 +122,7 @@ export default class extends wepy.app {
         // wifi/2g/3g/4g/unknown(Android下不常见的网络类型)/none(无网络)
         var networkType = res.networkType;
         if(res.networkType==='wifi'){
-            that.ApplyUpdate();
+            utils.ApplyUpdate();
         }else if(res.networkType==='3g'||res.networkType==='2g'){
            tips.alert('网络信号差')
         }else if(res.networkType==='none'){
@@ -128,34 +130,13 @@ export default class extends wepy.app {
         }
       }
     })
-    
   }
 
-  ApplyUpdate(){
-    if(!wx.canIUse('getUpdateManager')) return;
-    const updateManager = wx.getUpdateManager()
-    updateManager.onCheckForUpdate(function (res) {
-      // 请求完新版本信息的回调
-      console.log('有没有新版',res.hasUpdate)
-    })
-    updateManager.onUpdateReady(function () {
-      wx.showModal({
-        title: '更新提示',
-        showCancel: false,
-        content: '新版本已经准备好，是否重启应用？',
-        success: function (res) {
-          if (res.confirm) {
-            // 新的版本已经下载好，调用 applyUpdate 应用新版本并重启
-            updateManager.applyUpdate()
-          }
-        }
-      })
-    })
-    updateManager.onUpdateFailed(function () {
-      // 新的版本下载失败
-      console.log('新版下载失败');
-    })
+  onUnload(){
+    console.log('小程序退出了');
   }
+
+
 
   onPageNotFound(){
     wx.switchTab({
@@ -389,9 +370,9 @@ button::after{
 // 文章详情页返回首页
 .home-icon{
   display: block;
-  width: 142rpx;
-  height: 127rpx;
-  background-image: url('https://gcdn.playonwechat.com/nvzhu/home-icon.png');
+  width: 130rpx;
+  height: 130rpx;
+  background-image: url('https://gcdn.playonwechat.com/nvzhu/repack/20180627153954.png');
   background-size: 100% 100%;
   position: fixed;
   right: 30rpx;
@@ -421,8 +402,6 @@ button::after{
     transform: translateY(-24rpx);
   }
 }
-
-
 
 .border_bottom:after{
   content: '';
