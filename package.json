@@ -20,6 +20,7 @@
     "we-cropper": "^1.2.0",
     "wepy": "^1.6.0",
     "wepy-async-function": "^1.4.6",
+    "wepy-com-cropper": "0.0.3",
     "wepy-com-toast": "^1.0.2"
   },
   "devDependencies": {

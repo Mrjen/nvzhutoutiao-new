@@ -18,7 +18,7 @@
             
             <block>
                 <view class="noplace" wx:if="{{redpackStatus==='1'}}">助力名额已满</view>
-                <view class="excess-time" wx:else>剩余
+                <view class="excess-time" wx:elif="{{showRedPackCountDown}}">剩余
                     <view class="min time">{{redPackCountDown.h}}</view><text>时</text>
                     <view class="min time">{{redPackCountDown.m}}</view><text>分</text>
                     <view class="min time">{{redPackCountDown.s}}</view><text>秒</text>失效</view>
@@ -71,7 +71,8 @@ export default class joinGroup extends wepy.component{
     hasIuserInfo: Object,          // 用户信息
     redPackCountDown: Object,      // 倒计时
     redpackStatus: String,         // 红包状态
-    isHelp: Number
+    isHelp: Number,
+    showRedPackCountDown: Boolean
   }
 
   onLoad () {
@@ -258,7 +259,6 @@ export default class joinGroup extends wepy.component{
 }
 
 .check_active{
-  // border:1px solid red;
   animation: bounceIn .8s forwards;
 }
 

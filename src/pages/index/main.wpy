@@ -121,6 +121,7 @@
                 :hasIuserInfo.sync="hasIuserInfo"
                 :redpackStatus.sync="redpackStatus"
                 :isHelp.sync="is_help"
+                :showRedPackCountDown.sync="showRedPackCountDown"
                 @helpFriend.user="helpFriend"
                 @createdMySelf.user="createdMySelf"
                 @closePopup.user="closePopup"></joinGrop>
@@ -202,6 +203,7 @@ export default class Index extends wepy.page {
     redPackCountDown: {},                  // 红包图标倒计时
     redPackInCountDown: {},                // 红包助力弹层倒计时  
     packet_task_id: '',                    // 被助力的红包id
+    showRedPackCountDown: true,            // 显示倒计时
     persionList: [{                        // 助力列表
         id: '',
         avatarUrl:'',
@@ -272,30 +274,29 @@ export default class Index extends wepy.page {
        console.log('别人的红包信息', json);
        if(json.data.code===api.STATUS){
           let data = json.data.data;
+          console.log('data',data)
+          let persionList = this.persionList;
+          for(let i=0;i<3;i++){
+            persionList[i] = data.list[i]?{...data.list[i],text:'已助力'}:persionList[i];
+            if(persionList[i].user_id===data.insert_user_id){
+                console.log('我已助力11');
+                this.hsaIjoin = 1;
+                this.$apply();
+            }
+          }
+          this.persionList = persionList;
+          this.isSelfRedPack = data.is_self_redpacket;
           if(data.status==='0'){
             //  组团中 红包未过期
             this.joinGroup = true;
             this.showJoinPopup = false;
             this.is_help = data.is_help;
-            this.isSelfRedPack = data.is_self_redpacket;
-            this.$apply();
-            let persionList = this.persionList;
-            let myid = wx.getStorageSync('userInfo').id;
-            for(let i=0;i<3;i++){
-              persionList[i] = data.list[i]?{...data.list[i],text:'已助力'}:persionList[i];
-              if(persionList[i].user_id===data.insert_user_id){
-                 console.log('我已助力11');
-                 this.hsaIjoin = 1;
-                 this.$apply();
-              }
-            }
-
-            this.persionList = persionList;
+            
             this.$apply();
             // 红包倒计时
             let endTime = data.deadline*1000;
-            if(this.timer) clearTimeout(this.timer);
-            this.timer = setTimeout(function countDown(){
+            if(that.timer) clearTimeout(that.timer);
+            that.timer = setTimeout(function countDown(){
               if(endTime>new Date().getTime()){
                   that.redPackCountDown = utils.formatRemainTime(endTime, 1);
                   that.$apply()
@@ -327,6 +328,12 @@ export default class Index extends wepy.page {
             this.persionList = data.list;
             this.redpackStatus = data.status;
             this.$apply();
+          }else if(data.status==='2'){
+            console.log('走到这里')
+            this.joinGroup = true;
+            this.showRedPackCountDown = false;
+            this.redPackCountDown = {h:'00',m:'00',s:'00'}
+            this.$apply();
           }
        }
     }
@@ -341,6 +348,7 @@ export default class Index extends wepy.page {
         el.active = false;
       })
       let lost = continue_sign%7;
+      if(lost===0) lost=7;
       for(let i=0;i<lost;i++){
          checkList[i].active = true;
       }
@@ -533,6 +541,7 @@ export default class Index extends wepy.page {
           let checkList = this.checkList;
           let lost = Number(this.continue_sign)%7+1;
           console.log('this.continue_sign', this.continue_sign, lost)
+          if(lost===0) lost =7;
           for(let i=0;i<lost;i++){
             checkList[i].active = true;
           }

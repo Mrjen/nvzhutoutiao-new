@@ -79,7 +79,7 @@
       <redPackOpen :redPackIsOpen.sync="redPackIsOpen"
                    :getMoney.sync="openRedPackMoney"
                    :isSecondRedPack.sync="isSecondRedPack"
-                   @getNextRedPack.user="getNextRedPack"
+                   @getNextRedPack.user="getAnotherRedPack"
                    @closePopup.user="closePopup"></redPackOpen>
       
       <!-- 红包组团中 -->
@@ -93,6 +93,11 @@
                 @helpFriend.user="helpFriend"
                 @createdMySelf.user="createdMySelf"
                 @closePopup.user="closePopup"></joinGrop>
+      
+      <!-- 再拆一个红包 -->
+      <getNextPack :hasGetNext.sync="hasGetNext"
+                   @getAnotherRedPack.user="getAnotherRedPack"
+                   @closePopup.user="closePopup"></getNextPack>
 
       <view style="position:fixed;width:100vw;height:100vh;background:#9446c1;left:0;top:0;z-index:-1;"></view>
   </view>
@@ -108,6 +113,7 @@ import tips from '../../utils/tips.js';
 import redPack from '../index/components/redpack';
 import redPackOpen from '../index/components/redpackOpen';
 import joinGrop from '../index/components/joinGroup';
+import getNextPack from '../../pages/index/components/getNextRedPack';
 export default class checkIn extends wepy.page{
   config = {
     // disableScroll: true
@@ -115,7 +121,8 @@ export default class checkIn extends wepy.page{
   components = {
     redPack,
     redPackOpen,
-    joinGrop
+    joinGrop,
+    getNextPack
   }
   data = {
      continue_sign:'0',              // 连续签到天数
@@ -128,6 +135,7 @@ export default class checkIn extends wepy.page{
      isSecondRedPack: true,          // 是否已拆过一次红包  
      packet_task_id: '',             // 红包id
      integral: '',                   // 签到获得的积分
+     redpackType: 'common',          // 任务红包参数 ‘task’
      
      joinGroup: false,                // 拼团红包
      isSelfRedPack: 0,                // 是否是我自己组团的红包
@@ -135,6 +143,9 @@ export default class checkIn extends wepy.page{
      redPacketInfo: {},               // 我的组团红包信息 
      redpackStatus: '',               // 红包状态
      redPackCountDown: {},            // 红包图标倒计时
+     hasGetNext: false,                // 是否领取了第二个红包
+     is_have_task: 0,                 // 今天是否组团过红包
+     packet_task:{},                  // 任务红包信息
      persionList: [{                  // 助力列表
         id: 1,
         avatarUrl:'',
@@ -161,54 +172,52 @@ export default class checkIn extends wepy.page{
   }
 
   methods = {
-  //  点击签到弹层中的红包
-   getRedPack(e){
-      console.log('点击签到弹层红包');
-      console.log(e.currentTarget.dataset);
-      let dataset = e.currentTarget.dataset;
-      if(dataset.open===2){
-        tips.alert('已领取');
-        return;
-      }else if(dataset.open===0){
-        tips.alertText(`连续签到${dataset.day}天才可以拆开此礼包哦`);
-        return;
-      }
-      this.showCheck = false;
-      this.redPackIsShow = true;
-      this.$apply();
-   },
-     //  再拆一个红包
-  async getNextRedPack(){
-    console.log('获取一个新红包');
-    let that = this;
-    let type = this.continue_sign;
-    let json = await wxRequest(api.createpackettask,{type:type.toString()},'POST');
-    if(json.data.code===api.STATUS){
-      console.log('再另一红包',json);
-      if(json.data.data.list.length===0){
-        //  此时创建任务成功，没有人参与
-        let data = json.data.data;
-        let endTime = data.deadline*1000;
-        if(this.timer) clearTimeout(this.timer);
-        this.timer = setTimeout(function countDown(){
-           if(new Date().getTime()<endTime){
-             that.redPackCountDown = utils.formatRemainTime(endTime, 1);
-             that.$apply()
-           }else{
-             clearTimeout(this.timer)
-           }
-           that.timer = setTimeout(countDown,1000);
-        });
-        this.redpackStatus = '0';
-        this.isSelfRedPack = 1;
-        this.packet_task_id = data.packet_task_id;
+    // 获取任务红包
+    getAnotherRedPack(){
+       this.getNextRedPack();
+       this.hasGetNext = false;
+       this.$apply();
+    },
+     //  点击签到弹层中的红包
+    getRedPack(e){
+        console.log('点击签到弹层红包');
+        console.log(e.currentTarget.dataset);
+        let dataset = e.currentTarget.dataset;
+        if(dataset.open===2){
+          // tips.alert('已领取');  用户领取了普通红包，没有领取组团红包
+          if(this.is_have_task===0){
+            // 在这里领取组团红包
+            this.hasGetNext = true;
+            this.$apply();
+          }else if(this.is_have_task===1){
+             // 用户有任务红包在 需要判断任务红包状态
+             console.log('this.packet_task', this.packet_task)
+             if(this.packet_task.status==='2') {
+               tips.alertText(`连续签到${dataset.day}天还可以再拆开此礼包哦`);
+               return;
+             }
+             let packet_task = this.packet_task;
+            if(packet_task.status==='0'){
+               this.getGroupInfo();
+               this.joinGroup = true;
+            }else if(packet_task.status==='1'){
+               this.redPackIsShow = true;
+               this.redpackType = 'task';
+               this.isSecondRedPack = false;
+               this.$apply();
+            }
+            
+            this.$apply();
+          }
+          return;
+        }else if(dataset.open===0){
+          tips.alertText(`连续签到${dataset.day}天才可以拆开此礼包哦`);
+          return;
+        }
+        this.showCheck = false;
+        this.redPackIsShow = true;
         this.$apply();
-      }
-    }
-    this.joinGroup = true;
-    this.redPackIsOpen = false;
-    this.$apply();
-  },
+    },
     //  点击红包拆开红包
    async openRedPack(){
       console.log('领取红包');
@@ -241,14 +250,15 @@ export default class checkIn extends wepy.page{
     async dayCheck(e){
       let dataset = e.detail.target.dataset;
       if(dataset.type==='goshop'){
-         wx.navigateTo({url:'../shop/main'});
-         this.$emit('checkTap', 'toshop')
+          wx.navigateTo({url:'../shop/main'});
+          this.$emit('checkTap', 'toshop')
       }else if(dataset.type==='check'){
           let check = await wxRequest(api.chunk,{},'POST');
           if(check.data.code===api.STATUS){
-              let checkList = check.data.data.list;
+              let data = check.data.data;
+              let checkList = data.list;
               this.is_signin = 1;
-              this.integral = check.data.data.integral;
+              this.integral = data.integral;
               this.$apply();
               let lost = Number(this.continue_sign)%7+1;
               console.log('this.continue_sign', this.continue_sign, lost)
@@ -270,8 +280,8 @@ export default class checkIn extends wepy.page{
               console.log('checkList', checkList);
               this.todayIsCheck = 1;
               this.checkList = checkList;
-              this.continue_sign = Number(this.continue_sign)+1;
-              this.total_sign = Number(this.total_sign)+1;
+              this.continue_sign = data.continue_sign;
+              this.total_sign = data.total_sign;
               this.$apply();
           }
       }else if(dataset.type==='gohome'){
@@ -280,7 +290,8 @@ export default class checkIn extends wepy.page{
     },
     // 关闭弹层
     async closePopup(type){
-      console.log('关闭', type)
+      console.log('关闭', type);
+       this.getSignList();
        if(type==='check'){
           this.showCheck = false;
           wxRequest(api.closesign,{},'POST')
@@ -297,6 +308,9 @@ export default class checkIn extends wepy.page{
               return;
           }
           this.showJoinPopup = true;
+          this.$apply();
+       }else if(type==='getNext'){
+          this.hasGetNext = false;
           this.$apply();
        }
        this.$apply();
@@ -318,12 +332,78 @@ export default class checkIn extends wepy.page{
       }
     }
   }
+
+  //  再拆一个红包
+  async getNextRedPack(){
+    console.log('获取一个新红包');
+    let that = this;
+    let type = this.continue_sign;
+    let json = await wxRequest(api.createpackettask,{type:type.toString()},'POST');
+    if(json.data.code===api.STATUS){
+      console.log('再另一红包',json);
+      if(json.data.data.list.length===0){
+        //  此时创建任务成功，没有人参与
+        let data = json.data.data;
+        let endTime = data.deadline*1000;
+        if(this.timer) clearTimeout(this.timer);
+        this.timer = setTimeout(function countDown(){
+           if(new Date().getTime()<endTime){
+             that.redPackCountDown = utils.formatRemainTime(endTime, 1);
+             that.$apply()
+           }else{
+             clearTimeout(this.timer)
+           }
+           that.timer = setTimeout(countDown,1000);
+        });
+        this.redpackStatus = '0';
+        this.isSelfRedPack = 1;
+        this.packet_task_id = data.packet_task_id;
+        this.$apply();
+      }
+    }
+    this.getSignList();
+    this.joinGroup = true;
+    this.redPackIsOpen = false;
+    this.$apply();
+  }
+  
+  // 获取组团信息
+  async getGroupInfo(){
+     let that = this;
+     let json = await wxRequest(api.onepackettask,{packet_task_id:this.packet_task_id},'POST');
+     if(json.data.code===api.STATUS){
+       let data = json.data.data;
+       this.isSelfRedPack = 1;
+       let persionList = this.persionList;
+       for(let i=0;i<3;i++){
+          persionList[i] = data.list[i]?{...data.list[i],text:'已助力'}:persionList[i];
+        }
+       this.persionList = persionList;
+       this.$apply();
+      //  红包倒计时
+        let endTime = data.deadline*1000;
+        if(this.timer) clearTimeout(this.timer);
+        this.timer = setTimeout(function countDown(){
+          if(endTime>new Date().getTime()){
+              that.redPackCountDown = utils.formatRemainTime(endTime, 1);
+              that.$apply()
+          }else{
+              clearTimeout(that.timer);
+              that.$apply();
+          }
+          that.timer = setTimeout(countDown,1000)
+        })
+     }
+  }
+  
+  // 获取签到信息
   async getSignList(){
     let checkinfo = await wxRequest(api.signlist,{},'POST');
     console.log('checkinfo', checkinfo);
     if(checkinfo.data.code===api.STATUS){
-      let checkList = checkinfo.data.data.list;
-      let continue_sign = checkinfo.data.data.continue_sign;
+      let data = checkinfo.data.data;
+      let checkList = data.list;
+      let continue_sign = data.continue_sign;
       checkList.map(el=>{
         el.active = false;
       })
@@ -334,9 +414,12 @@ export default class checkIn extends wepy.page{
       }
       this.continue_sign = continue_sign;
       this.checkList = checkList;
-      this.integral = checkinfo.data.data.todayintegral;
-      this.total_sign = checkinfo.data.data.total_sign;
-      this.is_signin = checkinfo.data.data.is_signin;
+      this.integral = data.todayintegral;
+      this.total_sign = data.total_sign;
+      this.is_signin = data.is_signin;
+      this.is_have_task = data.is_have_task;
+      this.packet_task_id = data.packet_task_id;
+      this.packet_task = data.packet_task;
       this.$apply();
     }
   }

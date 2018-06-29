@@ -47,7 +47,6 @@
             <button class="check-btn" 
                     data-type="goshop" 
                     formType="submit">去兑换礼品</button>
-            <!-- <view class="close-sign">进入首页</view> -->
          </block>
       </form>
   </view>
