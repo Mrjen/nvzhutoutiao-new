@@ -65,7 +65,7 @@ export default class likesList extends wepy.page{
     // 区详情
     toDetail(id){
        wx.navigateTo({
-         url: '../details/main?id=' + id
+         url: '/pages/details/main?id=' + id
        })
     }
   }

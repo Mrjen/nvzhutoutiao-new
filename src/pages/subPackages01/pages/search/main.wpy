@@ -4,7 +4,7 @@
       <!-- 搜索输入框 -->
       <view class="readBg space_b">
         <view class="searchBgIn readBg">
-          <image src="../image/searchInput.png" mode="widthFix" class="searchImg" />
+          <image src="../../../image/searchInput.png" mode="widthFix" class="searchImg" />
           <input class="searchInputContent" 
                  confirm-type="search" 
                  @input="inputWord" 
@@ -16,11 +16,7 @@
         </view>
         <view class="reduce {{searchWord?'hasword':''}}" @tap="clearWords">取消</view>
       </view>
-      <!-- <view class="search-list">
-            <view class="search-item" 
-                  v-for="(item,idx) in keywordsList" 
-                  @tap="tapArticle(item.id)">{{item.title}}</view>
-         </view> -->
+
       <view>
         <!-- 女主热搜 -->
         <view class="hotSearch" wx:if="{{searchWord?false:true}}">热搜</view>
@@ -36,13 +32,13 @@
           <view class="historySearch" wx:if="{{historySearch.length}}">搜索历史</view>
           <view wx:for="{{historySearch}}" wx:for-index="idex" wx:key="{{item.id}}" class="readBg space_b historyList">
             <view class="readBg history-item" @tap="searchThisKey({{item}})">
-              <image src="../image/clock.png" class="clock" />
+              <image src="../../../image/clock.png" class="clock" />
               <view class="historyTitle">{{item}}</view>
             </view>
-            <image src="../image/delete.png" class="delete" @tap="clearSearchHistory({{item}},{{idex}})" />
+            <image src="../../../image/delete.png" class="delete" @tap="clearSearchHistory({{item}},{{idex}})" />
           </view>
           <view class="readBg historyList" wx:if="{{historySearch.length>0?true:false}}">
-            <image src="../image/clear.png" class="clear" />
+            <image src="../../../image/clear.png" class="clear" />
             <view class="manyHot" @tap="clearAll">清空搜索历史</view>
           </view>
         </block>
@@ -50,49 +46,7 @@
     </view>
 
 <block wx:if="{{searchEnd}}">
-    <!-- <view wx:if="{{articleList.length>0?true:false}}">
-      <view class="about">
-        相关话题
-      </view>
-      <view class="topic topic_Tboder" 
-            wx:for="{{articleList}}" 
-            wx:for-index="idx" 
-            wx:for-item="article"
-            wx:key="{{article.id}}">
-        <view class="topic_top" @tap="Hots({{article.article_id}})">
-          <view class="topic_title">{{article.title}}</view>
-          <view class="cover-box">
-            <image class="topic_img" src="{{article.cover}}" />
-          </view>
-          <view class="topic_bottom">
-            <view class="readBg">
-              <view class="read">阅读</view>
-              <view class="read_time">{{article.readtimes}}</view>
-            </view>
-            <view class="read">{{article.create_time}}</view>
-          </view>
-        </view>
-        <view class="button_flex">
-          <button class="three_button" hover-class="three_button_focus"  
-              @tap="openSharePopup({{article.title}}, {{article.article_id}}, {{idx}})">
-              <image src="../image/share.png" class="topic_button" />
-              <view>{{article.sharetimes}}</view>
-            </button>
-          <button class="three_button" hover-class="none" @tap="Hots({{article.id}})">
-              <image src="../image/comment.png" class="topic_button_w" />
-              <view>{{article.commenttimes}}</view>
-            </button>
-          <button class="three_button" 
-              hover-class="none" 
-              @tap="addLike({{article.likestatus}}, {{article.id}}, {{idx}})">
-              <image wx:if="{{article.likestatus===0?true:false}}" src="../image/like.png" class="topic_button_o" />
-              <image wx:if="{{article.likestatus===1?true:false}}" src="../image/like-active.png" class="topic_button_o" />
-              <view>{{article.liketimes}}</view>
-            </button>
-        </view>
-      </view>
-    </view> -->
- 
+
     <view class="article" wx:if="{{articleList.length>0?true:false}}">
           <form report-submit="true"
                 wx:for="{{articleList}}"
@@ -140,10 +94,10 @@
 
 <script>
 import wepy from 'wepy';
-import wxRequest from "../../utils/http.js";
-import api from "../../utils/api.js";
-import utils from '../../utils/utils';
-import sharPop from '../../components/shareItem';
+import wxRequest from "../../../../utils/http.js";
+import api from "../../../../utils/api.js";
+import utils from '../../../../utils/utils';
+import sharPop from '../../../../components/shareItem';
 export default class search extends wepy.page {
   config = {
      "navigationBarTitleText":"话题搜索"
@@ -244,7 +198,7 @@ export default class search extends wepy.page {
           data: 'hot'
         })
         wx.switchTab({
-          url: '../index/main?desc=hot',
+          url: '/pages/index/main?desc=hot',
         })
       },
 
@@ -259,7 +213,7 @@ export default class search extends wepy.page {
       toThemeDeatil(e){
         console.log(e)
         wx.navigateTo({
-          url: '../details/main?id='+ e.currentTarget.dataset.id 
+          url: '/pages/details/main?id='+ e.currentTarget.dataset.id 
         })
       },
       // 分享
@@ -329,7 +283,7 @@ export default class search extends wepy.page {
       clearWords() {
         this.searchWord = '';
         wx.switchTab({
-          url: '../index/main'
+          url: '/pages/index/main'
         })
       }
     }

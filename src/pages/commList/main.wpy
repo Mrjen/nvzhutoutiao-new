@@ -97,7 +97,7 @@ export default class commentList extends wepy.page {
     toDetail(e){
       let dataset = e.currentTarget.dataset;
       wx.navigateTo({
-        url: `../details/main?id=${dataset.id}&reid=${dataset.reid}`
+        url: `/pages/details/main?id=${dataset.id}&reid=${dataset.reid}`
       })
     },
 

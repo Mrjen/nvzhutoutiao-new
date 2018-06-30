@@ -176,7 +176,7 @@ export default class EditDayQuote extends wepy.page{
                         }else if(dataset.type==='logo'){ // 上传二维码
                            url = `${tempFilePaths}&w=300&h=300&type=logo`
                         }
-                        wx.navigateTo({url:`../cropper/main?cover=${url}`})
+                        wx.navigateTo({url:`/pages/cropper/main?cover=${url}`})
                     }
                 })
                 

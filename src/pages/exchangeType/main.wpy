@@ -56,7 +56,7 @@ export default class exchange extends wepy.page {
     // 有默认地址、切换地址
     EditAddress(){
         console.log('切换地址')
-        wx.navigateTo({url:`../addressManage/main?pid=${this.productInfo.id}`})
+        wx.navigateTo({url:`/pages/addressManage/main?pid=${this.productInfo.id}`})
     },
 
     // 兑换商品
@@ -99,7 +99,7 @@ export default class exchange extends wepy.page {
     addAddress(){
       console.log(this.productInfo)
        wx.navigateTo({
-         url: `../addressManage/main?from=address&pid=${this.productInfo.id}`
+         url: `/pages/addressManage/main?from=address&pid=${this.productInfo.id}`
        })
     },
     // 输入账号

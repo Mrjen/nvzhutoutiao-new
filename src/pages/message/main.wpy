@@ -196,7 +196,7 @@ export default class Message extends wepy.page{
     toChart(id){
       console.log('id',id)
       wx.navigateTo({
-        url:'../chartRoom/main?user_id='+id
+        url:'/pages/subPackages01/pages/chartRoom/main?user_id='+id
       })
     },
 
@@ -207,15 +207,15 @@ export default class Message extends wepy.page{
       console.log('dataset',dataset)
       if(dataset.type==="comment"||dataset.type==="commentlike"||dataset.type==="reward"){
         wx.navigateTo({
-          url:`../details/main?id=${dataset.aid}&reid=${dataset.reid}`
+          url:`/pages/details/main?id=${dataset.aid}&reid=${dataset.reid}`
         })
       }else if(dataset.type==='sys'){
         wx.navigateTo({
-          url:`../messageDetail/main?id=${dataset.reid}`
+          url:`/pages/messageDetail/main?id=${dataset.reid}`
         })
       }else if(dataset.type==='chat'){
         wx.navigateTo({
-          url:`../chartRoom/main?user_id=${dataset.uid}`
+          url:`/pages/subPackages01/pages/chartRoom/main?user_id=${dataset.uid}`
         })
       }
 

@@ -92,7 +92,7 @@ export default class beforeCheck extends wepy.component {
       console.log('e', e)
       let dataset = e.detail.target.dataset;
       if(dataset.type==='goshop'){
-         wx.navigateTo({url:'../shop/main'});
+         wx.navigateTo({url:'/pages/shop/main'});
          this.$emit('checkTap', 'toshop')
       }else if(dataset.type==='check'){
          this.$emit('checkTap');

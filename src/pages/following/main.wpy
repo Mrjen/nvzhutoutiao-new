@@ -126,7 +126,7 @@ export default class Detail extends wepy.page {
       console.log(user_id,is_self)
       if(is_self!=1){
         wx.navigateTo({
-          url: `../otherUserCenter/main?user_id=${user_id}`
+          url: `/pages/subPackages01/pages/otherUserCenter/main?user_id=${user_id}`
         })
       }      
     }

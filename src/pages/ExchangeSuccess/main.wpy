@@ -21,12 +21,12 @@ export default class exchangeSuccess extends wepy.page {
     methods = {
         toExchangeList(){
             wx.redirectTo({
-              url: '../ExchangeList/main'
+              url: '/pages/ExchangeList/main'
             })
         },
         toShop(){
             wx.redirectTo({
-              url: '../shop/main'
+              url: '/pages/shop/main'
             })
         }
     }

@@ -4,8 +4,11 @@
       <view class="icon"></view>
       <view class="revenue">我的收益</view>
       <view class="money">￥{{myMomoney/100}}</view>
-      <button class="kiting" type="primary" @tap="closeKitPop">微信提现</button>
-      <view class="details" catchtap="colseDeatilPop">交易明细></view>
+      <button class="kiting" 
+              type="primary" 
+              @tap="closeKitPop">微信提现</button>
+      <view class="details" 
+            catchtap="colseDeatilPop">交易明细></view>
   </view>
   <!-- 提现弹层 -->
   <view class="kitin-popup" wx:if="{{kitinPop}}">
@@ -17,8 +20,11 @@
                @input="inputMoney"/>
       </view>
       <block>
-        <view class="kitin-money runover" wx:if="{{kitIn>myMomoney/100}}">金额超出余额</view>
-        <view class="kitin-money" @tap="kitInMoney" wx:else>确认提现</view>
+        <view class="kitin-money runover" 
+              wx:if="{{kitIn>myMomoney/100}}">金额超出余额</view>
+        <view class="kitin-money" 
+              @tap="kitInMoney" 
+              wx:else>确认提现</view>
       </block>
       <view class="tips">注：账户余额必须大于<text>1</text>元才能申请提现哦</view>
     </view>
@@ -26,11 +32,18 @@
   </view>
 
   <!-- 明细弹层 -->
-  <action-sheet class="details-pop" catchchange="colseDeatilPop" hidden="{{DetailPop}}">
+  <action-sheet class="details-pop" 
+                catchchange="colseDeatilPop" 
+                hidden="{{DetailPop}}">
      <view class="title">交易明细</view>
      <view class="main">
-       <scroll-view class="scrollview" scroll-y bindscrolltolower="loadMore" wx:if="{{DetailList.length>0}}">
-          <view class="d-item border_bottom" wx:for="{{DetailList}}" wx:key="{{index}}">
+       <scroll-view class="scrollview" 
+                    scroll-y 
+                    bindscrolltolower="loadMore" 
+                    wx:if="{{DetailList.length>0}}">
+          <view class="d-item border_bottom" 
+                wx:for="{{DetailList}}" 
+                wx:key="{{index}}">
              <view class="d-left">
                <view class="item-title">{{item.nickName}}{{item.info}}<text class="status" wx:if="{{item.status_type}}">({{item.status_type}})</text></view>
                <view class="date">{{item.create_time}}</view>
@@ -80,7 +93,7 @@ export default class shop extends wepy.page {
     // 输入提现金额
     inputMoney(e){
       // console.log(e.detail)
-       this.kitIn = Number(e.detail.value);
+       this.kitIn = parseInt(e.detail.value);
        this.$apply();
     },
     // 点击提现按钮

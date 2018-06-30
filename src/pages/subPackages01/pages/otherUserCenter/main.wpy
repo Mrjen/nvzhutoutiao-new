@@ -6,8 +6,8 @@
         <view class="info-left">
           <view class="nick-name">
             <view class="info-name">{{user_Info.nickName}}</view>
-            <image wx:if="{{user_Info.gender=='2'}}" class="avatar-sex" src="../image/girl.png"/>
-            <image wx:if="{{user_Info.gender=='1'}}" class="avatar-sex" src="../image/boy.png"/>
+            <image wx:if="{{user_Info.gender=='2'}}" class="avatar-sex" src="../../../../pages/image/girl.png"/>
+            <image wx:if="{{user_Info.gender=='1'}}" class="avatar-sex" src="../../../../pages/image/boy.png"/>
           </view>
           <view class="grade">
             <view>Lv.{{empiric_level}}</view>
@@ -120,8 +120,8 @@
 
 <script>
 import wepy from 'wepy';
-import wxRequest from "../../utils/http.js";
-import api from "../../utils/api.js";
+import wxRequest from "../../../../utils/http.js";
+import api from "../../../../utils/api.js";
 export default class otherUserCenter extends wepy.page{
   config = {
      "navigationBarTitleText":"TA的个人中心"
@@ -220,13 +220,13 @@ export default class otherUserCenter extends wepy.page{
     // 去详情页
     toDetail(id){
       wx.navigateTo({
-        url: `../details/main?id=${id}`
+        url: `/pages/details/main?id=${id}`
       })
     },
     // 私聊
     toChart(){
       wx.navigateTo({
-        url: `../chartRoom/main?user_id=${this.user_id}`
+        url: `/pages/subPackages01/pages/chartRoom/main?user_id=${this.user_id}`
       })
     },
     // 取消关注用户

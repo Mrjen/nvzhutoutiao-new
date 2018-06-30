@@ -1,8 +1,12 @@
 <template>
 <view class="address-manage">
-  <view class="addr-main" wx:if="{{ShowAddressList}}">
+  <view class="addr-main" 
+        wx:if="{{ShowAddressList}}">
     <view wx:if="{{AddressList.length>0}}">
-      <repeat for="{{AddressList}}" key="index" index="index" item="item">
+      <repeat for="{{AddressList}}" 
+              key="index" 
+              index="index" 
+              item="item">
         <view class="addr-item">
 
           <addressItem :item.sync="item" 
@@ -136,7 +140,7 @@ export default class addressManage extends wepy.page  {
     selectAddress(id){
       console.log('地址id', id);
       if(this.from==='myaddress') return;
-      wx.navigateTo({url:`../exchangeType/main?aid=${id}&pid=${this.pid}&type=product`})
+      wx.navigateTo({url:`/pages/exchangeType/main?aid=${id}&pid=${this.pid}&type=product`})
     },
     // 编辑地址
     EditAddress(e){

@@ -21,11 +21,11 @@
               <block wx:if="{{article_Show_type=='rich_text'?true:false}}">
                   <rich-text class="richtext" nodes="{{ArticleContent}}"></rich-text>
               </block>
-               <block wx:elif="{{article_Show_type=='wxparse'?true:false}}"> -->
+               <block wx:elif="{{article_Show_type=='wxparse'?true:false}}">
                   <html2wxml :parserContent.sync="ArticleContent" :parserName="name"></html2wxml>
                </block> 
           </view>
-          <navigator wx:if="{{is_story=='1'?true:false}}" url="../dayQuote/main" style="text-align:center;color:#647ffb;margin-bottom:50rpx" hover-class="none">>>每日物语海报下载</navigator>
+          <navigator wx:if="{{is_story=='1'?true:false}}" url="/pages/dayQuote/main" style="text-align:center;color:#647ffb;margin-bottom:50rpx" hover-class="none">>>每日物语海报下载</navigator>
         </form>
 
         <!-- 解忧栏 -->
@@ -90,7 +90,7 @@
 
           <view class="article-info">
               <view class="info-item brower"><text>阅读</text>{{Article_readtimes}}</view>
-              <view class="comment" wx:if="{{show_input_1}}">官方粉丝福利群，点击<button open-type="contact">回复1进群</button></view>
+              <view class="comment" wx:if="{{show_input_2}}">官方粉丝福利群，点击<button open-type="contact">回复1进群</button></view>
           </view>
         </view>
 
@@ -521,7 +521,7 @@
 
    <block>
 
-    <view class="botm-bar" wx:if="{{show_input_1}}">
+    <view class="botm-bar" wx:if="{{show_input_2}}">
       <block>
         <view class="is_userinfo">
           <button class="btn-input" wx:if="{{is_accredit=='1'}}" @tap="writeComment">评论有赏...</button>
@@ -739,7 +739,7 @@ export default class Detail extends wepy.page {
         active: false
       }],   
     
-    show_input_1: 0,                     // 是否显示入群
+    show_input_2: 0,                     // 是否显示入群
     is_letter: 0                         // 文章类型是解忧
 
   };
@@ -807,7 +807,7 @@ export default class Detail extends wepy.page {
     // 这里数据字节过大，把数据拆分分次传递
     let _page_data = detail.data.data;
     this.is_story = _page_data.is_story;
-    this.show_input_1 = _page_data.show_input_1;
+    this.show_input_2 = _page_data.show_input_2;
     let voteList = _page_data.votedata;
     if(voteList){
       // 是否存在投票
@@ -1085,7 +1085,7 @@ export default class Detail extends wepy.page {
     let that = this;
 
     wx.navigateTo({
-       url:`../inputComment/main?commType=article&article_id=${this.ArticleId}&is_announce=${this.is_announce}`
+       url:`/pages/inputComment/main?commType=article&article_id=${this.ArticleId}&is_announce=${this.is_announce}`
     })
   }
 
@@ -1093,7 +1093,7 @@ export default class Detail extends wepy.page {
   async commentFollow(user_id, comment_id, fidx, cidx, comment_type) {
     console.log('提交评论', user_id, comment_id, fidx, cidx, comment_type);
     wx.navigateTo({
-      url: `../inputComment/main?commType=commentFollow&re_user_id=${user_id}&comment_id=${comment_id}&is_announce=${this.is_announce}`
+      url: `/pages/inputComment/main?commType=commentFollow&re_user_id=${user_id}&comment_id=${comment_id}&is_announce=${this.is_announce}`
     })
   }
 
@@ -1311,7 +1311,7 @@ export default class Detail extends wepy.page {
        this.inputShow = true;
        this.inputFcus =  true;
        wx.navigateTo({
-         url: `../inputComment/main?comment_type=文章&article_id=${this.ArticleId}&is_announce=${this.is_announce}`
+         url: `/pages/inputComment/main?comment_type=文章&article_id=${this.ArticleId}&is_announce=${this.is_announce}`
        });
        wx.setStorage({key: 'commTitle', data: this.ArticleTtictle})
        this.$apply();
@@ -1386,7 +1386,7 @@ export default class Detail extends wepy.page {
        let formId = e.detail.formId;
        this.saveFormId(formId)
         wx.switchTab({
-            url: '../index/main'
+            url: '/pages/index/main'
         });
         wxRequest(api.clickbutton,{type:'index'},'POST');
     },
@@ -1476,7 +1476,7 @@ export default class Detail extends wepy.page {
       wx.setStorage({key:'recomment', data: `${nickName}: ${comment}`})
       wx.setStorage({key: 'commTitle', data: this.ArticleTtictle})
       wx.navigateTo({
-        url:`../inputComment/main?commType=follow&commentIdx=${idx}&comment_id=${id}&user_id=${user_id}&comment_type=${type}&is_announce=${this.is_announce}`
+        url:`/pages/inputComment/main?commType=follow&commentIdx=${idx}&comment_id=${id}&user_id=${user_id}&comment_type=${type}&is_announce=${this.is_announce}`
       })
 
       
@@ -1509,7 +1509,7 @@ export default class Detail extends wepy.page {
       wx.setStorage({key: 'commTitle', data: this.ArticleTtictle})
 
       wx.navigateTo({
-        url: `../inputComment/main?user_id=${user_id}&commType=follow&comment_id=${comment_id}&follow_index=${fidx}&commentIdx=${cidx}&comment_type=${type}&is_announce=${this.is_announce}`
+        url: `/pages/inputComment/main?user_id=${user_id}&commType=follow&comment_id=${comment_id}&follow_index=${fidx}&commentIdx=${cidx}&comment_type=${type}&is_announce=${this.is_announce}`
       })
     },
     // 提交评论
@@ -1704,7 +1704,7 @@ export default class Detail extends wepy.page {
       let myid = wx.getStorageSync('myid');
       if (user_id!=myid) {
         wx.navigateTo({
-          url: `../otherUserCenter/main?user_id=${user_id}`
+          url: `/pages/subPackages01/pages/otherUserCenter/main?user_id=${user_id}`
         });
       }
     }

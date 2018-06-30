@@ -18,8 +18,8 @@
 <block> 
   <view class="shop-main">
     <view class="shop-nav">
-       <navigator class="my-gift" url="../ExchangeList/main"></navigator>
-       <navigator class="my-address" url="../addressManage/main?from=myaddress"></navigator>
+       <navigator class="my-gift" url="/pages/ExchangeList/main"></navigator>
+       <navigator class="my-address" url="/pages/addressManage/main?from=myaddress"></navigator>
     </view>
     
     <view class="shop-bar"></view>
@@ -215,12 +215,12 @@ export default class shop extends wepy.page {
        if(dataset.type==='virtual'){
             //  虚拟产品
             wx.navigateTo({
-               url: `../exchangeType/main?type=virtual&pid=${dataset.id}`
+               url: `/pages/exchangeType/main?type=virtual&pid=${dataset.id}`
             })
        }else if(dataset.type==='product'){
             //  真实产品
             wx.navigateTo({
-               url: `../exchangeType/main?type=product&pid=${dataset.id}`
+               url: `/pages/exchangeType/main?type=product&pid=${dataset.id}`
             })
        }
     },

@@ -12,8 +12,8 @@
 
 <script>
 import wepy from 'wepy';
-import wxRequest from "../../utils/http.js";
-import api from "../../utils/api.js";
+import wxRequest from "../../../../utils/http.js";
+import api from "../../../../utils/api.js";
 export default class Detail extends wepy.page {
   config = {
      "navigationBarTitleText":"消息反馈"
@@ -40,7 +40,7 @@ export default class Detail extends wepy.page {
                     if (res.confirm) {
                     console.log('用户点击确定')
                         wx.switchTab({
-                          url: '../mycenter/main'
+                          url: '/pages/mycenter/main'
                         })
                     } else if (res.cancel) {
                     console.log('用户点击取消')

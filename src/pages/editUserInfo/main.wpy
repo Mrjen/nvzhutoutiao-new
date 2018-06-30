@@ -149,7 +149,7 @@ export default class editUserInfo extends wepy.page {
           success(res) {
             var filePath = res.tempFilePaths[0];
             wx.navigateTo({
-              url:`../cropper/main?cover=${filePath}&w=300&h=300&type=avatar`
+              url:`/pages/cropper/main?cover=${filePath}&w=300&h=300&type=avatar`
             })
           }
         })
@@ -165,7 +165,7 @@ export default class editUserInfo extends wepy.page {
          if(info.data.code===api.STATUS){
             tips.success('保存成功')
             wx.navigateTo({
-              url: '../mycenter/main'
+              url: '/pages/mycenter/main'
             })
          }
          this.$apply();

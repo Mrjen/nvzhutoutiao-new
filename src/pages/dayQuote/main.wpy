@@ -14,8 +14,7 @@
              </view>
           </view>
         </view>
-        <!-- <navigator class="submit submit1" url="../details/main?id=1348">提交物语</navigator> -->
-        <navigator class="submit submit2" url="../EditDayQuote/main">制作物语</navigator>
+        <navigator class="submit submit2" url="/pages/EditDayQuote/main">制作物语</navigator>
      </view>
 
      <action-sheet hidden="{{actionSheetHidden}}" catchchange="shareOpation">
@@ -79,7 +78,7 @@ export default class dayQuote extends wepy.page{
     goHomego(e) {
        let formId = e.detail.formId;
        this.saveFormId(formId)
-        wx.switchTab({url: '../index/main'});
+        wx.switchTab({url: '/pages/index/main'});
         wxRequest(api.clickbutton,{type:'index'},'POST');
     },
   }

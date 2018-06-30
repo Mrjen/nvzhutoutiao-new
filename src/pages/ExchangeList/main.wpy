@@ -29,13 +29,13 @@
               </view>
           </view>
           <view class="contact">
-              <navigator url="../feedback/main">问题反馈</navigator>
+              <navigator url="/pages/subPackages01/pages/feedback/main">问题反馈</navigator>
               <navigator url="" 
                 wx:if="{{item.post_status=='1'}}"  
                 data-id="{{item.order_id}}"
                 data-idx="{{index}}"
                 @tap="changePost">确认收货</navigator>
-              <navigator url="../ExpressInfo/main?order_id={{item.order_id}}" wx:if="{{item.type!='virtual'}}">查看物流</navigator>
+              <navigator url="/pages/ExpressInfo/main?order_id={{item.order_id}}" wx:if="{{item.type!='virtual'}}">查看物流</navigator>
           </view>
       </view>
     </view>

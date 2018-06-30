@@ -102,19 +102,19 @@ export default class myCenter extends wepy.page{
         },
         userInfo:{},
         listData:[{
-            url: '../message/main',
+            url: '/pages/message/main',
             text: '我的信息',
             iconPath: 'https://gcdn.playonwechat.com/mycenter-icon-message.png',
             msgNum: 0
          },
          {
-           url: '../myWallet/main',
+           url: '/pages/myWallet/main',
            text: '我的钱包',
            iconPath: 'https://gcdn.playonwechat.com/mycenter-icon-wallt.png',
            msgNum: 0
          },
          {
-           url: '../shop/main',
+           url: '/pages/shop/main',
            text: '积分商城',
            iconPath: 'https://gcdn.playonwechat.com/mycenter-icon-shop.png',
            msgNum: 0
@@ -127,26 +127,26 @@ export default class myCenter extends wepy.page{
          },
          
          {
-           url: '../feedback/main',
+           url: '/pages/subPackages01/pages/feedback/main',
            text: '意见反馈',
            iconPath: 'https://gcdn.playonwechat.com/mycenter-icon-suggest.png',
            msgNum: 0
          }],
         listNav:[{
-          url:'../likesList/main',
+          url:'/pages/likesList/main',
           num:'0',
           text:'点亮'
         },{
-          url:'../commList/main',
+          url:'/pages/commList/main',
           num:'0',
           text:'评论'
         }
         ,{
-          url:'../following/main',
+          url:'/pages/following/main',
           num:'0',
           text:'关注'
         },{
-          url:'../followers/main',
+          url:'/pages/followers/main',
           num:'0',
           text:'粉丝'
         }
@@ -161,18 +161,18 @@ export default class myCenter extends wepy.page{
   methods={
     editInfo(){
       wx.navigateTo({
-        url: '../editUserInfo/main'
+        url: '/pages/editUserInfo/main'
       })
     },
     // 查看等级
     toGrade(){
       wx.navigateTo({
-        url:'../gradeDetail/main'
+        url:'/pages/gradeDetail/main'
       })
     },
     // 签到
     async checkIn(e){
-      wx.navigateTo({url: `../checkIn/main?title=${e}`})
+      wx.navigateTo({url: `/pages/checkIn/main?title=${e}`})
       // let json = await wxRequest(api.chunk,{},'POST')
       // console.log('json', json)
       // if(json.data.code === api.STATUS){

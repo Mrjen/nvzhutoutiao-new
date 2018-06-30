@@ -44,7 +44,7 @@
               </form>
             </view>
          </scroll-view>
-         <navigator class="search" url="../search/main">
+         <navigator class="search" url="/pages/subPackages01/pages/search/main">
             <view class="search-icon"></view>
          </navigator>
       </view>
@@ -120,6 +120,7 @@
                 :redPackCountDown.sync="redPackCountDown"
                 :hasIuserInfo.sync="hasIuserInfo"
                 :redpackStatus.sync="redpackStatus"
+                :packetTaskId.sync="packet_task_id"
                 :isHelp.sync="is_help"
                 :showRedPackCountDown.sync="showRedPackCountDown"
                 @helpFriend.user="helpFriend"
@@ -286,6 +287,7 @@ export default class Index extends wepy.page {
           }
           this.persionList = persionList;
           this.isSelfRedPack = data.is_self_redpacket;
+          this.redpackStatus = data.status;
           if(data.status==='0'){
             //  组团中 红包未过期
             this.joinGroup = true;
@@ -326,7 +328,6 @@ export default class Index extends wepy.page {
             }
             this.joinGroup = true;
             this.persionList = data.list;
-            this.redpackStatus = data.status;
             this.$apply();
           }else if(data.status==='2'){
             console.log('走到这里')
@@ -348,7 +349,7 @@ export default class Index extends wepy.page {
         el.active = false;
       })
       let lost = continue_sign%7;
-      if(lost===0) lost=7;
+      if(lost===0&&this.continue_sign>0) lost =7;
       for(let i=0;i<lost;i++){
          checkList[i].active = true;
       }
@@ -485,7 +486,12 @@ export default class Index extends wepy.page {
       if(this.redpackType!=='task'){
         data.type = type.toString();
       }
-      
+      let _user = await wxRequest(api.getUserInfo,{},'POST');
+      if(_user.data.code===api.STATUS){
+        this.hasIuserInfo = _user.data.data;
+        this.$apply();
+      }
+;
       let json = await wxRequest(api.openpacket,data,'POST');
       console.log('json', json)
       if(json.data.code===api.STATUS){
@@ -528,7 +534,7 @@ export default class Index extends wepy.page {
        }
        this.$apply();
     },
-    //  签到
+    //  点击签到按钮
     async checkTap(e){
        console.log('点击签到', this.continue_sign);
        if(e==='toshop'){
@@ -541,7 +547,7 @@ export default class Index extends wepy.page {
           let checkList = this.checkList;
           let lost = Number(this.continue_sign)%7+1;
           console.log('this.continue_sign', this.continue_sign, lost)
-          if(lost===0) lost =7;
+          if(lost===0&&this.continue_sign>0) lost =7;
           for(let i=0;i<lost;i++){
             checkList[i].active = true;
           }
@@ -573,7 +579,7 @@ export default class Index extends wepy.page {
       let json = await wxRequest(api.chunk,{},'POST')
       if(json.data.code === api.STATUS){
           wx.navigateTo({
-            url: `../checkIn/main?title=签到成功`
+            url: `/pages/checkIn/main?title=签到成功`
           })
           this.$apply();
         }
@@ -611,7 +617,7 @@ export default class Index extends wepy.page {
       console.log('去详情 formid', e.detail.formId);
       let dataset = e.currentTarget.dataset;
       wx.navigateTo({
-        url: '../details/main?id=' + dataset.id + '&from=index'
+        url: '/pages/details/main?id=' + dataset.id + '&from=index'
       });
       // 保存formid    
       if (e.detail.formId) {
@@ -623,7 +629,7 @@ export default class Index extends wepy.page {
     // 搜索
     toSearch() {
       wx.navigateTo({
-        url: `../search/main`
+        url: `/pages/search/main`
       });
     }
   };
@@ -639,6 +645,7 @@ export default class Index extends wepy.page {
       console.log('getUserInfo',msg)
       if (msg.data.code === api.STATUS) {
         wx.setStorage({key:'userInfo', data: msg.data.data});
+        this.hasIuserInfo = msg.data.data;
         // 用户是否有未读通知
         let data = msg.data.data;
         if (data.msgNum) {
@@ -705,7 +712,7 @@ export default class Index extends wepy.page {
         el.active = false;
       })
       let lost = continue_sign%7;
-      if(lost===0) lost =7;
+      if(lost===0&&this.continue_sign>0) lost =7;
       for(let i=0;i<lost;i++){
         checkList[i].active = true;
       }

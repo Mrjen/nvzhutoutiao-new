@@ -68,6 +68,7 @@
         <veiw class="text">2. 连续签到3天/7天可额外获得大礼包</veiw>
         <veiw class="text">3. 连续签到积分会不断增加，日上限100</veiw>
         <veiw class="text">4. 如果中断签到，将重新开始计算积分</veiw>
+        <veiw class="text">5. 助力红包需要在2小时内邀请3人即可拆开，过期自动组团失败</veiw>
      </view>
 
      <!-- 红包未拆开 -->
@@ -250,7 +251,7 @@ export default class checkIn extends wepy.page{
     async dayCheck(e){
       let dataset = e.detail.target.dataset;
       if(dataset.type==='goshop'){
-          wx.navigateTo({url:'../shop/main'});
+          wx.navigateTo({url:'/pages/shop/main'});
           this.$emit('checkTap', 'toshop')
       }else if(dataset.type==='check'){
           let check = await wxRequest(api.chunk,{},'POST');
@@ -285,7 +286,7 @@ export default class checkIn extends wepy.page{
               this.$apply();
           }
       }else if(dataset.type==='gohome'){
-        wx.switchTab({url:'../index/main'})
+        wx.switchTab({url:'/pages/index/main'})
       }
     },
     // 关闭弹层
@@ -408,7 +409,7 @@ export default class checkIn extends wepy.page{
         el.active = false;
       })
       let lost = continue_sign%7;
-      if(lost===0) lost=7;
+      if(lost===0&&this.continue_sign>0) lost =7;
       for(let i=0;i<lost;i++){
         checkList[i].active = true;
       }

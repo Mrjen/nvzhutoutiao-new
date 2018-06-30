@@ -35,19 +35,26 @@
                     <view class="red-pack-icon"></view>我也要玩</button>
             </view>
             <form wx:else>
-                <button open-type="share" 
+                <button open-type="share"
                         class="form-btn" 
                         wx:if="{{isSelfRedPack===1?1:0}}"
                         data-type="redpack">邀请好友助力</button>
+                        <!-- 未授权 -->
                 <button open-type="getUserInfo" 
+                        @getuserinfo="getUserInfo"
                         lang="zh_CN"  
-                        wx:elif="{{isSelfRedPack===0&&hasIuserInfo.is_accredit=='0'?0:0}}"
-                        class="form-btn">没有授权</button>
+                        wx:elif="{{isSelfRedPack===0&&hasIuserInfo.is_accredit=='0'?1:0}}"
+                        class="form-btn getuserinfo">给TA助力</button> 
+                        
                 <button class="form-btn help" 
                         @tap="helpFriend"
-                        wx:elif="{{isSelfRedPack===0&&hsaIjoin==0&&redpackStatus!=='1'?1:0}}">给TA助力</button>
-                <button wx:elif="{{isSelfRedPack===0&&hsaIjoin==1?1:0}}" class="has-join">已助力</button>
-                <button class="form-btn icon-btn" wx:if="{{isSelfRedPack===1?0:1}}" @tap="createdMySelf">
+                        wx:elif="{{isSelfRedPack===0&&hsaIjoin==0&&redpackStatus=='1'?1:0}}">给TA助力{{hasIuserInfo.is_accredit}}:{{isSelfRedPack}}</button>
+                <button wx:elif="{{isSelfRedPack===0&&hsaIjoin==1?1:0}}" 
+                        class="has-join">已助力</button>
+                <view class="noplace" wx:if="{{redpackStatus==='2'}}">助力名额已满</view>
+                <button class="form-btn icon-btn" 
+                        wx:if="{{isSelfRedPack===1?0:1}}" 
+                        @tap="createdMySelf">
                     <view class="red-pack-icon"></view>我也要玩</button>
             </form>
          </block>
@@ -57,7 +64,9 @@
 </template>
 
 <script>
-import wepy from 'wepy'
+import wepy from 'wepy';
+import wxRequest from '../../../utils/http.js';
+import api from '../../../utils/api.js';
 export default class joinGroup extends wepy.component{
   data={}
   props={
@@ -72,17 +81,22 @@ export default class joinGroup extends wepy.component{
     redPackCountDown: Object,      // 倒计时
     redpackStatus: String,         // 红包状态
     isHelp: Number,
-    showRedPackCountDown: Boolean
+    showRedPackCountDown: Boolean,
+    packetTaskId: Number
   }
 
   onLoad () {
     this.$data['persionList'] = null;   //  将 myprop 加入到脏检查中。
+    this.$data['hasIuserInfo'] = null;
   }
 
   watch = {
     'persionList':function(newValue, oldValue){
         console.log(newValue, oldValue)
         let myid = wx.getStorageSync('userInfo').id;
+    },
+    'hasIuserInfo':function(n,o){
+        console.log('new',n,'old',o)
     }
   }
   methods = {
@@ -97,6 +111,35 @@ export default class joinGroup extends wepy.component{
     // 我也要玩
     createdMySelf(){
         this.$emit('createdMySelf');
+    },
+
+    // 获取用户信息
+    async getUserInfo(e) {
+        console.log(e.detail)
+      let userInfo = e.detail.userInfo;
+      if (!userInfo) return;
+      userInfo.is_accredit = 1;
+      let _userInfo = await wxRequest(api.saveUserInfo, userInfo);
+      if (_userInfo.data.code === api.STATUS){
+        let json = await wxRequest(api.createhelp,{
+            packet_task_id:this.packetTaskId
+        },'POST');
+        if(json.data.code===api.STATUS){
+            let persionList = this.persionList;
+            let data = json.data.data;
+            for(let i=0;i<3;i++){
+                persionList[i] = data.list[i]?{...data.list[i],text:'已助力'}: persionList[i];
+            }
+          let hasIuserInfo = this.hasIuserInfo;
+          hasIuserInfo.is_accredit = 1;
+          this.hasIuserInfo = hasIuserInfo;
+          this.persionList = persionList;
+          this.hsaIjoin = 1;
+          this.$apply();
+        }  
+
+      }
+      this.$apply();
     }
   }
 }
@@ -209,7 +252,7 @@ export default class joinGroup extends wepy.component{
        border-radius: 50rpx;
        margin: 0 auto;
     }
-    .help{
+    .help,.getuserinfo{
         margin-bottom: 20rpx;
     }
     .red-pack-icon{

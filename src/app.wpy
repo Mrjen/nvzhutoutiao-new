@@ -18,16 +18,12 @@ export default class extends wepy.app {
       'pages/commList/main',
       'pages/details/main',
       'pages/editUserInfo/main',
-      'pages/feedback/main',
       'pages/followers/main',
       'pages/following/main',
       'pages/likesList/main',
       'pages/messageDetail/main',
       'pages/message/main',
       'pages/mycenter/main',
-      'pages/otherUserCenter/main',
-      'pages/search/main',
-      'pages/chartRoom/main',
       'pages/myWallet/main',
       'pages/shop/main',
       'pages/gradeDetail/main',
@@ -46,6 +42,10 @@ export default class extends wepy.app {
       root:'pages/subPackages01',
       pages:[
         'pages/webView/main',
+        'pages/chartRoom/main',
+        'pages/otherUserCenter/main',
+        'pages/search/main',
+        'pages/feedback/main',
         'pages/writeSolveProblems/main'
       ]
     }],
@@ -140,7 +140,7 @@ export default class extends wepy.app {
 
   onPageNotFound(){
     wx.switchTab({
-      url: './pages/index/main'
+      url: '/pages/index/main'
     })
   }
 

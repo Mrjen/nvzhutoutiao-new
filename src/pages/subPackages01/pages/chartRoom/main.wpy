@@ -2,16 +2,26 @@
   <div class="chart-room">
     <view class="chatRoom">
         <!-- 时间信息 -->
-        <view class="chart-list" wx:for="{{msgList}}" wx:key="{{item.id}}">
-          <view class="time" wx:if="{{item.is_show_time?true:false}}">{{item.create_time}}</view>
-          <view class="mySay" wx:if="{{item.is_self===0?false:true}}">
-            <image src="{{item.avatarUrl}}" class="myPotrait" />
+        <view class="chart-list" 
+              wx:for="{{msgList}}" 
+              wx:key="{{item.id}}">
+          <view class="time" 
+                wx:if="{{item.is_show_time?true:false}}">{{item.create_time}}</view>
+          <view class="mySay" 
+                wx:if="{{item.is_self===0?false:true}}">
+            <image src="{{item.avatarUrl}}" 
+                   class="myPotrait" />
             <view>
               <view class="readBg  flex_reverse">
                 <view class="talkName">{{item.nickName}}</view>
-                <image class="gender" wx:if="{{item.gender==2?true:false}}" src="../image/girl.png" />
-                <image class="gender" wx:if="{{item.gender==1}}" src="../image/boy.png" />
-                <view wx:if="{{item.owner}}" class="floorHost">楼主</view>
+                <image class="gender" 
+                       wx:if="{{item.gender==2?true:false}}" 
+                       src="../image/girl.png" />
+                <image class="gender" 
+                       wx:if="{{item.gender==1}}" 
+                       src="../image/boy.png" />
+                <view wx:if="{{item.owner}}" 
+                      class="floorHost">楼主</view>
               </view>
               <view class="myPotraitContent">
                 <text selectable>{{item.msg}}</text>
@@ -24,8 +34,12 @@
             <view>
               <view class="readBg">
                 <view class="talkName">{{item.nickName}}</view>
-                <image class="gender" wx:if="{{item.gender==2?true:false}}" src="../image/girl.png" />
-                <image class="gender" wx:if="{{item.gender==1?true:false}}" src="../image/boy.png" />
+                <image class="gender" 
+                       wx:if="{{item.gender==2?true:false}}" 
+                       src="../image/girl.png" />
+                <image class="gender" 
+                       wx:if="{{item.gender==1?true:false}}" 
+                       src="../image/boy.png" />
                 <!-- <view v-if="item.owner" class="floorHost">楼主</view> -->
               </view>
               <view class="potraitContent">
@@ -57,9 +71,9 @@
 
 <script>
 import wepy from 'wepy';
-import wxRequest from "../../utils/http.js";
-import api from "../../utils/api.js";
-import utils from '../../utils/utils';
+import wxRequest from "../../../../utils/http.js";
+import api from "../../../../utils/api.js";
+import utils from '../../../../utils/utils';
 export default class messageDetail extends wepy.page{
   config = {
      "navigationBarTitleText":"私聊"
