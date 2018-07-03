@@ -208,6 +208,9 @@ const createhelp = `${domainUrl}/packet/createhelp`
 // 保存解忧内容
 const saveletter = `${domainUrl}/letter/saveletter`
 
+// 资讯列表
+const newsindex = `${domainUrl}/news/newsindex`
+
 export default {
   STATUS,
   domainUrl,
@@ -278,5 +281,6 @@ export default {
   createpackettask,
   onepackettask,
   createhelp,
-  saveletter
+  saveletter,
+  newsindex
 };

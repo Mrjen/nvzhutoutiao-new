@@ -24,7 +24,7 @@
       </view>
 
       <!-- 关于他的 -->
-      <view class="about-he">
+      <!-- <view class="about-he">
           <navigator url="{{'/pages/following/main?user_id='+ user_id +'&nav_title=Ta的关注'}}">
              <view class="num">{{user_Info.attentionNum}}</view>
              <view class="tag">关注</view>
@@ -33,7 +33,7 @@
              <view class="num">{{user_Info.followerNum}}</view>
              <view class="tag">粉丝</view>
           </navigator>
-      </view>
+      </view> -->
      </view>
 
      <!-- 列表 -->
@@ -87,7 +87,7 @@
      </view>
 
      <!-- 底部按钮 -->
-     <view class="attation-bar">
+     <!-- <view class="attation-bar">
         <view class="item add-div">
             <button class="get_user_info" 
                     wx:if="{{is_accredit=='0'?true:false}}" 
@@ -110,7 +110,7 @@
           <view class="item chart" @tap="toChart" wx:else>
             <view class="icon-chart"></view>私聊</view>
         </block>
-     </view>
+     </view> -->
 
 
      <!-- 底部按钮 -->

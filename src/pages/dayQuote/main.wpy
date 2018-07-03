@@ -21,7 +21,7 @@
             <button open-type="share" 
                     data-name="item" 
                     class="action-item action-item0">发给朋友</button>
-            <button @tap="downloadPoster" data-name="item" class="action-item action-item1">生成图片分享朋友</button>
+            <button catchtap="downloadPoster" data-name="item" class="action-item action-item1">生成图片分享朋友</button>
         <!--自动隐藏action-sheet-->
         <action-sheet-cancel>取消
         <view style="width:750rpx;height:40rpx;background:#fff"></view>
@@ -67,9 +67,8 @@ export default class dayQuote extends wepy.page{
     async downloadPoster(){
       this.actionSheetHidden = !this.actionSheetHidden;
       this.$apply();
-      let url = await utils.getImage(this.currentQuote.qrpic);
-      await utils.saveImageToPhotosAlbum(url);
-
+      let url = await utils.getImage(this.currentQuote.pic);
+      utils.saveImageToPhotosAlbum(url);
       let quoteList = this.quoteList;
       let id = this.currentQuote.id;
       wxRequest(api.statisticsstroy,{id:id, type:'down'},'POST')
@@ -126,6 +125,10 @@ export default class dayQuote extends wepy.page{
       let scene = decodeURIComponent(options.scene);
       this.showHome = utils.getQueryString('show_home', scene);
       this.$apply();
+      let share = utils.getQueryString('share_user_id', scene);
+      if(share){
+        wxRequest(api.clickbutton,{type:`story`},'POST');
+      }
     }
   }
 

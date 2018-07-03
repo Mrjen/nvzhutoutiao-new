@@ -101,12 +101,13 @@ export default class myCenter extends wepy.page{
           like: 17
         },
         userInfo:{},
-        listData:[{
-            url: '/pages/message/main',
-            text: '我的信息',
-            iconPath: 'https://gcdn.playonwechat.com/mycenter-icon-message.png',
-            msgNum: 0
-         },
+        listData:[
+        //   {
+        //     url: '/pages/message/main',
+        //     text: '我的信息',
+        //     iconPath: 'https://gcdn.playonwechat.com/mycenter-icon-message.png',
+        //     msgNum: 0
+        //  },
          {
            url: '/pages/myWallet/main',
            text: '我的钱包',
@@ -141,15 +142,15 @@ export default class myCenter extends wepy.page{
           num:'0',
           text:'评论'
         }
-        ,{
-          url:'/pages/following/main',
-          num:'0',
-          text:'关注'
-        },{
-          url:'/pages/followers/main',
-          num:'0',
-          text:'粉丝'
-        }
+        // ,{
+        //   url:'/pages/following/main',
+        //   num:'0',
+        //   text:'关注'
+        // },{
+        //   url:'/pages/followers/main',
+        //   num:'0',
+        //   text:'粉丝'
+        // }
         ],
         lvIconArr: [],    // 等级图标数组
         todaySign: 0     //  今天是否签到
@@ -173,11 +174,6 @@ export default class myCenter extends wepy.page{
     // 签到
     async checkIn(e){
       wx.navigateTo({url: `/pages/checkIn/main?title=${e}`})
-      // let json = await wxRequest(api.chunk,{},'POST')
-      // console.log('json', json)
-      // if(json.data.code === api.STATUS){
-        
-      // }
     }
   }
   
@@ -191,17 +187,17 @@ export default class myCenter extends wepy.page{
       this.todaySign = _info.is_signin;
       listNav[0].num = _info.likeNum;
       listNav[1].num = _info.commentNum;
-      listNav[2].num = _info.attentionNum;
-      listNav[3].num = _info.followerNum;
+      // listNav[2].num = _info.attentionNum;
+      // listNav[3].num = _info.followerNum;
       console.log('_info.id',_info.id)
-      listNav[2].url = `../following/main?user_id=${_info.id}`;
-      listNav[3].url = `../followers/main?user_id=${_info.id}`;
+      // listNav[2].url = `../following/main?user_id=${_info.id}`;
+      // listNav[3].url = `../followers/main?user_id=${_info.id}`;
       listData[0].msgNum = _info.msgNum;
       this.listNav = listNav;
       if(_info.msgNum>0){
-        wx.setTabBarBadge({index: 1,text: _info.msgNum.toString()})
+        wx.setTabBarBadge({index: 2,text: _info.msgNum.toString()})
       }else{
-        wx.removeTabBarBadge({index:1})
+        wx.removeTabBarBadge({index:2})
       }
 
       let lvIconArr = [];
@@ -333,8 +329,9 @@ export default class myCenter extends wepy.page{
      display: flex;
      padding: 30rpx 0 46rpx 0;
      navigator{
-       flex: 1;
+      //  flex: 1;
        min-width: 40rpx;
+       width: 25%;
        margin-right: 44rpx;
        justify-content: center;
        position: relative;

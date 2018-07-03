@@ -4,7 +4,6 @@ export default async function wxRequest(url, params = {}, method = "GET") {
        params.token = wx.getStorageSync("token") || "";
     }
   }
-
   return new Promise(function (resolve, reject) {
     wx.request({
       url: url,

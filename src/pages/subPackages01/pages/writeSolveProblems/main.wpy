@@ -77,8 +77,21 @@ export default class writeSolve extends wepy.page {
   }
   async onLoad(options){
      console.log(options);
-     this.ArticleId = options.id;
+     this.ArticleId = options.article_id;
      this.$apply();
+  }
+  onShow(){
+    console.log('show')
+    let data = wx.getStorageSync('problem');
+    console.log('data',data, this.ArticleId)
+    if(data){
+       if(data.article_id==this.ArticleId){
+        this.commContent = data.text;
+        this.$apply();
+       }else if(data.article_id!=this.ArticleId){
+         wx.removeStorage({key:'problem'});
+       }
+    }
   }
   methods={
     // 发送解忧
@@ -108,8 +121,10 @@ export default class writeSolve extends wepy.page {
             //   console.log('json',json);
             that.showSendToast = true;
             that.$apply();
+            wx.removeStorage({key:'problem'});
             setTimeout(() => {
                 that.showSendToast = false;
+                wx.removeStorage({key:'commContent'});
                 that.$apply();
                 wx.redirectTo({url: `/pages/details/main?id=${this.ArticleId}`});
             },1500);
@@ -123,6 +138,7 @@ export default class writeSolve extends wepy.page {
     // 写内容
     TextInput(e){
        this.commContent = e.detail.value;
+       wx.setStorage({key: 'problem', data:{text:e.detail.value, article_id: this.ArticleId}});
        this.$apply();
     },
     //  移除图片
@@ -158,9 +174,6 @@ export default class writeSolve extends wepy.page {
       this.showMyName = e.detail.value;
       this.$apply();
     }
-  }
-  onShow(){
-
   }
 }
 </script>

@@ -13,6 +13,7 @@ import userAuth from './utils/userMethod/userAuth.js';
 export default class extends wepy.app {
   config = {
     pages: [
+      
       'pages/index/main',
       'pages/news/main',
       'pages/commList/main',
@@ -64,17 +65,22 @@ export default class extends wepy.app {
       backgroundColor: "#F5F4F1",
       borderStyle: "black",
       list: [
-        // {
-        //   pagePath: "pages/news/main",
-        //   text: "资讯",
-        //   iconPath: "pages/image/tabbar-icon-news.png",
-        //   selectedIconPath: "pages/image/tabbar-icon-news-active.png"
-        // },
+        {
+          pagePath: "pages/news/main",
+          text: "资讯",
+          iconPath: "pages/image/tabbar-icon-news.png",
+          selectedIconPath: "pages/image/tabbar-icon-news-active.png"
+        },
         {
           pagePath: "pages/index/main",
           text: "话题",
           iconPath: "pages/image/tabbar-icon-topic.png",
           selectedIconPath: "pages/image/tabbar-icon-topic-active.png"
+        },{
+          pagePath: "pages/message/main",
+          text: "消息",
+          iconPath: "pages/image/tabbar-icon-msg.png",
+          selectedIconPath: "pages/image/tabbar-icon-msg-active.png"
         },{
           pagePath: "pages/mycenter/main",
           text: "我的",
@@ -453,5 +459,47 @@ button::after{
   }
 }
 
+// 阅读数 评论数 点亮数icon
+.parameter {
+  display: flex;
+  position: relative;
+  .brower {
+    display: flex;
+    align-items: center;
+    font-size: 22rpx;
+    min-width: 120rpx;
+    color: #666;
+  }
+  .icon {
+    width: 38rpx;
+    height: 34rpx;
+    display: block;
+    margin-right: 4rpx;
+  }
+  .icon1 {
+    width: 38rpx;
+    height: 34rpx;
+    background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAYFBMVEUAAAC6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urr////l5eXKysrDw8P4+Pj09PTs7Oze3t7Z2dm+vr6+LRipAAAAFXRSTlMA+vbH7LGDbE5JPDYeGAXi4KKhJCOHBqNgAAAAhUlEQVQoz9WRSRKAIAwEMe7iruCu//+lhRtBKM7a167UJBnyXbLQLwFKP8w01dYOu3DqVlF5cKhHB7l0qcteuOntEo9peMnpImAGIBIuxnEDCo4JoYDUyGc0SwnepeOc92grZXJRJFAlc+umFWXatrXdafuQ9beYppKtVI2pzwKgEH3+kx2MHxitVsgBXAAAAABJRU5ErkJggg==');
+    background-size: 28rpx 28rpx;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  .icon2 {
+    width: 38rpx;
+    height: 34rpx;
+    background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAUVBMVEUAAAC6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urqgmJljAAAAGnRSTlMA1PNM2mr66sG4oYRysH5ZEvTg0MuadnA/GkJaMEsAAABxSURBVCjPzdHbCoAgDAbgVWqeOp99/wcNMzPQBt353wz5YLgNck3LSfFOUwUTJsqjlYlDPOoEMo80gaXHDkP1jb10z5q7OpOAlN12wGrrAjBFWADstm4AIm4r6Xh10Ar50J9RaAIHdH3o4tGTocfOMCcR7R8FnAvaTAAAAABJRU5ErkJggg==');
+    background-size: 28rpx 28rpx;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  .icon3 {
+    width: 38rpx;
+    height: 34rpx;
+    background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAeFBMVEUAAAC6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urogVSNDAAAAJ3RSTlMACqUE9+DCrJRS2HZuH5uNhEw/JhoSDgHq08a2iWZYRjMxzcyiXzWwYpPmAAAAyUlEQVQoz53S147DIBRF0YMJxt2OW3qbdv7/D8djbIVBIEXZ4m0J3SsEXizX0ZS+ejHjXOJFOYqpAYF28/F22W+m1N2LX5z7xr/aQmIqMZjir3u54JEqfW5bAegrqgUfMSlw5VIHSTLHWlGg41q2k5EuYSWVEe8zXGhVOniyMXcwtrF2MLKxcDANz/zZ4mBvOzxpPJNi2Kx2QM/stuIHWQt0n8a0QK/IZsGzfpi51TGuW/Nl9gnCSbiJpkWwLeMwpjy9eXNsbni5X20pHeQbuz5lAAAAAElFTkSuQmCC');
+    background-size: 28rpx 28rpx;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+}
 </style>
 

@@ -123,14 +123,14 @@ export default class Message extends wepy.page{
     nav:[{
       id: '1',
       tag: 'sys',
-      text: '通知',
+      text: '消息',
       active: true,
       show: true,
       msgNum: ''
     },{
       id: '2',
       tag: 'chat',
-      text: '私聊',
+      text: '通知',
       active: false,
       show: true,
       msgNum: ''
@@ -157,6 +157,13 @@ export default class Message extends wepy.page{
         }
         nav[1].msgNum = msg.data.data.chatNum;
         nav[0].msgNum = msg.data.data.sysNum;
+        if(nav[1].msgNum>0){
+           wx.setTabBarBadge({ index: 2, text: nav[1].msgNum.toString()});
+        }else if(nav[0].msgNum>0){
+           wx.setTabBarBadge({ index: 2, text: nav[0].msgNum.toString()});
+        }else{
+           wx.removeTabBarBadge({ index: 2 });
+        }
         this.nav = nav;
         this.$apply();
      }

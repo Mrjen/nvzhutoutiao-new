@@ -122,6 +122,7 @@
                 :redpackStatus.sync="redpackStatus"
                 :packetTaskId.sync="packet_task_id"
                 :isHelp.sync="is_help"
+                :isoverdue.sync="isoverdue"
                 :showRedPackCountDown.sync="showRedPackCountDown"
                 @helpFriend.user="helpFriend"
                 @createdMySelf.user="createdMySelf"
@@ -133,7 +134,9 @@
             bindsubmit="openJoinGroup">
          <button formType="submit" class="open-join">
             <view class="count-down">
-              <text class="time-text">{{redPackCountDown.h}}</text>:<text class="time-text">{{redPackCountDown.m}}</text>:<text class="time-text">{{redPackCountDown.s}}</text>
+              <text class="time-text">{{redPackCountDown.h!=''?redPackCountDown.h:''}}</text>
+              <text class="time-text">{{redPackCountDown.m!=''?(':'+redPackCountDown.m+':'):''}}</text>
+              <text class="time-text">{{redPackCountDown.s!=''?redPackCountDown.s+':':''}}</text>
             </view>
          </button>
       </form>
@@ -205,6 +208,7 @@ export default class Index extends wepy.page {
     redPackInCountDown: {},                // 红包助力弹层倒计时  
     packet_task_id: '',                    // 被助力的红包id
     showRedPackCountDown: true,            // 显示倒计时
+    isoverdue: 0,                          // 红包是否已过期 0->没过期 1 -> 过期
     persionList: [{                        // 助力列表
         id: '',
         avatarUrl:'',
@@ -270,17 +274,15 @@ export default class Index extends wepy.page {
        this.packet_task_id = options.packet_task_id;
        this.pagefrom = options.from;
        this.$apply();
-       console.log('options.packet_task_id', options.packet_task_id)
        let json = await wxRequest(api.onepackettask,{packet_task_id:options.packet_task_id},'POST');
        console.log('别人的红包信息', json);
        if(json.data.code===api.STATUS){
           let data = json.data.data;
-          console.log('data',data)
           let persionList = this.persionList;
           for(let i=0;i<3;i++){
             persionList[i] = data.list[i]?{...data.list[i],text:'已助力'}:persionList[i];
             if(persionList[i].user_id===data.insert_user_id){
-                console.log('我已助力11');
+                console.log('我已助力');
                 this.hsaIjoin = 1;
                 this.$apply();
             }
@@ -288,6 +290,7 @@ export default class Index extends wepy.page {
           this.persionList = persionList;
           this.isSelfRedPack = data.is_self_redpacket;
           this.redpackStatus = data.status;
+          this.isoverdue = data.is_overdue;
           if(data.status==='0'){
             //  组团中 红包未过期
             this.joinGroup = true;
@@ -315,6 +318,7 @@ export default class Index extends wepy.page {
             let endTime = data.deadline*1000;
             if(endTime===0){
               this.showJoinPopup = false;
+              this.redPackCountDown = {h:'00',m:'00',s:'00'};
               this.$apply();
               return;
             }
@@ -323,6 +327,7 @@ export default class Index extends wepy.page {
                console.log('我自己进来，组团成功了')
                this.showJoinPopup = true;
                this.isSecondRedPack = false;
+               this.redPackCountDown = {h:'可领取',m:'',s:''};
                this.$apply();
                return;
             }
@@ -339,26 +344,7 @@ export default class Index extends wepy.page {
        }
     }
 
-    // 签到红包相关
-    let checkinfo = await wxRequest(api.signlist,{},'POST');
-    console.log('checkinfo', checkinfo);
-    if(checkinfo.data.code===api.STATUS){
-      let checkList = checkinfo.data.data.list;
-      let continue_sign = checkinfo.data.data.continue_sign;
-      checkList.map(el=>{
-        el.active = false;
-      })
-      let lost = continue_sign%7;
-      if(lost===0&&this.continue_sign>0) lost =7;
-      for(let i=0;i<lost;i++){
-         checkList[i].active = true;
-      }
-      this.continue_sign = continue_sign;
-      this.checkList = checkList;
-      this.show_check = checkinfo.data.data.show_check;
-      this.total_sign = checkinfo.data.data.total_sign;
-      this.$apply();
-    }
+    
   }
 
  methods = {
@@ -372,6 +358,7 @@ export default class Index extends wepy.page {
         this.continue_sign = data.continue_sign;
         this.total_sign = data.total_sign;
         this.todayIsCheck = data.is_signin;
+        this.integral = data.todayintegral;
      }
      this.joinGroup = false;
      this.showCheck = true;
@@ -469,6 +456,9 @@ export default class Index extends wepy.page {
       }
     }
     this.joinGroup = true;
+    this.persionList = [{id: '',avatarUrl:'',text: '已助力'},
+                        {id: '',avatarUrl:'',text: '已助力'},
+                        {id: '',avatarUrl:'',text: '已助力'}];
     this.redPackIsOpen = false;
     this.$apply();
   },
@@ -490,8 +480,7 @@ export default class Index extends wepy.page {
       if(_user.data.code===api.STATUS){
         this.hasIuserInfo = _user.data.data;
         this.$apply();
-      }
-;
+      };
       let json = await wxRequest(api.openpacket,data,'POST');
       console.log('json', json)
       if(json.data.code===api.STATUS){
@@ -642,19 +631,16 @@ export default class Index extends wepy.page {
     let token = '';
     setTimeout(async ()=>{
       let msg = await wxRequest(api.getUserInfo,{token:wx.getStorageSync('token')}, 'POST');
-      console.log('getUserInfo',msg)
+      console.log('msg index',msg)
       if (msg.data.code === api.STATUS) {
         wx.setStorage({key:'userInfo', data: msg.data.data});
         this.hasIuserInfo = msg.data.data;
         // 用户是否有未读通知
         let data = msg.data.data;
         if (data.msgNum) {
-          let _msg = data.msgNum.toString();
-          if (_msg > 0) {
-            wx.setTabBarBadge({ index: 1, text: _msg });
-          } else {
-            wx.removeTabBarBadge({ index: 2 });
-          }
+          wx.setTabBarBadge({ index: 2, text: data.msgNum.toString() });
+        }else{
+          wx.removeTabBarBadge({ index: 2 });
         }
         // 是否显示签到弹层
         if(data.sign_view===0){
@@ -697,6 +683,31 @@ export default class Index extends wepy.page {
         }
         console.log('now', now)
         that.redPacketInfo = redPacketInfo;
+        that.$apply();
+      }
+
+      // 签到红包相关
+      let checkinfo = await wxRequest(api.signlist,{},'POST');
+      console.log('checkinfo', checkinfo);
+      if(checkinfo.data.code===api.STATUS){
+        let data = checkinfo.data.data;
+        let checkList = data.list;
+        let continue_sign = data.continue_sign;
+        checkList.map(el=>{
+          el.active = false;
+        })
+        let lost = continue_sign%7;
+        if(lost===0&&that.continue_sign>0) lost =7;
+        for(let i=0;i<lost;i++){
+          checkList[i].active = true;
+        }
+        that.continue_sign = continue_sign;
+        that.checkList = checkList;
+        that.show_check = data.show_check;
+        that.total_sign = data.total_sign;
+        that.isoverdue = data.is_overdue;
+        that.isSelfRedPack = data.is_self_redpacket;
+        that.redpackStatus = data.packet_task.status;
         that.$apply();
       }
     },1000)
@@ -999,10 +1010,6 @@ page {
       overflow: hidden;
       line-height: 1.4;
     }
-    .parameter {
-      display: flex;
-      position: relative;
-    }
     .article-top::after{
       content: '置顶';
       display: block;
@@ -1013,44 +1020,7 @@ page {
       font-size: 24rpx;
       padding: 4rpx 6rpx;
       color: #fc9a12;
-    }
-    .brower {
-      display: flex;
-      align-items: center;
-      font-size: 22rpx;
-      min-width: 120rpx;
-      color: #666;
-    }
-    .icon {
-      width: 38rpx;
-      height: 34rpx;
-      display: block;
-      margin-right: 4rpx;
-    }
-    .icon1 {
-      width: 38rpx;
-      height: 34rpx;
-      background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAYFBMVEUAAAC6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urr////l5eXKysrDw8P4+Pj09PTs7Oze3t7Z2dm+vr6+LRipAAAAFXRSTlMA+vbH7LGDbE5JPDYeGAXi4KKhJCOHBqNgAAAAhUlEQVQoz9WRSRKAIAwEMe7iruCu//+lhRtBKM7a167UJBnyXbLQLwFKP8w01dYOu3DqVlF5cKhHB7l0qcteuOntEo9peMnpImAGIBIuxnEDCo4JoYDUyGc0SwnepeOc92grZXJRJFAlc+umFWXatrXdafuQ9beYppKtVI2pzwKgEH3+kx2MHxitVsgBXAAAAABJRU5ErkJggg==');
-      background-size: 28rpx 28rpx;
-      background-repeat: no-repeat;
-      background-position: center;
-    }
-    .icon2 {
-      width: 38rpx;
-      height: 34rpx;
-      background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAUVBMVEUAAAC6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urqgmJljAAAAGnRSTlMA1PNM2mr66sG4oYRysH5ZEvTg0MuadnA/GkJaMEsAAABxSURBVCjPzdHbCoAgDAbgVWqeOp99/wcNMzPQBt353wz5YLgNck3LSfFOUwUTJsqjlYlDPOoEMo80gaXHDkP1jb10z5q7OpOAlN12wGrrAjBFWADstm4AIm4r6Xh10Ar50J9RaAIHdH3o4tGTocfOMCcR7R8FnAvaTAAAAABJRU5ErkJggg==');
-      background-size: 28rpx 28rpx;
-      background-repeat: no-repeat;
-      background-position: center;
-    }
-    .icon3 {
-      width: 38rpx;
-      height: 34rpx;
-      background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAeFBMVEUAAAC6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urogVSNDAAAAJ3RSTlMACqUE9+DCrJRS2HZuH5uNhEw/JhoSDgHq08a2iWZYRjMxzcyiXzWwYpPmAAAAyUlEQVQoz53S147DIBRF0YMJxt2OW3qbdv7/D8djbIVBIEXZ4m0J3SsEXizX0ZS+ejHjXOJFOYqpAYF28/F22W+m1N2LX5z7xr/aQmIqMZjir3u54JEqfW5bAegrqgUfMSlw5VIHSTLHWlGg41q2k5EuYSWVEe8zXGhVOniyMXcwtrF2MLKxcDANz/zZ4mBvOzxpPJNi2Kx2QM/stuIHWQt0n8a0QK/IZsGzfpi51TGuW/Nl9gnCSbiJpkWwLeMwpjy9eXNsbni5X20pHeQbuz5lAAAAAElFTkSuQmCC');
-      background-size: 28rpx 28rpx;
-      background-repeat: no-repeat;
-      background-position: center;
-    }
+    } 
   }
 }
 

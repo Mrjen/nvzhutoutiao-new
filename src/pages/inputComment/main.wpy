@@ -66,7 +66,18 @@ export default class inputComment extends wepy.page {
   }
 
   onShow(){
+    console.log('this.options',this.options)
     this.commTitle = wx.getStorageSync('commTitle');
+    let data = wx.getStorageSync('commContent')||'';
+    console.log('data', data)
+    if(data){
+       if(this.options.article_id!=data.article_id){
+          wx.removeStorage({key:'commContent'});
+          this.commContent = '';
+       }else if(this.options.article_id==data.article_id){
+         this.commContent = data.text;
+       }
+    }
     // this.recomment = `还有一种情况就是加了好友也不聊天，久而久之也搞不清什么关系`;
     this.$apply();
   }
@@ -93,6 +104,7 @@ export default class inputComment extends wepy.page {
             console.log('评论文章', res);
             if(res.data.code===api.STATUS){
                 wx.setStorage({key:'comment', data:res.data.data.list});
+                wx.removeStorage({key:'commContent'});
                 let getintegral = res.data.data.getintegral;
                 if(getintegral){
                        let myToast = {
@@ -139,7 +151,7 @@ export default class inputComment extends wepy.page {
                     comment = wx.getStorageSync('topComment');
                     comment[options.commentIdx].follow_comment = jsonData;
                     wx.setStorage({key: 'topComment', data: comment});
-                    
+                    wx.removeStorage({key:'commContent'});
                     if(jsonData[0].getintegral){
                        let myToast = {
                             title: '评论奖励',
@@ -256,6 +268,7 @@ export default class inputComment extends wepy.page {
     // 评论输入
     TextInput(e){
        this.commContent = e.detail.value;
+       wx.setStorage({key:'commContent', data: {text:e.detail.value, article_id:this.options.article_id}});
        this.$apply();
     }
   }
@@ -264,7 +277,7 @@ export default class inputComment extends wepy.page {
 </script>
 
 <style lang="less" scoped>
-// 评论弹层
+
 .comm-title{
     font-size: 34rpx;
     font-weight: bolder;

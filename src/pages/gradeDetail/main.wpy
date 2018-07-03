@@ -1,8 +1,8 @@
 <template>
   <view class="grade-detail">
     <!-- 顶部资料 -->
+    <image class="topbg" mode="widthFix" src="https://gcdn.playonwechat.com/nvzhu/top-bg.png"/>
     <view class="grade-info">
-        <image class="logo" mode="widthFix" src="https://gcdn.playonwechat.com/nvzhugrade-logo.png"/>
         <view class="level">
             <text>当前等级:</text> 
             <view class="grade">Lv.{{myData.empiric_level}}</view>
@@ -40,11 +40,11 @@
 
      <!-- 等级规则 经验经验 -->
      <view class="list">
-        <navigator class="list-item" @tap="openLvRule">
-            等级规则
+        <navigator class="list-item list01" @tap="openLvRule">
+            <text></text>等级规则
         </navigator>
-        <navigator class="list-item" @tap="openExprenceList">
-            经验记录
+        <navigator class="list-item list02" @tap="openExprenceList">
+            <text></text>经验记录
         </navigator>   
      </view>
 
@@ -54,35 +54,35 @@
         <view class="get-item">
            <view class="item-left">
              <image class="icon" 
-             src="https://gcdn.playonwechat.com/nvzhu/lv-login-icon.png" mode="widthFix"/>登录
+             src="https://gcdn.playonwechat.com/nvzhu/lv-icon01.png" mode="widthFix"/>登录
            </view>
            <view class="score">+2</view>
            <view class="item-right">每天上限<text>2</text>经验值</view>
         </view>
         <view class="get-item">
            <view class="item-left">
-             <image class="icon" src="https://gcdn.playonwechat.com/nvzhu/lv-like-icon.png" mode="widthFix"/>点亮
+             <image class="icon" src="https://gcdn.playonwechat.com/nvzhu/lv-icon02.png" mode="widthFix"/>点亮
            </view>
            <view class="score">+1</view>
            <view class="item-right">每天上限<text>5</text>经验值</view>
         </view>
         <view class="get-item">
            <view class="item-left">
-             <image class="icon" src="https://gcdn.playonwechat.com/nvzhu/lv-share-icon.png" mode="widthFix"/>转发
+             <image class="icon" src="https://gcdn.playonwechat.com/nvzhu/lv-icon03.png" mode="widthFix"/>转发
            </view>
            <view class="score">+2</view>
            <view class="item-right">每天上限<text>10</text>经验值</view>
         </view>
         <view class="get-item">
            <view class="item-left">
-             <image class="icon" src="https://gcdn.playonwechat.com/nvzhu/lv-comment-icon.png" mode="widthFix"/>评论
+             <image class="icon" src="https://gcdn.playonwechat.com/nvzhu/lv-icon04.png" mode="widthFix"/>评论
            </view>
            <view class="score">+2</view>
            <view class="item-right">每天上限<text>10</text>经验值</view>
         </view>
         <view class="get-item">
            <view class="item-left">
-             <image class="icon" src="https://gcdn.playonwechat.com/nvzhu/lv-topcomment-icon.png" mode="widthFix"/>热门评论
+             <image class="icon" src="https://gcdn.playonwechat.com/nvzhu/lv-icon05.png" mode="widthFix"/>精彩评论
            </view>
            <view class="score">+5</view>
            <view class="item-right">每天上限<text>10</text>经验值</view>
@@ -308,18 +308,19 @@ export default class gradeDetail extends wepy.page {
 
 <style lang="less" scoped>
 .grade-detail{
+  .topbg{
+    width: 750rpx;
+    height: 237rpx;
+  }
   .grade-info{
     width: 750rpx;
-    height: 375rpx;
-    background-color: #ff7905;
-    background-image: url(https://gcdn.playonwechat.com/nvzhu/grade-bg01.png);
-    padding-top: 1rpx;
+    padding: 1rpx 0 20rpx 0;
+    border-bottom: 20rpx solid #eeeeee;
     .level{
       display: flex;
       justify-content: center;
       align-items: center;
       font-size: 28rpx;
-      color: #fff;
       margin-bottom: 50rpx;
     }
     .grade{
@@ -341,7 +342,7 @@ export default class gradeDetail extends wepy.page {
   }
     .level-bar{
       width: 600rpx;
-      height: 8rpx;
+      height: 10rpx;
       margin:0 auto 20rpx auto;
       background-color: #c399ff;
       border-radius: 6rpx;
@@ -352,10 +353,10 @@ export default class gradeDetail extends wepy.page {
     .level-bar::before{
       content:'';
       display: block;
-      width: 10rpx;
-      height: 10rpx;
+      width: 20rpx;
+      height: 20rpx;
       background: #7c48c6;
-      border:4rpx solid #c399ff;
+      box-shadow: 0px 0px 0px 8rpx rgba(196, 153, 255,0.5);  
       border-radius: 50%;
       position: absolute;
       left: 30%;
@@ -365,10 +366,12 @@ export default class gradeDetail extends wepy.page {
     .level-bar::after{
       content:'';
       display: block;
-      width: 10rpx;
-      height: 10rpx;
+      width: 20rpx;
+      height: 20rpx;
       background: #7c48c6;
-      border:4rpx solid #c399ff;
+      box-shadow: 0px 0px 0px 8rpx rgba(196, 153, 255,0.5);  
+      -webkit-background-clip: padding-box;
+      background-clip: padding-box;
       border-radius: 50%;
       position: absolute;
       left: 70%;
@@ -379,7 +382,7 @@ export default class gradeDetail extends wepy.page {
       display: block;
       position: absolute;
       // width: 300rpx;
-      height: 8rpx;
+      height: 10rpx;
       background: #7c48c6;
       border-radius: 6rpx;
       left: 0;
@@ -394,7 +397,6 @@ export default class gradeDetail extends wepy.page {
       font-size: 20rpx;
     }
     .bar-left{
-      color: #fff;
       font-size: 20rpx;
       .icon{
         image{
@@ -408,7 +410,6 @@ export default class gradeDetail extends wepy.page {
     }
     .bar-right{
       font-size: 20rpx;
-      color: #fff;
       .icon{
         height: 40rpx;
         display: flex;
@@ -420,7 +421,6 @@ export default class gradeDetail extends wepy.page {
       }
       .next-lv{
         font-size: 20rpx;
-        color: #fff;
       }
     }
   }
@@ -435,6 +435,8 @@ export default class gradeDetail extends wepy.page {
         padding:0 20rpx;
         position: relative;
         box-sizing: border-box;
+        display: flex;
+        align-items: center;
       }
       .list-item:before{
         content: '';
@@ -459,6 +461,20 @@ export default class gradeDetail extends wepy.page {
         margin-top: -12rpx;
         left: 700rpx;
         background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAZCAMAAAAPIl6bAAAAZlBMVEUAAADHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zHx8zRTRADAAAAIXRSTlMA4BLpxzEb79YgDgfazbQoJhfRqGpj98C7up2JdVBBOSyXj9d+AAAAfklEQVQY03XQSRKFIAxFURRE/Y36G/uW/W9SE6t4UcvM7hlAQClVduowf+d+p97kCegdTSZkuEjJ0goZK5L6AZliEiMk0iwhpAhI3kJsQvL9QEJDklhI7mga3ymfEqTHfvku9rZ3nWvcINrvsGjshHdg6yhGAww3hH8CM2eyV5TRD4XtDXMwAAAAAElFTkSuQmCC');
+        background-size: 100% 100%;
+      }
+      .list-item text{
+        display: block;
+        width: 50rpx;
+        height: 50rpx;
+        margin-right: 10rpx;
+      }
+      .list01 text{
+        background-image: url('https://gcdn.playonwechat.com/nvzhu/lv-icon-lv.png');
+        background-size: 100% 100%;
+      }
+      .list02 text{
+        background-image: url('https://gcdn.playonwechat.com/nvzhu/lv-icon-list.png');
         background-size: 100% 100%;
       }
     }
@@ -496,8 +512,8 @@ export default class gradeDetail extends wepy.page {
           font-size: 28rpx;
         }
         .icon{
-          width: 66rpx;
-          height: 66rpx;
+          width: 54rpx;
+          height: 54rpx;
           margin-right: 20rpx;
         }
         .score{

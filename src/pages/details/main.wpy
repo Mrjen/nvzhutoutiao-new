@@ -90,7 +90,7 @@
 
           <view class="article-info">
               <view class="info-item brower"><text>阅读</text>{{Article_readtimes}}</view>
-              <view class="comment" wx:if="{{show_input_2}}">官方粉丝福利群，点击<button open-type="contact">回复1进群</button></view>
+              <view class="comment" wx:if="{{show_input_1}}">官方粉丝福利群，点击<button open-type="contact">回复1进群</button></view>
           </view>
         </view>
 
@@ -521,7 +521,7 @@
 
    <block>
 
-    <view class="botm-bar" wx:if="{{show_input_2}}">
+    <view class="botm-bar" wx:if="{{show_input_1}}">
       <block>
         <view class="is_userinfo">
           <button class="btn-input" wx:if="{{is_accredit=='1'}}" @tap="writeComment">评论有赏...</button>
@@ -738,8 +738,8 @@ export default class Detail extends wepy.page {
         id: 6,
         active: false
       }],   
-    
-    show_input_2: 0,                     // 是否显示入群
+    fromPage: '',                        // 来自页面
+    show_input_1: 0,                     // 是否显示入群
     is_letter: 0                         // 文章类型是解忧
 
   };
@@ -752,6 +752,8 @@ export default class Detail extends wepy.page {
 
   async onLoad(options) {
     let that = this;
+    this.fromPage = options.from;
+    this.$apply();
     setTimeout(() => {
       that.pageLoad = false;
       that.$apply();
@@ -771,6 +773,8 @@ export default class Detail extends wepy.page {
       share_user_id = utils.getQueryString('share_user_id', scene);
       wx.setStorage({ key: 'share_user_id', data: share_user_id });
       wx.setStorageSync('showCommIndex', 0);
+      this.fromPage = utils.getQueryString('from', scene);
+      this.$apply();
       console.log('_article_id', _article_id, 'share_user_id', share_user_id);
     }
     // 保证获取到token,如果从首页来不用重新请求token
@@ -807,7 +811,7 @@ export default class Detail extends wepy.page {
     // 这里数据字节过大，把数据拆分分次传递
     let _page_data = detail.data.data;
     this.is_story = _page_data.is_story;
-    this.show_input_2 = _page_data.show_input_2;
+    this.show_input_1 = _page_data.show_input_1;
     let voteList = _page_data.votedata;
     if(voteList){
       // 是否存在投票
@@ -1093,7 +1097,7 @@ export default class Detail extends wepy.page {
   async commentFollow(user_id, comment_id, fidx, cidx, comment_type) {
     console.log('提交评论', user_id, comment_id, fidx, cidx, comment_type);
     wx.navigateTo({
-      url: `/pages/inputComment/main?commType=commentFollow&re_user_id=${user_id}&comment_id=${comment_id}&is_announce=${this.is_announce}`
+      url: `/pages/inputComment/main?commType=commentFollow&re_user_id=${user_id}&comment_id=${comment_id}&is_announce=${this.is_announce}&article_id=${this.ArticleId}`
     })
   }
 
@@ -1115,7 +1119,7 @@ export default class Detail extends wepy.page {
   methods = {
     // 书写解忧
     toWriteSolveProblems(){
-       wx.navigateTo({url:`/pages/subPackages01/pages/writeSolveProblems/main?id=${this.ArticleId}`})
+       wx.navigateTo({url:`/pages/subPackages01/pages/writeSolveProblems/main?article_id=${this.ArticleId}`})
     },
     // 点击打赏图标
     RewardBtn(e){
@@ -1384,11 +1388,17 @@ export default class Detail extends wepy.page {
     // 返回首页
     goHomego(e) {
        let formId = e.detail.formId;
-       this.saveFormId(formId)
-        wx.switchTab({
-            url: '/pages/index/main'
-        });
-        wxRequest(api.clickbutton,{type:'index'},'POST');
+       this.saveFormId(formId);
+       let url = '';
+       if(this.fromPage==='news'){
+          url = '/pages/news/main'
+       }else if(this.fromPage=='index'){
+          url = '/pages/index/main'
+       }else{
+          url = '/pages/index/main'
+       }
+        wx.switchTab({url});
+        wxRequest(api.clickbutton,{type:`${this.fromPage}`},'POST');
     },
     // input失去焦点
     inputBlur() {
@@ -1476,7 +1486,7 @@ export default class Detail extends wepy.page {
       wx.setStorage({key:'recomment', data: `${nickName}: ${comment}`})
       wx.setStorage({key: 'commTitle', data: this.ArticleTtictle})
       wx.navigateTo({
-        url:`/pages/inputComment/main?commType=follow&commentIdx=${idx}&comment_id=${id}&user_id=${user_id}&comment_type=${type}&is_announce=${this.is_announce}`
+        url:`/pages/inputComment/main?commType=follow&commentIdx=${idx}&comment_id=${id}&user_id=${user_id}&comment_type=${type}&is_announce=${this.is_announce}&article_id=${this.ArticleId}`
       })
 
       
@@ -1509,7 +1519,7 @@ export default class Detail extends wepy.page {
       wx.setStorage({key: 'commTitle', data: this.ArticleTtictle})
 
       wx.navigateTo({
-        url: `/pages/inputComment/main?user_id=${user_id}&commType=follow&comment_id=${comment_id}&follow_index=${fidx}&commentIdx=${cidx}&comment_type=${type}&is_announce=${this.is_announce}`
+        url: `/pages/inputComment/main?user_id=${user_id}&commType=follow&comment_id=${comment_id}&follow_index=${fidx}&commentIdx=${cidx}&comment_type=${type}&is_announce=${this.is_announce}&article_id=${this.ArticleId}`
       })
     },
     // 提交评论

@@ -89,7 +89,7 @@ export default class messageDetail extends wepy.page {
     commList: [],
     commContent: '',
     reid: '',
-    inputPlaceholder: '回复小主：',
+    inputPlaceholder: '回复小秘书：',
     scrollTop: 0
   };
   async onLoad(options) {

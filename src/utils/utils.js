@@ -249,7 +249,7 @@ function unique(array) {
   })
 }
 
-// 热门评论和最新评论
+// 热门评论和最新评论去重
 function commentUnique(array) {
   var obj = {};
   return array.filter(function(item, index, array){
@@ -266,7 +266,6 @@ async function upLoadImageQiNiu(imageArr) {
   let _qiniu_token = QiNiuToken.upload_token;
   return new Promise((resolve,reject)=>{
     for (let i = 0; i < len; i++) {
-
     qiniuUploader.upload(imageArr[i], (res) => {
         upArr.push('https://gcdn.playonwechat.com' + res.imageURL);
         if(upArr.length===len){
@@ -320,6 +319,21 @@ function ApplyUpdate(){
   })
 }
 
+async function upDataMsgTag(){
+   let msg = await wxRequest(api.getUserInfo,{token:wx.getStorageSync('token')}, 'POST');
+    // console.log('msgmsgmsgmsg',msg.data.data)
+    if (msg.data.code === api.STATUS){
+      wx.setStorage({key:'userInfo', data: msg.data.data});
+      // 用户是否有未读通知
+      let data = msg.data.data;
+      if (data.msgNum) {
+          wx.setTabBarBadge({ index: 2, text: data.msgNum.toString() });
+        }else{
+          wx.removeTabBarBadge({ index: 2 });
+        }
+    }
+}
+
 
 export default {
   formatTime,
@@ -339,5 +353,6 @@ export default {
   unique,
   commentUnique,
   upLoadImageQiNiu,
-  ApplyUpdate
+  ApplyUpdate,
+  upDataMsgTag
 };
