@@ -4,11 +4,10 @@
      scroll-y 
      scroll-into-view="{{toView}}" 
      enable-back-to-top
-     style="width:100vw;height:100vh;box-sizing:border-box" @scrolltolower="LoadMore">
+     style="width:100vw;height:100vh;box-sizing:border-box;background:#fff;" @scrolltolower="LoadMore">
     <import src="../../wxparse/wxParse.wxml"/>
         <!-- 话题主题 -->
-      <view class="topic" id="topic" 
-            style="margin-bottom:20rpx;">
+      <view class="topic" id="topic">
         <view class="topic_top">
           <view class="topic_title">{{ArticleTtictle}}</view>
           <view class="author" @tap="goHomego">
@@ -90,7 +89,7 @@
 
           <view class="article-info">
               <view class="info-item brower"><text>阅读</text>{{Article_readtimes}}</view>
-              <view class="comment" wx:if="{{show_input_1}}">官方粉丝福利群，点击<button open-type="contact">回复1进群</button></view>
+              <view class="comment" wx:if="{{show_input_2}}">领取福利点击<button open-type="contact">回复1进群</button></view>
           </view>
         </view>
 
@@ -521,7 +520,7 @@
 
    <block>
 
-    <view class="botm-bar" wx:if="{{show_input_1}}">
+    <view class="botm-bar" wx:if="{{show_input_2}}">
       <block>
         <view class="is_userinfo">
           <button class="btn-input" wx:if="{{is_accredit=='1'}}" @tap="writeComment">评论有赏...</button>
@@ -739,7 +738,7 @@ export default class Detail extends wepy.page {
         active: false
       }],   
     fromPage: '',                        // 来自页面
-    show_input_1: 0,                     // 是否显示入群
+    show_input_2: 0,                     // 是否显示入群
     is_letter: 0                         // 文章类型是解忧
 
   };
@@ -758,6 +757,10 @@ export default class Detail extends wepy.page {
       that.pageLoad = false;
       that.$apply();
     }, 300);
+
+    if(options.from==='news'){
+      wx.setNavigationBarTitle({title: '文章详情'})
+    }
 
     console.log('页面数据', options);
     let _article_id = null;
@@ -811,7 +814,7 @@ export default class Detail extends wepy.page {
     // 这里数据字节过大，把数据拆分分次传递
     let _page_data = detail.data.data;
     this.is_story = _page_data.is_story;
-    this.show_input_1 = _page_data.show_input_1;
+    this.show_input_2 = _page_data.show_input_2;
     let voteList = _page_data.votedata;
     if(voteList){
       // 是否存在投票
@@ -1043,13 +1046,18 @@ export default class Detail extends wepy.page {
     let title = '';
     let nickName = this.nickName || '我';
     let article_id = this.ArticleId;
-    if(e.from==='menu'){
-      //  右上角分享
-      imageUrl = that.Article_cover;
-      title = `${nickName}邀请你一起讨论这个话题`
-      
-    }else if(e.from==='button'){
-      // 页面内分享
+    let fromPage = this.fromPage;
+    
+    if(fromPage==='news'&&e.from==='menu'){
+      //  资讯分享
+       title = this.ArticleTtictle;
+       imageUrl = that.Article_cover;
+    }else if(fromPage==='news'&&e.from==='button'){
+       let dataset = e.target.dataset;
+       imageUrl = that.Article_cover;
+       title = `${nickName}邀请你一起讨论这个话题`
+    }else if(fromPage==='index'&&e.from==='button'){
+      // 页面内分享   
       let dataset = e.target.dataset;
       if(dataset.type==='vote'){
         imageUrl = this.vote_poster;
@@ -1058,12 +1066,15 @@ export default class Detail extends wepy.page {
         imageUrl = that.Article_cover;
         title = `${nickName}邀请你一起讨论这个话题`
       }
-
+    }else if(fromPage==='index'&&e.from==='menu'){
+        imageUrl = that.Article_cover;
+        title = `${nickName}邀请你一起讨论这个话题`
     }
 
     this.actionSheetHidden = true;
     this.$apply();
     console.log('分享文章id', article_id);
+
     that.ArticleShare();
     return {
       title: title,
@@ -1768,16 +1779,19 @@ page {
 }
 
 .topic_title {
-  padding-bottom: 40rpx;
+  padding: 40rpx 0 40rpx 0;
   box-sizing: border-box;
   position: relative;
   text-align: left;
   font-size: 36rpx;
   font-weight: bold;
+  width: 680rpx;
+  margin: 0 auto;
 }
 
 .author {
-  margin-bottom: 70rpx;
+  width: 680rpx;
+  margin: 0 auto 70rpx auto;
   font-size: 28rpx;
   .applet {
     color: #7c48c6;
@@ -1801,6 +1815,11 @@ page {
   background-color: #ffffff;
   margin-bottom: 20rpx;
 }
+ 
+.topic{
+   border-bottom: 20rpx solid #f7f7f7;
+   padding-bottom: 40rpx;
+ }
 
 .topic_img {
   display: block;
@@ -2051,12 +2070,15 @@ page {
 
 .content {
   width: 680rpx;
+  margin: 0 auto;
   min-height: 100vh;
   margin-bottom: 80rpx;
 }
+
 .richtext {
   width: 680rpx;
   display: block;
+  margin: 0 auto;
   .common-css {
     padding: 0;
     margin: 0;
@@ -2068,8 +2090,11 @@ page {
     font-size: 32rpx;
     line-height: 1.6 !important;
     margin: 15rpx 0;
+    margin: 0 atuo;
+    width:100%;
     font-weight: 300;
     text-align: justify;
+    box-sizing: border-box;
   }
   .common-css::after,
   .common-css::before {
@@ -2080,7 +2105,6 @@ page {
     position: relative;
     width: 750rpx;
     min-height: 100%;
-    padding: 25rpx;
     font-family: 'SimHei';
     background-color: #fff;
   }
@@ -2098,9 +2122,14 @@ page {
     word-spacing: 4rpx;
   }
   .img {
-    margin: 0 auto;
-    max-width: 660rpx;
+    max-width: 680rpx;
+    margin: 0;
     padding: 0;
+    display: block;
+    // border:1px solid red;
+    // position: relative;
+    // left: 50%;
+    // transform: translateX(-50%);
   }
   .em {
     font-size: 26rpx;
@@ -2330,6 +2359,8 @@ page {
 
 // 分享
 .article-info {
+  width: 680rpx;
+  margin: 0 auto;
   display: flex;
   justify-content:space-between;
   .info-item {
@@ -2585,7 +2616,7 @@ page {
   background: #fff;
   position: relative;
   padding-top: 20rpx;
-  margin-bottom: 40rpx;
+  margin: 0 auto 40rpx auto;
   .write-email{
     background-color: transparent;
     width: 700rpx;

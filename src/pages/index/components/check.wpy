@@ -1,5 +1,5 @@
 <template>
-<view wx:if="{{showCheck}}" class="check">
+<view wx:if="{{showCheck?1:0}}" class="check">
   <view class="check-in {{showCheck?'check_active':''}}">
       <view class="title"></view>
       <view class="check-text">已累计签到<text>{{total}}</text>天</view>

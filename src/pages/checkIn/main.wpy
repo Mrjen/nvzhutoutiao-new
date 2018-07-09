@@ -105,7 +105,7 @@
                    @getAnotherRedPack.user="getAnotherRedPack"
                    @closePopup.user="closePopup"></getNextPack>
 
-      <view style="position:fixed;width:100vw;height:100vh;background:#9446c1;left:0;top:0;z-index:-1;"></view>
+      <view style="position:fixed;width:100vw;height:100vh;background:#7c48c6;left:0;top:0;z-index:-1;"></view>
   </view>
 </template>
 
@@ -447,12 +447,12 @@ export default class checkIn extends wepy.page{
 
 <style lang="less" scoped>
 page{
-  background: red;
+  background: #7c48c6;
 }
 
 .check{
-  background: #fe5047;
-  background-image: url('https://gcdn.playonwechat.com/nvzhu/repack/check-page-bg.png');
+  background: #7c48c6;
+  background-image: url('https://gcdn.playonwechat.com/nvzhu/check-page-bg01.png');
   background-size: 750rpx 1206rpx;
   background-repeat: no-repeat;
   min-height: 1206rpx;
@@ -639,6 +639,7 @@ page{
 .rules{
    margin-top: 110rpx;
    position: relative;
+   max-width: 600rpx;
   .header{
     text-align: center;
     color: #fff;
@@ -660,7 +661,7 @@ page{
   width: 60rpx;
   border-bottom: 1px solid #fff;
   position: absolute;
-  left: 30rpx;
+  left: 120rpx;
   top: 50%;
 }
 
@@ -670,7 +671,7 @@ page{
   width: 60rpx;
   border-bottom: 1px solid #fff;
   position: absolute;
-  right: 30rpx;
+  right: 120rpx;
   top: 50%;
 }
 

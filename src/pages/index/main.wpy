@@ -136,7 +136,7 @@
             <view class="count-down">
               <text class="time-text">{{redPackCountDown.h!=''?redPackCountDown.h:''}}</text>
               <text class="time-text">{{redPackCountDown.m!=''?(':'+redPackCountDown.m+':'):''}}</text>
-              <text class="time-text">{{redPackCountDown.s!=''?redPackCountDown.s+':':''}}</text>
+              <text class="time-text">{{redPackCountDown.s!=''?redPackCountDown.s:''}}</text>
             </view>
          </button>
       </form>
@@ -628,9 +628,10 @@ export default class Index extends wepy.page {
     let that = this;
     // 获取用户是否有未读信息
     console.log('this.token', this.token)
-    let token = '';
-    setTimeout(async ()=>{
-      let msg = await wxRequest(api.getUserInfo,{token:wx.getStorageSync('token')}, 'POST');
+      let dataToken = await utils.getToken();
+      console.log('dataToken', dataToken)
+      let token = dataToken.data.token;
+      let msg = await wxRequest(api.getUserInfo,{token: token}, 'POST');
       console.log('msg index',msg)
       if (msg.data.code === api.STATUS) {
         wx.setStorage({key:'userInfo', data: msg.data.data});
@@ -643,6 +644,7 @@ export default class Index extends wepy.page {
           wx.removeTabBarBadge({ index: 2 });
         }
         // 是否显示签到弹层
+        console.log('data', data.is_signin)
         if(data.sign_view===0){
           that.showCheck = false;
         }else if(data.is_signin===0){
@@ -651,48 +653,54 @@ export default class Index extends wepy.page {
         that.todayIsCheck = data.is_signin;
         that.$apply()
 
+
         // 用户是否有组团红包正在进行
-        let redPacketInfo = msg.data.data.redpacket;
-        if(!redPacketInfo) return;
-        if(this.pagefrom==='redpack') return;
-        console.log('redPacketInfo', redPacketInfo)
-        let now = new Date().getTime();
-        if(now<redPacketInfo.deadline*1000){
-          //  红包没有过期
-          console.log('红包没有过期');
-          let endTime = redPacketInfo.deadline*1000;
-          if(that.timer) clearTimeout(that.timer);
-          that.timer = setTimeout(function countDown(){
-             if(endTime>new Date().getTime()){
-                that.redPackCountDown = utils.formatRemainTime(endTime, 1);
-                that.$apply()
-             }else{
-                clearTimeout(that.timer);
-                that.showJoinPopup = 0;
-                that.$apply()
-             }
-             that.timer = setTimeout(countDown,1000)
-          });
-          that.showJoinPopup = 1;
-          that.packet_task_id = redPacketInfo.id;
+        let redPacketInfo = data.redpacket;
+        if(redPacketInfo){
+          if(this.pagefrom!='redpack'){   // 来自邀请红包 不检查自身红包
+          console.log('redPacketInfo', redPacketInfo)
+          let now = new Date().getTime();
+          if(now<redPacketInfo.deadline*1000){
+            //  红包没有过期
+            console.log('我有红包没有过期');
+            let endTime = redPacketInfo.deadline*1000;
+            if(that.timer) clearTimeout(that.timer);
+            that.timer = setTimeout(function countDown(){
+              if(endTime>new Date().getTime()){
+                  that.redPackCountDown = utils.formatRemainTime(endTime, 1);
+                  that.$apply()
+              }else{
+                  clearTimeout(that.timer);
+                  that.showJoinPopup = 0;
+                  that.$apply()
+              }
+              that.timer = setTimeout(countDown,1000)
+            });
+            that.showJoinPopup = 1;
+            that.packet_task_id = redPacketInfo.id;
+            that.$apply();
+          }else{
+            //  红包已过期
+            console.log('红包已过期');
+            that.showJoinPopup = 0;
+          }
+          console.log('now', now)
+          that.redPacketInfo = redPacketInfo;
+          that.isSelfRedPack = redPacketInfo.is_self_redpacket;
+          that.redpackStatus = redPacketInfo.status;
           that.$apply();
-        }else{
-          //  红包已过期
-          console.log('红包已过期');
-          that.showJoinPopup = 0;
-        }
-        console.log('now', now)
-        that.redPacketInfo = redPacketInfo;
-        that.$apply();
+          } 
+        };
       }
 
       // 签到红包相关
       let checkinfo = await wxRequest(api.signlist,{},'POST');
       console.log('checkinfo', checkinfo);
       if(checkinfo.data.code===api.STATUS){
-        let data = checkinfo.data.data;
-        let checkList = data.list;
-        let continue_sign = data.continue_sign;
+        let check = checkinfo.data.data;
+        console.log('check', check)
+        let checkList = check.list;
+        let continue_sign = check.continue_sign;
         checkList.map(el=>{
           el.active = false;
         })
@@ -703,14 +711,12 @@ export default class Index extends wepy.page {
         }
         that.continue_sign = continue_sign;
         that.checkList = checkList;
-        that.show_check = data.show_check;
-        that.total_sign = data.total_sign;
-        that.isoverdue = data.is_overdue;
-        that.isSelfRedPack = data.is_self_redpacket;
-        that.redpackStatus = data.packet_task.status;
+        that.show_check = check.show_check;
+        that.total_sign = check.total_sign;
+        that.isoverdue = check.is_overdue;
+        
         that.$apply();
       }
-    },1000)
   }
 
   async getSignList(){
@@ -749,7 +755,7 @@ export default class Index extends wepy.page {
        }
     }else{
       return {
-        title: '热门的女性话题都在这里',
+        title: '可以一起讨论一起玩耍的社区，就差你啦！',
         path: '/pages/index/main'
       };
     }

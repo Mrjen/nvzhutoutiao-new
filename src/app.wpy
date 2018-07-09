@@ -13,9 +13,8 @@ import userAuth from './utils/userMethod/userAuth.js';
 export default class extends wepy.app {
   config = {
     pages: [
-      
-      'pages/index/main',
       'pages/news/main',
+      'pages/index/main',
       'pages/commList/main',
       'pages/details/main',
       'pages/editUserInfo/main',
@@ -232,10 +231,7 @@ view{
   border:none;
   margin-right:10rpx;
 }
-.topic_top{
-  background-color: #FFFFFF;
-  padding: 30rpx 40rpx 40rpx 40rpx;
-}
+
 .button_flex{
   display: flex;
   border-top: 1rpx solid #EEEEEE;

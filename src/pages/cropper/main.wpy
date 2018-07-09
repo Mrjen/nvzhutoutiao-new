@@ -2,8 +2,9 @@
 <view>
     <cropper :options.sync="cropperOpt" 
              @beforeImageLoad="bl"
-             @uploadTap.user="uploadTap"
-             @getCropperImage.user="getCropperImage">
+             >
+             <!-- @uploadTap.user="uploadTap"
+             @getCropperImage.user="getCropperImage" -->
         <cover-view class="cropper-buttons">
           <cover-view class="upload" @tap="uploadTap">重新选择</cover-view>
           <cover-view style="height:100px;width:1px;background:#999;"></cover-view>
@@ -81,6 +82,7 @@ export default class wxcropper extends wepy.page{
 
   methods = {
      uploadTap () {
+       console.log('重新选择')
         wx.chooseImage({
           count: 1,
           sizeType: ['original', 'compressed'],

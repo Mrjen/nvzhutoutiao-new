@@ -25,12 +25,13 @@
       <view class="out-item" 
             wx:for="{{arcitleList}}"
             wx:key="{{index}}">
-          <!-- 标题 无图 -->
-          <view wx:if="{{item.image_lenght=='0'}}" 
+          <!-- 标题 一张大图  type=1大图、2小图右对齐、3三张图-->
+          <view wx:if="{{item.type=='1'}}" 
                 data-id="{{item.id}}"
                 @tap="toDetails"
                 class="a-type a-type1">
               <view class="title">{{item.title}}</view>
+              <view class="cover"><image src="{{item.image[0]}}"  mode="widthFix"/></view>
               <view class="parameter {{item.top>0?'article-top':''}}">
                 <view class="brower"><text class="icon icon1"></text>{{item.readtimes}}</view>
                 <view class="brower"><text class="icon icon2"></text>{{item.commenttimes}}</view>
@@ -38,8 +39,8 @@
               </view>
           </view>
 
-          <!-- 标题 + 右边一张图 -->
-          <view wx:if="{{item.image_lenght=='1'}}" 
+          <!-- 标题 + 右边一张图  type=1大图、2小图右对齐、3三张图 -->
+          <view wx:if="{{item.type=='2'}}" 
                 data-id="{{item.id}}"
                 @tap="toDetails"
                 class="a-type a-type2">
@@ -54,8 +55,8 @@
               </view>
           </view>
 
-          <!-- 标题 + 三张图 -->
-          <view wx:if="{{item.image_lenght=='3'}}" 
+          <!-- 标题 + 三张图  type=1大图、2小图右对齐、3三张图-->
+          <view wx:if="{{item.type=='3'}}" 
                 data-id="{{item.id}}"
                 @tap="toDetails"
                 class="a-type a-type3">
@@ -108,7 +109,7 @@ export default class News extends wepy.page {
       let data = await this.getList('1',typeNav[dataset.idx].news_type_id);
       this.currentTypeId = typeNav[dataset.idx].news_type_id;
       this.arcitleList = data.article_list;
-      this.page = 1;
+      this.page = 2;
       this.$apply();
     },
     // 去详情
@@ -119,7 +120,6 @@ export default class News extends wepy.page {
   }
 
   async onLoad(){
-    console.log('on')
     let data = await this.getList('1');
     let typeNav = data.newsType;
     typeNav.map(el=>{
@@ -156,7 +156,7 @@ export default class News extends wepy.page {
   }
 
   async onPullDownRefresh() {
-    let data = await this.getList(this.page,this.currentTypeId);
+   /* let data = await this.getList(this.page,this.currentTypeId);
     let typeNav = data.newsType;
     typeNav.map(el=>{
       el.active = false;
@@ -165,8 +165,14 @@ export default class News extends wepy.page {
     this.typeNav = typeNav;
     this.currentTypeId = typeNav[this.currentTypeIdx].news_type_id;
     this.arcitleList = data.article_list;
-    this.$apply();
+    this.$apply();*/
     wx.stopPullDownRefresh();
+  }
+
+  onShareAppMessage(e){
+     return {
+       title: '发现一个超棒的女性资讯社区，快来一起玩！'
+     }
   }
 }
 </script>
@@ -183,12 +189,13 @@ export default class News extends wepy.page {
     display: flex;
   }
   .text-item {
-    min-width: 105rpx;
+    min-width: 110rpx;
     height: 88rpx;
     line-height: 88rpx;
     text-align: center;
     padding: 0;
     margin: 0;
+    display: inline-block;
     font-size: 30rpx;
     background: transparent;
   }
@@ -228,9 +235,11 @@ export default class News extends wepy.page {
     padding: 0 20rpx;
   }
   .title{
-      font-size: 30rpx;
+      font-size: 32rpx;
       color: #333;
       line-height: 42rpx;
+      text-align: justify;
+      padding: 20rpx;
   }
   .a-hot{
     font-size: 20rpx;
@@ -248,8 +257,19 @@ export default class News extends wepy.page {
     border-bottom: 1px solid rgba(0, 0, 0, .1);
     transform: scaleY(.5);
   }
-  .a-type1 .title{
-      padding: 20rpx;
+  .a-type1 .cover{
+    width: 710rpx;
+    height: 402rpx;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-bottom: 20rpx;
+    image{
+      display: block;
+      width: 100%;
+    }
   }
   .a-type2{
      .main{
@@ -270,10 +290,6 @@ export default class News extends wepy.page {
      }
   }
   .a-type3{
-    .title{
-      padding:20rpx;
-      font-size: 30rpx;
-    }
     .cover{
       display: flex;
       justify-content: space-between;

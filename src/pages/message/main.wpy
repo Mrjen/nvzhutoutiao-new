@@ -9,16 +9,17 @@
             data-idx="{{index}}">
          <button class="btn-item btn-item{{index+1}}  {{item.active?'btn-active':''}}" 
           wx:if="{{item.show}}"
-         formType="submit">{{item.text}}<text wx:if="{{item.msgNum>0}}" class="btn-dian"></text></button>
+         formType="submit">{{item.text}}
+         <text wx:if="{{item.msgNum>0}}" class="btn-dian"></text></button>
       </form>
     </view>
 
-    <!-- 信息列表 -->
+    <!-- 消息列表 -->
     <view class="msg-list">
-      <block wx:if="{{currentList=='sys'?true:false}}" >
+      <block wx:if="{{currentList=='other'?true:false}}" >
        <view class="notice">
           <view class="item-block" 
-                wx:for="{{noticeList}}" 
+                wx:for="{{msgList}}" 
                 wx:key="{{item.id}}">
              <view class="notice-item {{item.is_read==1?'':'no_read'}}"
                    @touchstart="touchS" 
@@ -56,14 +57,14 @@
                    data-infoid="{{item.inform_id}}">删除</view>
           </view>
        </view>
-       <view wx:if="{{noticeList.length===0}}" class="none-more">
+       <view wx:if="{{msgList.length===0}}" class="none-more">
          暂无数据
        </view>
       </block>
 
-      <block wx:if="{{currentList=='chat'?true:false}}">
+      <block wx:if="{{currentList=='sys'?true:false}}">
        <view class="notice">
-          <view wx:for="{{chartList}}" 
+          <view wx:for="{{noticeList}}" 
                 wx:key="{{item.id}}"
                 class="item-block">
              <view class="notice-item  {{item.is_read==1?'':'no_read'}}"
@@ -97,7 +98,7 @@
                    data-infoid="{{item.inform_id}}">删除</view>
           </view>
        </view>
-       <view wx:if="{{chartList.length===0}}" class="none-more">
+       <view wx:if="{{noticeList.length===0}}" class="none-more">
          暂无数据
        </view>
       </block>
@@ -122,22 +123,22 @@ export default class Message extends wepy.page{
     delBtnWidth: 120,
     nav:[{
       id: '1',
-      tag: 'sys',
-      text: '消息',
+      tag: 'other',
+      text: '通知',
       active: true,
       show: true,
       msgNum: ''
     },{
       id: '2',
-      tag: 'chat',
-      text: '通知',
+      tag: 'sys',
+      text: '消息',
       active: false,
       show: true,
       msgNum: ''
     }],
-    currentList: 'sys',  // 当前导航所在标签 sys chat
-    chartList: [],
-    noticeList: []
+    currentList: 'other',  // 当前导航所在标签 sys chat
+    noticeList: [],
+    msgList: []
   }
   async onShow(e){
      let that = this;
@@ -150,13 +151,14 @@ export default class Message extends wepy.page{
         let nav = this.nav;
         nav[1].show = msg.data.data.is_view;
         
-        if(this.currentList==='sys'){
+        if(this.currentList==='other'){
+          this.msgList = msg.data.data.list;
+        }else if(this.currentList==='sys'){
           this.noticeList = msg.data.data.list;
-        }else if(this.currentList==='chat'){
-          this.chartList = msg.data.data.list;
         }
-        nav[1].msgNum = msg.data.data.chatNum;
-        nav[0].msgNum = msg.data.data.sysNum;
+        nav[0].msgNum = msg.data.data.otherNum;
+        nav[1].msgNum = msg.data.data.sysNum;
+        
         if(nav[1].msgNum>0){
            wx.setTabBarBadge({ index: 2, text: nav[1].msgNum.toString()});
         }else if(nav[0].msgNum>0){
@@ -176,7 +178,7 @@ export default class Message extends wepy.page{
 
   methods = {
     async changeNav(e){
-      console.log('切换导航');
+      console.log('切换导航',e.currentTarget.dataset);
       let that = this;
       let idx = e.currentTarget.dataset.idx;
       let nav = that.nav;
@@ -191,9 +193,9 @@ export default class Message extends wepy.page{
       let msg = await this.getMsg(1,nav[idx].tag);
       if(msg.data.code===api.STATUS&&msg.data.data.list.length>0){
          if(idx===0){
-           this.noticeList = msg.data.data.list;
+           this.msgList = msg.data.data.list;
          }else if(idx===1){
-           this.chartList = msg.data.data.list;
+           this.noticeList = msg.data.data.list;
          }
          this.$apply();
       }
@@ -232,13 +234,13 @@ export default class Message extends wepy.page{
 
   }
 
-  async getMsg(page=1,type='sys'){
+  async getMsg(page=1,type='notice'){
       let msg = await wxRequest(api.systemMsgList,{ page: page, type:type },'POST');
       return msg;
   }
 
   async getChartList(page=1){
-     let chart = await wxRequest(api.chartList,{page:page},'POST');
+     let chart = await wxRequest(api.noticeList,{page:page},'POST');
      console.log('chart', chart);
      if(chart.data.code === api.STATUS&&chart.data.data.length){
         return chart.data.data;
@@ -252,14 +254,14 @@ export default class Message extends wepy.page{
       if(msg.data.code === api.STATUS){
         let msgList = [];
         if(dataset.type==="comment"||dataset.type==="sys"||dataset.type==="commentlike"){
-           msgList = this.noticeList;
+           msgList = this.msgList;
            msgList.splice(dataset.idx,1);
-           this.noticeList = msgList;
+           this.msgList = msgList;
            this.$apply();
         }else if(dataset.type==='chat'){
-          msgList = this.chartList;
+          msgList = this.noticeList;
           msgList.splice(dataset.idx,1);
-          this.chartList = msgList;
+          this.noticeList = msgList;
           this.$apply();
         }
       }
@@ -300,15 +302,15 @@ export default class Message extends wepy.page{
       var msgList = [];
       if(dataset.type==="comment"||dataset.type==="sys"||dataset.type==='commentlike'){
         // console.log('这里是滑动的数据', e.currentTarget.dataset);
-        msgList = this.noticeList;
+        msgList = this.msgList;
         //将拼接好的样式设置到当前item中
         msgList[index].txtStyle = txtStyle; 
-        this.noticeList = msgList;
+        this.msgList = msgList;
         this.$apply();
       }else if(dataset.type==="chat"){
-        msgList = this.chartList;
+        msgList = this.noticeList;
         msgList[index].txtStyle = txtStyle; 
-        this.chartList = msgList;
+        this.noticeList = msgList;
         this.$apply();
       }
 
@@ -330,20 +332,20 @@ export default class Message extends wepy.page{
       let dataset = e.currentTarget.dataset;
       var msgList = [];
       if(dataset.type==="comment"||dataset.type==="sys"||dataset.type==='commentlike'){
-        msgList = this.noticeList;
+        msgList = this.msgList;
         msgList.map(el=>{
           el.txtStyle = 'left:0'
         })
         msgList[index].txtStyle = txtStyle; 
-        this.noticeList = msgList;
+        this.msgList = msgList;
         this.$apply();
       }else if(dataset.type==='chat'){
-        msgList = this.chartList;
+        msgList = this.noticeList;
         msgList.map(el=>{
           el.txtStyle = 'left:0'
         })
         msgList[index].txtStyle = txtStyle;
-        this.chartList = msgList;
+        this.noticeList = msgList;
         this.$apply();
       }
     }
@@ -352,9 +354,23 @@ export default class Message extends wepy.page{
   async onReachBottom(){
     console.log('触底了')
      let currentList = this.currentList;
-     if(currentList==="sys"){
+     console.log('currentList', currentList)
+     if(currentList==="other"){
         console.log('加载通知列表数据');
-        let more = await this.getMsg(this.page)
+        let more = await this.getMsg(this.page,currentList);
+        if(more.data.code === api.STATUS){
+            if(more.data.data.list.length>0){
+              let oldList = this.msgList;
+              more.data.data.list.map(el=>{
+                el.txtStyle = 'left:0'
+              })
+              this.msgList = [...oldList,...more.data.data.list];
+              this.page++;
+              this.$apply();
+            }
+        }
+     }else if(currentList==='sys'){
+        let more = await this.getMsg(this.page,currentList);
         if(more.data.code === api.STATUS){
             if(more.data.data.list.length>0){
               let oldList = this.noticeList;
@@ -366,18 +382,6 @@ export default class Message extends wepy.page{
               this.$apply();
             }
         }
-     }else if(currentList==='chart'){
-       let more = await this.getChartList(this.page)
-       if(more.data.code===api.STATUS){
-         if(more.data.data.length>0){
-            let oldList = this.chartList;
-            more.data.data.map(el=>{
-              el.txtStyle = 'left:0'
-            })
-            this.chartList = [...oldList,...more.data.data];
-            this.$apply();
-         }
-       }
      }
      
   }

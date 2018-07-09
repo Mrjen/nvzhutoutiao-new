@@ -41,7 +41,7 @@ const followWommentList = `${domainUrl}/followcomment/followcommentlist`;
 const feedBackMsg = `${domainUrl}/sysmessage/createsysmessage`;
 
 // 系统消息列表
-const systemMsgList = `${domainUrl}/sysmessage/sysmessagelist`;
+const systemMsgList = `${domainUrl}/sysmessage/sysmessagelistxin`;
 
 // 修改系统消息阅读状态
 const systemMsgStatus = `${domainUrl}/sysmessage/changesysmessagestatus`;
