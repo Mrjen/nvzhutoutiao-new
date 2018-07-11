@@ -1,162 +1,216 @@
 <template>
-<view>
-    <cropper :options.sync="cropperOpt" 
-             @beforeImageLoad="bl"
-             >
-             <!-- @uploadTap.user="uploadTap"
-             @getCropperImage.user="getCropperImage" -->
-        <cover-view class="cropper-buttons">
-          <cover-view class="upload" @tap="uploadTap">重新选择</cover-view>
-          <cover-view style="height:100px;width:1px;background:#999;"></cover-view>
-          <cover-view class="getCropperImage" @tap="getCropperImage">确定</cover-view>
-        </cover-view>
-    </cropper>
-</view>
+    <canvas
+    class="cropper"
+    disable-scroll="{{disable}}"
+    @touchstart="ts"
+    @touchmove="tm"
+    @touchend="te"
+    style="width:{{cropperOpt.width}}px;height:{{cropperOpt.height}}px;background-color: rgba(0, 0, 0, .8);position: relative;z-index:2"
+    @error="canvasError"
+    canvas-id="cropper">
+     <cover-view class="cropper-buttons">
+      <cover-view class="upload" @tap="uploadTap">重新选择</cover-view>
+      <cover-view style="height:100px;width:1px;background:#999;"></cover-view>
+      <cover-view class="getCropperImage" @tap="getCropperImage">确定</cover-view>
+    </cover-view>
+  </canvas>
 </template>
+
 
 <script>
 import wepy from 'wepy';
-import cropper from '@/components/wepy-com-cropper';
+import WeCropper from 'we-cropper';
 import utils from '@/utils/utils.js';
 import tips from '../../utils/tips.js';
 const device = wx.getSystemInfoSync();
 const dpr = device.pixelRatio;
-const width = device.windowWidth
+const width = device.windowWidth;
 const height = device.windowHeight;
-export default class wxcropper extends wepy.page{
-  config={
-     disableScroll: true
-  }
-  data={
-     cropperOpt: {
-        width:width,
-        height:height,
-        scale: 2.5,
-        zoom: 8,
-        
-        cut: {
-          x: (width - 668/2) / 2,
-          y: (height - 908/2) / 2,
-          width: 668/2,
-          height: 908/2
-        }
-      },
-      options:{}
-  }
-  components = {
-    cropper
-  }
+export default class wxcropper extends wepy.page {
+  config = {
+    disableScroll: true
+  };
+  data = {
+    $: null,
+    cropperOpt: {
+      width: width,
+      height: height,
+      scale: 2.5,
+      zoom: 8,
+      cut: {
+        x: (width - 668 / 2) / 2,
+        y: (height - 908 / 2) / 2,
+        width: 668 / 2,
+        height: 908 / 2
+      }
+    },
+    options: {}
+  };
+
   events = {
-    ready () {
-      console.log('we-cropper ready')
+    ready() {
+      console.log('we-cropper ready');
     },
-    beforeImageLoad () {
-      console.log('we-cropper beforeImageLoad')
+    beforeImageLoad() {
+      console.log('we-cropper beforeImageLoad');
     },
-    imageLoad () {
-      console.log('we-cropper imageLoad')
+    imageLoad() {
+      console.log('we-cropper imageLoad');
     },
-    beforeDraw () {
-      console.log('we-cropper beforeDraw')
+    beforeDraw() {
+      console.log('we-cropper beforeDraw');
+    }
+  };
+
+  onLoad(options) {
+    console.log(options);
+    console.log('canIUse', wx.canIUse('cover-view'));
+    if (options) {
+      let cropperOpt = this.cropperOpt;
+      cropperOpt.cut = {
+        x: (width - options.w / 2) / 2,
+        y: (height - options.h / 2) / 2,
+        width: options.w / 2,
+        height: options.h / 2
+      };
+      cropperOpt.options = options;
+      this.cropperOpt = cropperOpt;
+      this.$ = new WeCropper(cropperOpt);
+      this.options = options;
+      this.$apply();
+      this.pushOrigin(options.cover);
     }
   }
 
-  onLoad(options){
-      console.log(options)
-      console.log('canIUse',wx.canIUse('cover-view'))
-      if(options){
-        let cropperOpt = this.cropperOpt;
-        cropperOpt.cut = {
-           x:(width - options.w/2)/2,
-           y:(height - options.h/2)/2,
-           width: options.w/2,
-           height: options.h/2
-        }
-        cropperOpt.options = options;
-        this.cropperOpt = cropperOpt;
-        this.options = options;
+  watch = {
+    cropperOpt: function() {
+      if (this.$) {
+        this.$ = null;
+        this.$ = new WeCropper(this.cropperOpt)
+          .on('ready', (...args) => {
+            this.$emit('ready', ...args);
+          })
+          .on('beforeImageLoad', (...args) => {
+            this.$emit('beforeImageLoad', ...args);
+          })
+          .on('imageLoad', (...args) => {
+            this.$emit('imageLoad', ...args);
+          })
+          .on('beforeDraw', (...args) => {
+            this.$emit('beforeDraw', ...args);
+          })
+          .updateCanvas();
         this.$apply();
-        this.$invoke('cropper', 'pushOrigin', options.cover);
-      }  
+      }
+    }
+  };
+
+  pushOrigin(src) {
+    this.$.pushOrign(src);
+  }
+  updateCanvas() {
+    this.$.updateCanvas();
+  }
+  getCropperImage(fn, ev) {
+    this.$.getCropperImage(fn);
+  }
+  getCropperBase64(fn, ev) {
+    this.$.getCropperImage(fn);
   }
 
   methods = {
-     uploadTap () {
-       console.log('重新选择')
-        wx.chooseImage({
-          count: 1,
-          sizeType: ['original', 'compressed'],
-          sourceType: ['album', 'camera'],
-          success: (res) => {
-            const src = res.tempFilePaths[0]
-            //  获取裁剪图片资源后，给data添加src属性及其值
-            this.$invoke('cropper', 'pushOrigin', src)
-          }
-        })
-      },
-      getCropperImage () {
-        console.log('点击保存')
-        let that = this;
-        this.$invoke('cropper', 'getCropperImage', (src) => {
-          wx.showLoading({title: '保存中'})
-          if (src) {
-             console.log('图片裁切成功', src);
-             let imageArr = [src];
-             utils.upLoadImageQiNiu(imageArr).then(upImageArr=>{
-                 console.log('upImageArr',upImageArr);
-                 let url = '';
-                 if(that.options.type==='cover'){
-                     url = `../EditDayQuote/main?cover=${upImageArr[0]}&from=copper`
-                 }else if(that.options.type==='logo'){
-                     url = `../EditDayQuote/main?logo=${upImageArr[0]}&from=copper`
-                 }else if(that.options.type==='avatar'){
-                     url = `../editUserInfo/main?avatar=${upImageArr[0]}`
-                 }
-                 console.log('url', url)
-                 wx.redirectTo({url:url})
-             }).catch(res=>{
-                 wx.hideLoading();
-                 tips.alert('上传失败');
-             });
-             
-          } else {
-            console.log('获取图片地址失败，请稍后重试')
-          }
-        })
-      }
-  }
+    ts(e) {
+      this.$.touchStart(e);
+    },
+    tm(e) {
+      console.log('move');
+      this.$.touchMove(e);
+    },
+    te(e) {
+      this.$.touchEnd(e);
+    },
+    canvasError(e) {
+      console.error(e.detail.errMsg);
+    },
+
+    uploadTap() {
+      console.log('重新选择');
+      wx.chooseImage({
+        count: 1,
+        sizeType: ['original', 'compressed'],
+        sourceType: ['album', 'camera'],
+        success: res => {
+          const src = res.tempFilePaths[0];
+          console.log('选择的图片', res);
+          //  获取裁剪图片资源后，给data添加src属性及其值
+          this.pushOrigin(src);
+        }
+      });
+    },
+    getCropperImage(e) {
+      console.log('点击保存', e);
+      let that = this;
+      this.getCropperImage(src => {
+        console.log('scr', src);
+        wx.showLoading({ title: '保存中' });
+        if (src) {
+          console.log('图片裁切成功', src);
+          let imageArr = [src];
+          utils.upLoadImageQiNiu(imageArr)
+            .then(upImageArr => {
+              console.log('upImageArr', upImageArr);
+              let url = '';
+              if (that.options.type === 'cover') {
+                url = `../EditDayQuote/main?cover=${upImageArr[0]}&from=copper`;
+              } else if (that.options.type === 'logo') {
+                url = `../EditDayQuote/main?logo=${upImageArr[0]}&from=copper`;
+              } else if (that.options.type === 'avatar') {
+                url = `../editUserInfo/main?avatar=${upImageArr[0]}`;
+              }
+              console.log('url', url);
+              wx.redirectTo({ url: url });
+            })
+            .catch(res => {
+              wx.hideLoading();
+              tips.alert('上传失败');
+              console.log('上传失败', res);
+            });
+        } else {
+          console.log('获取图片地址失败，请稍后重试');
+        }
+      });
+    }
+  };
 }
 </script>
 
 <style lang="less" scoped>
-.cropper-buttons{
-    display: flex;
-    position: fixed;
-    left: 0;
-    bottom: 0;
+.cropper-buttons {
+  display: flex;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  height: 100rpx;
+  background: transparent;
+  width: 750rpx;
+  border: 1px solid transparent;
+  .upload {
+    flex: 1;
+    text-align: center;
     height: 100rpx;
-    background: transparent;
-    width: 750rpx;
-    border:1px solid transparent;
-    .upload{
-       flex: 1;
-       text-align: center;
-       height: 100rpx;
-       background: #fff;
-       line-height: 100rpx;
-       border-right: 1px solid #eee;
-       position: relative;
-       color: #333;
-    }
-    .getCropperImage{
-        flex: 1;
-        text-align: center;
-        height: 100rpx;
-        background: #fff;
-        line-height: 100rpx;
-        position: relative;
-        color: #333;
-    }
-
+    line-height: 100rpx;
+    position: relative;
+    color: #333;
+    background: #fff;
+  }
+  .getCropperImage {
+    flex: 1;
+    text-align: center;
+    height: 100rpx;
+    background: #fff;
+    line-height: 100rpx;
+    position: relative;
+    color: #333;
+  }
 }
 </style>

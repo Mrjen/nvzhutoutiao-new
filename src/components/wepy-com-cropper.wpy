@@ -15,7 +15,6 @@
 <script>
 import wepy from 'wepy'
 import WeCropper from 'we-cropper'
-
 export default class Cropper extends wepy.component {
   data = {
     $: null,
@@ -25,15 +24,6 @@ export default class Cropper extends wepy.component {
 
   props = {
     options: Object
-  }
-
-  computed = {
-    width () {
-      return this.options.width
-    },
-    height () {
-      return this.options.height
-    }
   }
 
   methods = {

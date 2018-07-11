@@ -7,10 +7,12 @@
         </view>
        <view wx:else
              class="upload" 
-             data-type="cover" 
-             @tap="upLoadImage">
-          <view class="upload-icon"></view>
+             data-type="cover">
+          <view class="upload-icon" 
+                data-type="cover" 
+                @tap="upLoadImage"></view>
           <view class="icon-text">请上传物语图片</view>
+          <view class="cover-list" @tap="selectCover">图库选择</view>
        </view>
        
     </view>
@@ -21,6 +23,7 @@
                   show-confirm-bar="{{0}}"
                   placeholder-style="color:#dbdbdb"
                   placeholder="请输入物语...(50字内)"></textarea>
+        <view class="word-list" @tap="selectWord">语录选择</view>
     </view>
     <view class="author">
         <input type="text" placeholder="请输入作者...(选填)" value="{{author}}"
@@ -34,12 +37,23 @@
             </label>
         </block>
         <block wx:if="{{is_nuzhu=='1'?true:false}}">
-            <label hidden="{{is_nvzhu=='1'?true:false}}" class="show_logo" @tap="showQuoteTag"><radio value="" checked="{{checkedTag}}"  color="#7c48c6"/>显示女主logo</label>
+            <label hidden="{{is_nvzhu=='1'?true:false}}" 
+                   class="show_logo" 
+                   @tap="showQuoteTag">
+                   <radio value="" checked="{{checkedTag}}"  color="#7c48c6"/>显示女主logo</label>
         </block>
-        <label class="date" @tap="showDateTag"><radio value="" checked="{{showDate}}"  color="#7c48c6"/>显示今天日历</label>
+        <label class="date" 
+               @tap="showDateTag">
+               <radio value="" 
+                      checked="{{showDate}}"  
+                      color="#7c48c6"/>显示今天日历</label>
         <view class="qrcode">
-            <label class="qrlabel"  @tap="showQrcode" data-type="logo">
-            <radio value="1" checked="{{showqrcode}}" color="#7c48c6" />
+            <label class="qrlabel"  
+                   @tap="showQrcode" 
+                   data-type="logo">
+            <radio value="1" 
+                   checked="{{showqrcode}}" 
+                   color="#7c48c6" />
             <text>自定义二维码</text>
             </label>  
             <block>
@@ -47,7 +61,10 @@
                     <image src="{{logo}}" mode="widthFix"/>
                     <view class="delete-cover" @tap="DeleteLogo"></view>
                 </view>
-                <view wx:else class="uplogo" data-type="logo" @tap="upLoadImage">上传</view>
+                <view wx:else 
+                      class="uplogo" 
+                      data-type="logo" 
+                      @tap="upLoadImage">上传</view>
             </block>
         </view>
     </view>
@@ -77,7 +94,7 @@ import utils from '@/utils/utils';
 import tips from '../../utils/tips.js';
 export default class EditDayQuote extends wepy.page{
   data = {
-     checkedTag: true,                 // 是否显示“今日物语”
+     checkedTag: true,              // 是否显示“今日物语”
      showDate: true,                // 是否显示日期
      quoteAlign: 1,                 // 物语对齐方式 默认 左对齐
      cover: '',                     // 物语封面
@@ -104,14 +121,21 @@ export default class EditDayQuote extends wepy.page{
         this.$apply();
      }
      if(options.from!='copper'){
+         //  来自图片裁切
          wx.removeStorage({key: 'dayCover'});
          wx.removeStorage({key: 'dayLogo'});
          wx.removeStorage({key: 'dayQuote'});
          wx.removeStorage({key: 'dayAuthor'});
      }
+     if(options.from==='quotelist'){
+        // 来自选择语录
+        if(options.quote) wx.setStorage({key:'dayQuote', data: options.quote});
+        if(options.author) wx.setStorage({key: 'dayAuthor', data: options.author});
+     }
   }
 
   async onShow(){
+    setTimeout(async () => {
      if(wx.getStorageSync('dayCover')){
         this.cover = wx.getStorageSync('dayCover');
      }
@@ -135,6 +159,7 @@ export default class EditDayQuote extends wepy.page{
             this.$apply();
         }
      }
+    }, 500);
   }
 
   onPullDownRefresh(){
@@ -147,6 +172,19 @@ export default class EditDayQuote extends wepy.page{
        this.isShowNvZhu = !this.isShowNvZhu;
        this.$apply();
     },
+    // 去词库选择名言
+    selectWord(){
+      let str = '';
+      if(this.cover) str = `?cover=${this.cover}`;
+      wx.navigateTo({url:`/pages/subPackages01/pages/quoteList/main${str}`})
+    },
+    // 去图库选择图片
+    selectCover(){
+      let str = '';
+      if(this.quote) str=`?quote=${this.quote}`;
+      if(this.author) str=`?quote=${this.quote}&author=${this.author}`;
+      wx.navigateTo({url:`/pages/subPackages01/pages/quoteImageList/main${str}`})
+    },
     // 选择图片
     upLoadImage(e){
         let dataset = e.currentTarget.dataset;
@@ -157,6 +195,7 @@ export default class EditDayQuote extends wepy.page{
             sourceType: ['album', 'camera'], 
             success: function (res) {
                 var tempFilePaths = res.tempFilePaths[0];
+                console.log('选择的图片', res )
                 wx.getImageInfo({
                     src: tempFilePaths,
                     success: function (res) {
@@ -267,7 +306,6 @@ export default class EditDayQuote extends wepy.page{
           data.qrcode = this.logo;
       }
 
-
       let json = await wxRequest(api.imgmerge,data,'POST');
       if(json.data.code===api.STATUS){
           console.log(json)
@@ -294,6 +332,19 @@ export default class EditDayQuote extends wepy.page{
         height: 544rpx;
         margin:0 auto 30rpx auto;
         position: relative;
+    }
+    .upload{
+        width: 300rpx;
+        margin: 0 auto;
+        position: relative;
+        .cover-list{
+            position: absolute;
+            display: inline-block;
+            right: -172rpx;
+            bottom: 0;
+            color: #7c48c6;
+            font-size: 26rpx;
+        }
     }
     .cover{
         width: 100%;
@@ -366,12 +417,18 @@ export default class EditDayQuote extends wepy.page{
     height: 100%;
     padding: 20rpx;
     box-sizing: border-box;
+    margin-bottom: 20rpx;
+  }
+  .word-list{
+      text-align: right;
+      color: #7c48c6;
+      font-size: 26rpx;
   }
 }
 .author{
     width: 650rpx;
     height: 88rpx;
-    margin: 0 auto 30rpx auto;
+    margin: 80rpx auto 30rpx auto;
     border:1px solid #dfdfdf;
     input{
       display: block;

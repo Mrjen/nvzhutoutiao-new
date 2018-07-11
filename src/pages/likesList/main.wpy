@@ -1,12 +1,15 @@
 <template>
 <div class="like-list">
   <view wx:if="{{likeList.length?true:false}}">
-    <view wx:for="{{likeList}}" wx:key="{{item.cover}}">
+    <view wx:for="{{likeList}}" 
+          wx:key="{{item.cover}}">
       <view class="list-item">
-         <!-- <likeItem :itemData="item" @toDetail="toDetail"></likeItem> -->
-
         <view class="time">{{item.date}}</view>
-        <view class="in-item" wx:for="{{item.list}}" wx:for-item="lis" wx:key="{{lis.article_id}}" @tap="toDetail({{lis.article_id}})">
+        <view class="in-item" 
+              wx:for="{{item.list}}" 
+              wx:for-item="lis" 
+              wx:key="{{lis.article_id}}" 
+              @tap="toDetail({{lis.article_id}})">
           <view class="item-left">
             <view class="title">{{lis.title}}</view>
             <view class="info">

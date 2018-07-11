@@ -2,7 +2,6 @@
 <script>
 import wepy from 'wepy';
 import 'wepy-async-function';
-
 import api from './utils/api';
 import wxRequest from './utils/http';
 import utils from './utils/utils';
@@ -46,7 +45,11 @@ export default class extends wepy.app {
         'pages/otherUserCenter/main',
         'pages/search/main',
         'pages/feedback/main',
-        'pages/writeSolveProblems/main'
+        'pages/writeSolveProblems/main',
+        'pages/newsDetail/main',
+        'pages/quoteList/main',
+        'pages/collectList/main',
+        'pages/quoteImageList/main'
       ]
     }],
     window: {
@@ -99,13 +102,16 @@ export default class extends wepy.app {
       this.use('promisify');
   }
 
-  onLaunch() {
+  async onLaunch() {
     let that = this;
     wx.getNetworkType({
       success: function(res) {
         wx.setStorage({key:'networkType', data: res.networkType})
       }
     })
+    
+    let code = await utils.getToken();
+    wxRequest(api.logindata,{token: code.data.data.token, type:'login'},'POST');
 
     // 获取设备
     wx.getSystemInfo({

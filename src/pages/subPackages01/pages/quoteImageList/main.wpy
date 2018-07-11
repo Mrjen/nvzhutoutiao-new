@@ -1,0 +1,126 @@
+<template>
+ <view class="image-list">
+    <view class="img-item" 
+          wx:for="{{imageList}}"
+          wx:key="{{index}}"
+          data-url="{{item.pic}}"
+          @tap="selectImage">
+      <image src="{{item.pic}}" data-id="{{item.id}}" mode="widthFix"/>
+    </view>
+
+    <!-- 弹层 -->
+    <showModal :modalData.sync="modalData"
+               @ModalCancel.user="ModalCancel"
+               @ModalSure.user="ModalSure"></showModal>
+ </view> 
+</template>
+
+<script>
+import wepy from 'wepy';
+import wxRequest from '../../../../utils/http.js';
+import api from '../../../../utils/api.js';
+import showModal from '../../../../components/showModal';
+export default class quoteImageList extends wepy.page{
+  config={
+    navigationBarTitleText: '图库'
+  }
+  components={
+    showModal
+  }
+  data={
+    imageList:[],
+    currentQuote: '',             // 用户填写的物语
+    currentAuthor: '',            // 作者
+    page: 2,                      // 数据页数
+    modalData:{
+      title: '添加此图片到海报？',
+      show: false
+    },
+  }
+
+  async onLoad(options){
+    console.log('图库页面参数', options)
+    this.imageList = await this.getImageList(1);
+    if(options.quote){
+      this.currentQuote = options.quote;
+    }
+    if(options.author){
+        this.currentAuthor = options.author;
+    }
+    this.$apply();
+  }
+
+  async getImageList(page='1'){
+    let json = await wxRequest(api.calendarpiclist,{page},'POST');
+    if(json.data.code===api.STATUS){
+        return json.data.data;
+    }
+  }
+  methods={
+    // 选择图片
+    selectImage(e){
+      console.log('点击确定');
+      let dataset = e.currentTarget.dataset;
+      this.modalData = {...this.modalData,
+                          show: true,
+                          image:dataset.url,
+                          author: this.currentAuthor,
+                          type:'image'};
+      this.$apply();
+    },
+    // 点击确定
+    ModalSure(url){
+      console.log('点击确定', url);
+      let str = '';
+      if(this.currentQuote){
+          str = `?quote=${this.currentQuote}&cover=${url}&author=${this.currentAuthor}&from=quotelist`
+      }else{
+          str = `?cover=${url}&from=quotelist`
+      }
+      wx.redirectTo({url: `/pages/EditDayQuote/main${str}`})
+    },
+    // 点击取消
+    ModalCancel(){
+       console.log('点击取消');
+       this.modalData = {...this.modalData,
+                          show: false};
+       this.$apply();
+    }
+  }
+
+  async onReachBottom(){
+    let oldList = this.imageList;
+    this.imageList = [...oldList,...await this.getImageList(this.page)];
+    this.page++;
+    this.$apply();
+  }
+
+  onPullDownRefresh(){
+    wx.stopPullDownRefresh();
+  }
+}
+</script>
+
+<style lang="less" scoped>
+.image-list{
+  display: flex;
+  flex-wrap: wrap;
+  padding: 26rpx;
+  width: 750rpx;
+  .img-item{
+    width: 340rpx;
+    height: 420rpx;
+    overflow: hidden;
+    margin-bottom: 18rpx;
+    box-shadow: 0 0 10rpx 0 rgba(149, 150, 255, .5);
+    border-radius: 10rpx;
+    image{
+      width: 100%;
+      display: block;
+    }
+  }
+  .img-item:nth-of-type(2n){
+      margin-left: 18rpx;
+  }
+}
+</style>

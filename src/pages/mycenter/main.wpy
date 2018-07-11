@@ -1,53 +1,41 @@
 <template>
   <div class="mine">
-     <view class="my-center space_b">
-        <view class="info">
-          <view class="info-left">
-          <view class="info-nickname">
-            <view wx:if="{{userInfo.nickName?true:false}}" 
-                  class="nick-name">{{userInfo.nickName}}</view>
-            <view wx:else 
-                  class="nick-name">
-              <open-data type="userNickName"></open-data>
-            </view>
-          </view>
-          <block>
-             <image wx:if="{{userInfo.gender==2?true:false}}" 
-                    class="gender mg_15" 
-                    src="../image/girl.png" />
-             <image wx:if="{{userInfo.gender==1?true:false}}" 
-                    class="gender mg_15" 
-                    src="../image/boy.png"/>
-          </block>
-          </view>
-          <view class="user-leval">
-             <view class="grade"  @tap="toGrade">Lv.{{userInfo.empiric_level}}</view>
-             <view class="grade-icon" @tap="toGrade">
-               <image wx:for="{{lvIconArr}}" wx:key="{{index}}" src="{{item}}"/>
-             </view>
-             <block>
-                <view class="sign_btn" wx:if="{{todaySign===0}}" catchtap="checkIn('签到成功')">签到</view>
-                <view class="sign_btn" wx:else catchtap="checkIn('今天已签到')">已签到</view>
-             </block>
-          </view>
-          
+  <!-- 我的资料 -->
+  <view class="my-info">
+    <block>
+        <image wx:if="{{userInfo.avatarUrl?true:false}}" 
+                class="myCenterImg" 
+                @tap="editInfo" 
+                src="{{userInfo.avatarUrl}}"/>
+        <view wx:else class="myCenterImg">
+            <open-data type="userAvatarUrl" @tap="editInfo"></open-data>
         </view>
-        
+     </block>
 
-        <block>
-            <image wx:if="{{userInfo.avatarUrl?true:false}}" 
-                   class="myCenterImg" 
-                   @tap="editInfo" 
-                   src="{{userInfo.avatarUrl}}"/>
-            <view wx:else class="myCenterImg">
-               <open-data type="userAvatarUrl" @tap="editInfo"></open-data>
-            </view>
-        </block>
+     <view class="info-nickname">
+        <view wx:if="{{userInfo.nickName?true:false}}" 
+              class="nick-name">{{userInfo.nickName}}</view>
+        <view wx:else 
+              class="nick-name">
+          <open-data type="userNickName"></open-data>
+        </view>
+     </view>
+
+    <view class="grade-out">
+      <view class="grade"  @tap="toGrade">Lv.{{userInfo.empiric_level}}</view>
+      <view class="grade-icon" @tap="toGrade">
+        <image wx:for="{{lvIconArr}}" wx:key="{{index}}" mode="widthFix" src="{{item}}"/>
+      </view>
     </view>
+    
+    <block>
+      <view class="sign_btn" wx:if="{{todaySign===0}}" catchtap="checkIn('签到成功')">签到</view>
+      <view class="sign_btn" wx:else catchtap="checkIn('今天已签到')">已签到</view>
+    </block>
 
-<!-- 和我相关 -->
-      <!-- <aboutMe :listNav="listNav"></aboutMe> -->
-      <view class="about-me">
+  </view>
+
+  <view class="about-me">
         <view class="list">
             <navigator class="list-item"
                   hover-class="none" 
@@ -141,6 +129,10 @@ export default class myCenter extends wepy.page{
           url:'/pages/commList/main',
           num:'0',
           text:'评论'
+        },{
+          url: '/pages/subPackages01/pages/collectList/main',
+          num: '0',
+          text: '收藏'
         }
         // ,{
         //   url:'/pages/following/main',
@@ -176,6 +168,17 @@ export default class myCenter extends wepy.page{
       wx.navigateTo({url: `/pages/checkIn/main?title=${e}`})
     }
   }
+
+  onLoad(){
+    wx.setNavigationBarColor({
+    frontColor: '#ffffff',
+    backgroundColor: '#7c48c6',
+        animation: {
+            duration: 400,
+            timingFunc: 'easeIn'
+        }
+    })
+  }
   
   async onShow(){
     let info = await wxRequest(api.getUserInfo,{},'POST');
@@ -185,14 +188,12 @@ export default class myCenter extends wepy.page{
       let listNav = this.listNav;
       let listData = this.listData;
       this.todaySign = _info.is_signin;
+      console.log('_info.id',_info.id)
       listNav[0].num = _info.likeNum;
       listNav[1].num = _info.commentNum;
-      // listNav[2].num = _info.attentionNum;
-      // listNav[3].num = _info.followerNum;
-      console.log('_info.id',_info.id)
+      listNav[2].num = _info.collectNum;
       // listNav[2].url = `../following/main?user_id=${_info.id}`;
       // listNav[3].url = `../followers/main?user_id=${_info.id}`;
-      listData[0].msgNum = _info.msgNum;
       this.listNav = listNav;
       if(_info.msgNum>0){
         wx.setTabBarBadge({index: 2,text: _info.msgNum.toString()})
@@ -219,56 +220,59 @@ export default class myCenter extends wepy.page{
   page {
     background-color: #F3F6F8;
   }
-  .my-center {
-    background-color: #7C48C6;
-    color: #FFFFFF;
-    padding: 60rpx 60rpx 0 60rpx;
-    display: flex;
-    justify-content: space-between;
-    .info-left{
-      display: flex;
+  
+  .my-info{
+    width: 750rpx;
+    height: 350rpx;
+    background: url(https://gcdn.playonwechat.com/nvzhu/mycenter-bg.png) no-repeat;
+    background-size: 100% 100%;
+    .myCenterImg {
+      width: 120rpx;
+      height: 120rpx;
+      border-radius: 50%;
+      overflow: hidden;
+      flex-shrink: 0;
+      margin: 0 auto;
+      display: block;
     }
-    .info{
-      display: flex;
-      flex-direction: column;
+    .nick-name{
+      text-align: center;
+      margin: 20rpx 0;
+      font-size: 30rpx;
     }
-    .grade{
-      height: 28rpx;
-      background-size: 100%;
-      font-size: 26rpx;
-      margin-right: 10rpx;
+    .grade-out{
+      display: flex;
+      align-items: center;
       color: #ffd767;
-    }
-    .grade-icon{
-      display: flex;
+      justify-content: center;
+      .grade{
+        margin-right: 14rpx;
+      }
       image{
-        display: block;
         width: 28rpx;
-        height: 28rpx;
-        margin:0 4rpx;
       }
     }
-    .user-tag{
-      font-size: 18rpx;
-      display: inline-block;
-      padding: 2 5rpx;
-      min-width: 50rpx;
+    .sign_btn{
+      margin: 20rpx auto 0 auto;
+      width: 136rpx;
+      height: 46rpx;
+      background: #fc9a12;
+      color: #fff;
       text-align: center;
-      border:1px solid rgba(255, 255, 255, .4);
-      border-radius: 20rpx;
-      margin-left: 20rpx;
-    }
-    .user-leval{
-       display: flex;
-       align-items: center;
+      line-height: 46rpx;
+      border-radius: 40rpx;
+      font-size: 24rpx;
     }
   }
+
   .myCenterImg {
     width: 150rpx;
     height: 150rpx;
     border-radius: 50%;
     overflow: hidden;
     flex-shrink: 0;
+    margin: 0 auto;
+    display: block;
   }
 
   .msg-tag{
@@ -324,21 +328,25 @@ export default class myCenter extends wepy.page{
  
 
  .about-me{
-  background: #7c48c6;
+  background: #fff;
+  border-radius: 16rpx 16rpx 0 0;
+  margin-top: -10rpx;
    .list{
      display: flex;
-     padding: 30rpx 0 46rpx 0;
+     height: 124rpx;
+     align-items: center;
+    //  padding: 30rpx 0 46rpx 0;
+     border-bottom: 12rpx solid #f3f6f8;
      navigator{
-      //  flex: 1;
+       flex: 1;
        min-width: 40rpx;
-       width: 25%;
-       margin-right: 44rpx;
+      //  width: 25%;
        justify-content: center;
        position: relative;
        align-items: center;
        view{
          text-align: center;
-         color: #fff;
+         color: #444;
        }
        .num{
          font-size: 32rpx;
@@ -346,7 +354,7 @@ export default class myCenter extends wepy.page{
        }
        .text{
          font-size: 20rpx;
-         color: #eee;
+         color: #444;
        }
      }
      navigator:before{
@@ -365,19 +373,9 @@ export default class myCenter extends wepy.page{
    }
 }
 
-.sign_btn{
-  display: inline-block;
-  background: #fc9a12;
-  color: #fff;
-  padding: 4rpx 6rpx;
-  border-radius: 5rpx;
-  margin-left: 20rpx;
-  font-size: 26rpx;
-}
-
 // 列表
 .messageList {
-  padding: 50rpx 20rpx;
+  padding: 40rpx 20rpx;
   background-color: #FFFFFF;
   border-bottom: 1rpx solid #E5E5E5;
   flex: 1;

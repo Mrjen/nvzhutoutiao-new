@@ -745,7 +745,9 @@ export default class Index extends wepy.page {
   // 分享
   onShareAppMessage(e) {
     let that = this;
-    let dataset = e.target.dataset;
+    let dataset = '';
+    console.log(e)
+    if(e.target) dataset = e.target.dataset;
     console.log('packet_task_id', this.packet_task_id)
     if(dataset.type==='redpack'){
        return {
@@ -759,7 +761,6 @@ export default class Index extends wepy.page {
         path: '/pages/index/main'
       };
     }
-    
   }
 
   async onPullDownRefresh() {

@@ -1,0 +1,121 @@
+<template>
+<view class="show-modal" wx:if="{{modalData.show}}">
+  <view class="main">
+     <view class="m-top">
+        <view class="m-title">{{modalData.title}}</view>
+        <view class="m-content">{{modalData.content}}</view>
+        <view class="m-image" 
+              wx:if="{{modalData.image}}">
+              <image mode="widthFix" src="{{modalData.image}}"/>
+        </view>
+     </view>
+     <view class="m-bottom">
+        <view class="m-cancel m-btn" @tap="ModalCancel">取消</view>
+        <view class="m-sure m-btn" @tap="ModalSure">确定</view>
+     </view>
+  </view>
+</view>   
+</template>
+
+<script>
+import wepy from 'wepy'
+export default class showModal extends wepy.component {
+  props={
+    modalData:{
+      type: Object,
+      default:{
+        title: '我是默认标题',
+        content: '我是内容我是内容我是内容我是内容我是内容我是内容我是内容我是内容',
+        image: 'http://iph.href.lu/360x362',
+        type: 'text'
+      }
+    }
+  }
+  data={}
+  methods={
+    // 点击取消
+    ModalCancel(){
+      this.$emit('ModalCancel');
+    },
+    // 点击确定
+    ModalSure(){
+      if(this.modalData.type==='text'){
+        this.$emit('ModalSure', this.modalData.content, this.modalData.author);
+      }else if(this.modalData.type==='image'){
+        this.$emit('ModalSure', this.modalData.image);
+      }
+    } 
+  }
+}
+</script>
+
+<style lang="less" scoped>
+.show-modal{
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, .3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  .main{
+    width: 524rpx;
+	min-height: 300rpx;
+	background-color: #fffdfd;
+    border-radius: 20rpx;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .m-top{
+      padding: 20rpx;
+  }
+  .m-bottom{
+    width: 100%;
+    height: 94rpx;
+    display: flex;
+    line-height: 94rpx;
+    text-align: center;
+    position: relative;
+  }
+  .m-bottom::before{
+    content: '';
+    display: block;
+    width: 100%;
+    border-top: 1px solid rgba(0, 0, 0, .1);
+    transform: scaleY(.5);
+    left: 0;
+    top: 0;
+    position: absolute;
+  }
+  .m-content{
+    color: #616161;
+  }
+  .m-btn{
+    flex: 1;
+    text-align: center;
+    line-height: 94rpx;
+    color: #616161;
+  }
+  .m-sure{
+    background: #9596ff;
+    color: #fff;
+  }
+  .m-title{
+    text-align: center;
+    margin-bottom: 20rpx;
+  }
+  .m-image{
+    width: 100%;
+    max-height: 500rpx;
+    overflow: hidden;
+    margin-top: 20rpx;
+    image{
+      width: 100%;
+    }
+  }
+}
+</style>

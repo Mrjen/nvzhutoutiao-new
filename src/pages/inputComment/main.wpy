@@ -176,6 +176,7 @@ export default class inputComment extends wepy.page {
                     comment = wx.getStorageSync('comment');
                     comment[options.commentIdx].follow_comment = jsonData;
                     wx.setStorage({key:'comment', data:comment});
+                    wx.removeStorage({key:'commContent'});
                     if(jsonData[0].getintegral){
                        let myToast = {
                             title: '评论奖励',

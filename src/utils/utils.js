@@ -263,13 +263,15 @@ async function upLoadImageQiNiu(imageArr) {
   let upArr = [];
   let len = imageArr.length;
   let QiNiuToken = await getQiNiuToken();
+  console.log('QiNiuToken', QiNiuToken)
   let _qiniu_token = QiNiuToken.upload_token;
   return new Promise((resolve,reject)=>{
     for (let i = 0; i < len; i++) {
     qiniuUploader.upload(imageArr[i], (res) => {
         upArr.push('https://gcdn.playonwechat.com' + res.imageURL);
+        console.log('up', )
         if(upArr.length===len){
-          console.log('完成了')
+          console.log('完成了', upArr)
           resolve(upArr);
         }
         wx.hideLoading();

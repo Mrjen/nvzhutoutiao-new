@@ -19,11 +19,12 @@ export default class Loading extends wepy.component {
     justify-content: center;
     align-items: center;
     position: relative;
+    color: #666;
 }
 .loading{
    width: 40rpx;
    height: 40rpx;
-   border: 4px solid #eee;
+   border: 4px solid #dfc9ff;
    border-radius: 50%;
    margin-right: 10rpx;
    border-top-color: #7c48c6;

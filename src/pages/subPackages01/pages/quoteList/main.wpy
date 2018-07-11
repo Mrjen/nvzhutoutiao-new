@@ -1,0 +1,224 @@
+<template>
+  <view class="quote-list">
+    <scroll-view scroll-x style="width:750rpx;height:98rpx;background:#7c48c6;position:fixed;left:0;top:0;z-index:100">
+       <view class="nav">
+            <view class="search"></view>
+            <view wx:for="{{navList}}"
+                  wx:key="{{index}}"
+                  data-idx="{{index}}"
+                  data-id="{{item.type_id}}"
+                  @tap="changeNav"
+                  class="n-item {{item.active?'n-active':''}}">{{item.type}}</view>
+        </view> 
+    </scroll-view>
+
+    <!-- 占位 -->
+    <view style="width:750rpx;height:98rpx"></view>
+
+    <!-- 语录列表 -->
+    <view class="list">
+       <view wx:for="{{quoteList}}" 
+             wx:key="{{index}}" 
+             class="l-item">
+           <view class="l-main">
+              <view class="l-text">{{item.content}}</view>
+              <view class="l-author">─ ─ {{item.author}}</view>
+           </view>
+           <label class="l-select" 
+                  data-idx="{{index}}"
+                  data-text="{{item.content}}"
+                  data-author="{{item.author}}"
+                  @tap="selectQuote">
+                  <radio checked="{{item.active}}" color="#e57b7b"/></label>
+       </view>
+    </view>
+
+    <!-- 弹层 -->
+    <showModal :modalData.sync="modalData"
+               @ModalCancel.user="ModalCancel"
+               @ModalSure.user="ModalSure"></showModal>
+  </view>  
+</template>
+
+<script>
+import wepy from 'wepy';
+import wxRequest from '../../../../utils/http.js';
+import api from '../../../../utils/api.js';
+import showModal from '../../../../components/showModal';
+export default class quoteList extends wepy.page{
+  components={
+    showModal
+  }
+  data={
+    page: 2,                          // 数据页数
+    currentTypeId: null,              // 当前处于的语录类型id
+    currentIndex: 0,                  // 当前语录分类index
+    currentCover: '',                 // 当前语录封面
+    modalData:{                       // 弹层数据
+      show: false
+    },
+    navList:[],
+    quoteList:[]
+  }
+
+  async onLoad(options){
+    console.log('物语页面参数', options)
+    let json = await this.getQuoteList(1);
+    console.log('json', json)
+    let navList = json.newsType;
+    this.navList = this.change(json.newsType,0);
+    this.currentTypeId = this.navList[0].type_id;
+    this.quoteList = this.change(json.list);
+    if(options.cover) this.currentCover = options.cover;
+    this.$apply();
+  }
+
+  async getQuoteList(page,id){
+    let data = { page: page };
+    if(id) data.type_id = id;
+    let json = await wxRequest(api.calendartextlist,data,'POST');
+    if(json.data.code===api.STATUS){
+      return json.data.data;
+    }
+  }
+
+  methods={
+    // 切换标签
+    async changeNav(e){
+      let dataset = e.currentTarget.dataset;
+      this.currentTypeId = dataset.id;
+      let json = await this.getQuoteList(1,this.currentTypeId);
+      this.quoteList = this.change(json.list);
+      this.navList = this.change(this.navList, dataset.idx);
+      this.page = 2;
+      this.$apply();
+    },
+    // 选择物语
+    selectQuote(e){
+       let dataset = e.currentTarget.dataset;
+       this.quoteList = this.change(this.quoteList, dataset.idx);
+       this.$apply();
+       this.modalData = {...this.modalData,
+                         show:true,
+                         title: '添加此语录到海报？',
+                         content: dataset.text,
+                         author: dataset.author,
+                         type: 'text'};
+       this.$apply();
+    },
+    // 点击确定
+    ModalSure(text,author){
+       console.log('点击确定');
+       let str = '';
+       if(this.currentCover){
+         str = `?cover=${this.currentCover}&quote=${text}&author=${author}&from=quotelist`
+       }else{
+         str = `?quote=${text}&author=${author}&from=quotelist`
+       }
+       wx.redirectTo({url: `/pages/EditDayQuote/main${str}`})
+    },
+    // 点击取消
+    ModalCancel(){
+       console.log('点击取消');
+       this.modalData = {...this.modalData,
+                          show: false};
+       this.quoteList = this.change(this.quoteList);
+       this.$apply();
+    }
+  }
+
+  change(arr,idx){
+    arr.map(el=>{
+      el.active = false;
+    })
+    if(idx!=undefined) arr[idx].active = true;
+    return arr;
+  }
+
+  async onReachBottom(){
+     let oldList = this.quoteList;
+     let json = await this.getQuoteList(this.page, this.currentTypeId);
+     this.page++;
+     this.quoteList = [...oldList,...this.change(json.list)];
+     this.$apply();
+  }
+
+  onPullDownRefresh(){
+    wx.stopPullDownRefresh();
+  }
+}
+</script>
+
+<style lang="less" scoped>
+.quote-list{
+  background: #f6f7f9;
+  .nav{
+    width: 750rpx;
+	height: 98rpx;
+    background-color: #7c48c6; 
+    display: flex; 
+    .n-item{
+      line-height: 98rpx;
+      padding: 0 20rpx;
+      color: #d195ff;
+      min-width: 130rpx;
+      text-align: center;
+    }
+    .n-active{
+       color: #fff;
+       position: relative;
+    }
+    .n-active:after{
+        content: '';
+        display: block;
+        width: 50rpx;
+        height: 2px;
+        border-radius: 5px;
+        background: #fff;
+        position: absolute;
+        left: 50%;
+        bottom: 14rpx;
+        transform: translateX(-50%);
+    }
+    .search{
+       flex-shrink: 0;
+       width: 98rpx;
+       height: 98rpx;
+       display: flex;
+       justify-content: center;
+       align-items: center;
+       background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAfCAMAAADHso01AAAAk1BMVEUAAAD////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////ROyVeAAAAMHRSTlMACjbsFAb6ENXOeST2vTvm5Nu/VEstHwLgycjFt6CRhFhDG/Hw6aabmJV1a2Zesqh/kqPaAAABGElEQVQoz4WQ13LCMBRELcu9YGyDTegQeknO/39dMiNEBPI4+7Sao1v2Og+J9aEMoPy+C8eSf5FoycR/o2kMZTLwfM9NIojSFzqWFHWrX/UQ6Rq02VN5xjuskH/17YyZeN2kIn7Ov7HXtVrekKv+OuFuJVlTPMpHTFoLtyW1cidWjq2EhTIxgw7sEimTEXbgkEAZsJiqEn2YB5ZsO6hHpsyMUQceESuz4tSBlyx1hJ2wqJDPuB8dd0mItd0QuG90nBkLHSnS15MFHIxBU4qBSTPYmBecwlmnb5YBOz7NeeIMwfxSb9ZJHsAx/NJcN5yjlf8O8ufIsWOquS3yab64NqpfbnJbomKY9vDw418+2fZwLyJy+ngc/QAd9xvrKYlDqwAAAABJRU5ErkJggg==');
+       background-size: 30rpx 31rpx;
+       background-repeat: no-repeat;
+       background-position: center center;
+    }
+  }
+  .list{
+    .l-item{
+      width: 750rpx;
+      min-height: 120rpx;
+      padding: 20rpx;
+      display: flex;
+      background-color: #fff;
+      margin-bottom: 10rpx;
+    }
+    .l-select{
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .l-main{
+      flex: 1;
+    }
+    .l-text{
+      font-size: 28rpx;
+      color: #4a4643;
+      padding:0 20rpx 10rpx 0;
+    }
+    .l-author{
+      font-size: 20rpx;
+      color: #a1a1a1;
+    }
+  }
+}
+</style>

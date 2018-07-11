@@ -1,0 +1,345 @@
+<template>
+<div class="like-list">
+  <view wx:if="{{collectList.length?true:false}}">
+        <view class="comm-item" 
+              wx:for="{{collectList}}" 
+              wx:key="{{index}}" 
+              wx:for-index="idx">
+            <view class="item-main">
+              <view class="time">{{item.date}}</view>
+              <view class="in-item" 
+                    wx:for="{{item.list}}" 
+                    wx:for-item="list" 
+                    wx:for-index="indx"
+                    wx:key="list.article_id">
+              <view class="item-left" 
+                    @tap="toDetail"
+                    bindtouchstart="touchS" 
+                    bindtouchmove="touchM" 
+                    bindtouchend="touchE" 
+                    data-inidx="{{indx}}"
+                    data-outidx="{{idx}}"
+                    data-id="{{list.kind_id}}"
+                    data-reid="{{list.kind_id}}"
+                    style="{{list.txtStyle}}">
+                  <view class="item-content">
+                      <view class="content-left">
+                       <view class="title title2" wx:if="{{!item.sliderDown}}">{{list.title}}</view>
+                       <view class="info">
+                            <view class="info-icon info-icon1">{{list.readtimes}}</view>
+                            <view class="info-icon info-icon2">{{list.commenttimes}}</view>
+                            <view class="info-icon info-icon3">{{list.liketimes}}</view>
+                        </view>
+                      </view>
+                     <view class="in-right">
+                        <image src="{{list.article_cover}}" mode="widthFix"/>
+                     </view>
+                     <!-- <view class="title" wx:else>222222</view> -->
+                  </view>
+              </view>
+              <view class="item-delete" 
+                    @tap="delItem" 
+                    data-id="{{list.id}}"
+                    data-outidx="{{idx}}"
+                    data-inidx="{{indx}}">删除</view>
+              </view>
+           </view>
+        </view>
+    </view>
+
+  <!-- <view wx:if="{{collectList.length?true:false}}">
+    <view wx:for="{{collectList}}" wx:key="{{item.cover}}">
+      <view class="list-item">
+        <view class="time">{{item.date}}</view>
+        <view class="in-item" 
+              wx:for="{{item.list}}" 
+              wx:for-item="lis" 
+              wx:key="{{lis.kind_id}}" 
+              @tap="toDetail({{lis.kind_id}})">
+          <view class="item-left">
+            <view class="title">{{lis.title}}</view>
+            <view class="info">
+              <view class="info-icon info-icon1">{{lis.readtimes}}</view>
+              <view class="info-icon info-icon2">{{lis.commenttimes}}</view>
+              <view class="info-icon info-icon3">{{lis.liketimes}}</view>
+            </view>
+          </view>
+          <view class="in-right">
+            <image src="{{lis.article_cover}}" mode="widthFix"/>
+          </view>
+        </view>
+        
+      </view>
+    </view>
+  </view> -->
+  <view wx:else class="none-more">
+       暂无数据
+  </view>
+
+</div>
+
+</template>
+
+<script>
+import wepy from 'wepy';
+import wxRequest from "../../../../utils/http.js";
+import api from "../../../../utils/api.js";
+export default class collectList extends wepy.page{
+  config = {
+     "navigationBarTitleText":"收藏列表"
+  }
+  data ={
+    collectList:[],
+    page: 2,
+    delBtnWidth: 120 
+  }
+
+  async onShow(){
+     let list = await this.getList(1,'like');
+     if(list.data.code === api.STATUS){
+       this.collectList = list.data.data;
+       this.$apply();
+     }
+  }
+
+  async onPullDownRefresh(){
+     wx.stopPullDownRefresh()
+  }
+
+  async getList(page,type='like'){
+     let list =  wxRequest(api.collectlist,{ page: page },'POST')
+     return list;
+  }
+
+  methods={
+    // 删除收藏
+    async delItem(e){
+      let dataset = e.currentTarget.dataset;
+      console.log('dataset', dataset)
+      let json = await wxRequest(api.delcollect,{id:dataset.id},'POST');
+      if(json.data.code === api.STATUS){
+         let collectList = this.collectList;
+         let comm = collectList[dataset.outidx].list;
+         comm.splice(dataset.inidx,1);
+         collectList[dataset.outidx].list = comm;
+         this.collectList = collectList;
+         this.$apply();
+      }
+    },
+    // 去详情
+    toDetail(e){
+        console.log('收藏选择', e.currentTarget.dataset)
+       let dataset = e.currentTarget.dataset;
+       wx.navigateTo({
+         url: '/pages/subPackages01/pages/newsDetail/main?id=' + dataset.id
+       })
+    },
+     //手指刚放到屏幕触发
+    touchS(e){
+    //判断是否只有一个触摸点
+      if(e.touches.length==1){
+        this.startX = e.touches[0].clientX
+      }
+    },
+    //触摸时触发，手指在屏幕上每移动一次，触发一次
+    touchM(e){
+        // console.log("touchM:",e);
+        var that = this
+        if(e.touches.length==1){
+        //记录触摸点位置的X坐标
+        var moveX = e.touches[0].clientX;
+        //计算手指起始点的X坐标与当前触摸点的X坐标的差值
+        var disX = this.startX - moveX;
+        //delBtnWidth 为右侧按钮区域的宽度
+        var delBtnWidth = this.delBtnWidth;
+        var txtStyle = "";
+        if(disX == 0 || disX < 0){//如果移动距离小于等于0，文本层位置不变
+            txtStyle = "left:0px";
+        }else if(disX > 0 ){//移动距离大于0，文本层left值等于手指移动距离
+            txtStyle = "left:-"+disX+"rpx";
+            if(disX>=delBtnWidth){
+            //控制手指移动距离最大值为删除按钮的宽度
+            txtStyle = "left:-"+delBtnWidth+"rpx";
+            }
+        }
+        //获取手指触摸的是哪一个item
+        let dataset = e.currentTarget.dataset;
+        var inidx = dataset.inidx;
+        var collectList = this.collectList;
+
+        let comm = collectList[dataset.outidx].list;
+        comm.map(el=>{
+            el.txtStyle = 'left:0'
+            })
+        comm[inidx].txtStyle = txtStyle;
+        console.log('comm', comm)
+        collectList[dataset.outidx].list = comm;
+        this.collectList = collectList;
+        this.$apply();
+        }
+    },
+    touchE(e){
+     // console.log("touchE", e);
+        var that = this
+        if(e.changedTouches.length==1){
+        //手指移动结束后触摸点位置的X坐标
+        var endX = e.changedTouches[0].clientX;
+        //触摸开始与结束，手指移动的距离
+        var disX = this.startX - endX;
+        var delBtnWidth = this.delBtnWidth;
+        //如果距离小于删除按钮的1/2，不显示删除按钮
+        var txtStyle = disX > delBtnWidth/2 ? "left:-"+delBtnWidth+"rpx":"left:0px";
+        //获取手指触摸的是哪一项
+        let dataset = e.currentTarget.dataset;
+        var inidx = dataset.inidx;
+        var collectList = this.collectList;
+
+        let comm = collectList[dataset.outidx].list;
+        comm.map(el=>{
+            el.txtStyle = 'left:0'
+            })
+        comm[inidx].txtStyle = txtStyle;
+        collectList[dataset.outidx].list = comm;
+        this.collectList = collectList;
+        this.$apply();
+        }
+    }
+  }
+
+  async onReachBottom(){
+     let list = await this.getList(this.page);
+     if(list.data.code === api.STATUS){
+        if(list.data.data.length>0){
+           let collectList = this.collectList;
+           this.collectList = [...collectList,...list.data.data];
+           this.page++;
+           this.$apply();
+        }
+     }
+  }
+
+}
+</script>
+
+<style lang="less" scoped>
+.like-list{
+   .list-item{
+     width: 100%;
+     box-sizing: border-box;
+   }
+   .time{
+     height: 50rpx;
+     background: #eee;
+     font-size: 22rpx;
+     line-height: 50rpx;
+     color:#9f9f9f;
+     padding:0 10rpx;
+   }
+   .in-item{
+     display: flex;
+     align-items: center;
+     height: 198rpx;
+     position: relative;
+   }
+   .in-item::after{
+     content: '';
+     display: block;
+     width: 100%;
+     border-bottom: 1px solid rgba(0, 0, 0, .1);
+     position: absolute;
+     left: 0;
+     bottom: 0;
+     transform: scaleY(.5);
+   }
+   .item-left{
+     flex: 1;
+     display: flex;
+     padding: 0 20rpx;
+     flex-direction: column;
+     justify-content: space-around;
+     position: relative;
+     z-index: 2;
+     background: #fff;
+     width: 100%;
+     height: 100%;
+     .item-content{
+         display: flex;
+     }
+     .title{
+       font-size: 30rpx;
+     }
+     .info{
+       display: flex;
+       font-size: 24rpx;
+       color: #666;
+       margin-top: 10rpx;
+     }
+     .info-icon{
+       display: flex;
+       font-size: 24rpx;
+       position: relative;
+       min-width: 120rpx;
+     }
+     .info-icon1::before{
+       content: '';
+       display: block;
+       width: 38rpx;
+       height: 34rpx;
+       margin-right: 6rpx;
+       position: relative;
+       background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAYFBMVEUAAAC6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urr////l5eXKysrDw8P4+Pj09PTs7Oze3t7Z2dm+vr6+LRipAAAAFXRSTlMA+vbH7LGDbE5JPDYeGAXi4KKhJCOHBqNgAAAAhUlEQVQoz9WRSRKAIAwEMe7iruCu//+lhRtBKM7a167UJBnyXbLQLwFKP8w01dYOu3DqVlF5cKhHB7l0qcteuOntEo9peMnpImAGIBIuxnEDCo4JoYDUyGc0SwnepeOc92grZXJRJFAlc+umFWXatrXdafuQ9beYppKtVI2pzwKgEH3+kx2MHxitVsgBXAAAAABJRU5ErkJggg==');
+      background-size: 28rpx 28rpx;
+      background-repeat: no-repeat;
+      background-position: center;
+     }
+     .info-icon2::before{
+       content: '';
+       display: block;
+       width: 38rpx;
+       height: 34rpx;
+       margin-right: 6rpx;
+      background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAUVBMVEUAAAC6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urqgmJljAAAAGnRSTlMA1PNM2mr66sG4oYRysH5ZEvTg0MuadnA/GkJaMEsAAABxSURBVCjPzdHbCoAgDAbgVWqeOp99/wcNMzPQBt353wz5YLgNck3LSfFOUwUTJsqjlYlDPOoEMo80gaXHDkP1jb10z5q7OpOAlN12wGrrAjBFWADstm4AIm4r6Xh10Ar50J9RaAIHdH3o4tGTocfOMCcR7R8FnAvaTAAAAABJRU5ErkJggg==');
+      background-size: 28rpx 28rpx;
+      background-repeat: no-repeat;
+      background-position: center;
+     }
+     .info-icon3::before{
+       content: '';
+       display: block;
+       width: 38rpx;
+       height: 34rpx;
+       margin-right: 6rpx;
+      background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAeFBMVEUAAAC6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urogVSNDAAAAJ3RSTlMACqUE9+DCrJRS2HZuH5uNhEw/JhoSDgHq08a2iWZYRjMxzcyiXzWwYpPmAAAAyUlEQVQoz53S147DIBRF0YMJxt2OW3qbdv7/D8djbIVBIEXZ4m0J3SsEXizX0ZS+ejHjXOJFOYqpAYF28/F22W+m1N2LX5z7xr/aQmIqMZjir3u54JEqfW5bAegrqgUfMSlw5VIHSTLHWlGg41q2k5EuYSWVEe8zXGhVOniyMXcwtrF2MLKxcDANz/zZ4mBvOzxpPJNi2Kx2QM/stuIHWQt0n8a0QK/IZsGzfpi51TGuW/Nl9gnCSbiJpkWwLeMwpjy9eXNsbni5X20pHeQbuz5lAAAAAElFTkSuQmCC');
+      background-size: 28rpx 28rpx;
+      background-repeat: no-repeat;
+      background-position: center;
+     }
+   }
+   .in-right{
+     flex-shrink: 0;
+     width: 252rpx;
+     height: 142rpx;
+     border-radius: 10rpx;
+     overflow: hidden;
+     image{
+       width: 100%;
+       display: block;
+     }
+   }
+
+   .item-delete{
+       position: absolute;
+       right: 0;
+       top: 50%;
+       background: red;
+       color: #fff;
+       width: 120rpx;
+       height: 100%;
+       display: flex;
+       justify-content: center;
+       align-items: center;
+       transform: translateY(-50%);
+       z-index: 1;
+   }
+}
+</style>

@@ -97,11 +97,8 @@ const createattention = `${domainUrl}/attention/createattention`
 // 保存formid
 const saveFormId = `${domainUrl}/user/saveformid`
 
-// 腾讯接口检测消息是否有敏感内容
-const checkMsg = 'https://api.weixin.qq.com/wxa/msg_sec_check'
-
 // 获取微信access_token
-const getAccessToken = `https://nvzhu.zealcdn.cn/public/index.php/api/user/getwxtoken`;
+const getAccessToken = `${domainUrl}/user/getwxtoken`;
 
 // 获取首页banner或者文章
 const articleindex = `${domainUrl}/article/articleindex`
@@ -211,6 +208,24 @@ const saveletter = `${domainUrl}/letter/saveletter`
 // 资讯列表
 const newsindex = `${domainUrl}/news/newsindex`
 
+// 登录
+const logindata = `${domainUrl}/user/logindata`
+
+// 添加收藏
+const createcollect = `${domainUrl}/userinfo/createcollect`
+
+// 收藏列表
+const collectlist = `${domainUrl}/userinfo/collectlist`
+
+// 删除收藏
+const delcollect = `${domainUrl}/userinfo/delcollect`
+
+// 物语列表
+const calendartextlist =  `${domainUrl}/calendar/calendartextlist`
+
+// 语录图库
+const calendarpiclist = `${domainUrl}/calendar/calendarpiclist`
+
 export default {
   STATUS,
   domainUrl,
@@ -245,7 +260,6 @@ export default {
   isattention,
   createattention,
   saveFormId,
-  checkMsg,
   getAccessToken,
   articleindex,
   articletype,
@@ -282,5 +296,11 @@ export default {
   onepackettask,
   createhelp,
   saveletter,
-  newsindex
+  newsindex,
+  logindata,
+  createcollect,
+  collectlist,
+  delcollect,
+  calendartextlist,
+  calendarpiclist
 };
