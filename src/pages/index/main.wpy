@@ -344,6 +344,12 @@ export default class Index extends wepy.page {
        }
     }
 
+    // 检查用户是否是从别的用户分享而来
+    if (options.share_user_id){
+        console.log('此用户从别人分享进入小程序');
+        wxRequest(api.getintegralshare,{share_user_id:options.share_user_id},'POST')
+    }
+
     
   }
 
@@ -639,9 +645,9 @@ export default class Index extends wepy.page {
         // 用户是否有未读通知
         let data = msg.data.data;
         if (data.msgNum) {
-          wx.setTabBarBadge({ index: 2, text: data.msgNum.toString() });
+          wx.setTabBarBadge({ index: 3, text: data.msgNum.toString() });
         }else{
-          wx.removeTabBarBadge({ index: 2 });
+          wx.removeTabBarBadge({ index: 3 });
         }
         // 是否显示签到弹层
         console.log('data', data.is_signin)
@@ -752,13 +758,13 @@ export default class Index extends wepy.page {
     if(dataset.type==='redpack'){
        return {
           title:'@你，只差一个助力就能领红包，拜托帮助力一下！',
-          path: `/pages/index/main?packet_task_id=${this.packet_task_id}&from=redpack`,
+          path: `/pages/index/main?packet_task_id=${this.packet_task_id}&from=redpack&share_user_id=${wx.getStorageSync('myid')}`,
           imageUrl: 'https://gcdn.playonwechat.com/nvzhu/repack/share-poster.jpg'
        }
     }else{
       return {
         title: '可以一起讨论一起玩耍的社区，就差你啦！',
-        path: '/pages/index/main'
+        path: `/pages/index/main?share_user_id=${wx.getStorageSync('myid')}`
       };
     }
   }

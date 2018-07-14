@@ -1,0 +1,239 @@
+<template>
+  <view class="day-quote">
+     <view class="today">
+       <image src="{{currentQuote.pic}}" @tap="prevImage" data-img="{{currentQuote.pic}}" mode="widthFix"/>
+     </view>
+     <button class="share" @tap="shareOpation">分享给好友</button>
+
+     <view class="list">
+        <view class="mon-item" wx:for="{{quoteList}}" wx:key="{{index}}">
+          <view class="mon">{{item.date}}</view>
+          <view class="item-main">
+             <view class="d-image" wx:for="{{item.list}}" wx:for-item="day" wx:key="{{index}}">
+                 <image src="{{day.pic}}" @tap="prevImage" data-img="{{day.pic}}" data-arr="{{item.imageArr}}" mode="widthFix"/>
+             </view>
+          </view>
+        </view>
+        <navigator class="submit submit2" url="/pages/subPackages02/pages/EditDayQuote/main">制作物语</navigator>
+     </view>
+
+     <action-sheet hidden="{{actionSheetHidden}}" catchchange="shareOpation">
+            <button open-type="share" 
+                    data-name="item" 
+                    class="action-item action-item0">发给朋友</button>
+            <button catchtap="downloadPoster" data-name="item" class="action-item action-item1">生成图片分享朋友</button>
+        <!--自动隐藏action-sheet-->
+        <action-sheet-cancel>取消
+        <view style="width:750rpx;height:40rpx;background:#fff"></view>
+        </action-sheet-cancel>
+    </action-sheet>
+
+    <!-- 小房子回首页 -->
+  <form bindsubmit="goHomego" report-submit="true" wx:if="{{showHome}}">
+    <button formType="submit" class="go-home"></button>
+  </form>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy';
+import wxRequest from "@/utils/http.js";
+import api from "@/utils/api.js";
+import utils from '@/utils/utils.js';
+export default class dayQuote extends wepy.page{
+  data={
+    actionSheetHidden: true,               // 分享给朋友弹层
+    quoteList: '',                         // 每日物语列表
+    currentQuote: '',                      // 今日物语
+    qrocdeList:[],                         // 带二维码的图
+    showHome: false                        // 是否显示返回首页
+  }
+
+  methods = {
+    // 点击分享
+    shareOpation(){
+      this.actionSheetHidden = !this.actionSheetHidden;
+      this.$apply();
+    },
+    // 预览图片
+    prevImage(e){
+       let dataset = e.currentTarget.dataset;
+       wx.previewImage({
+          current: dataset.img, 
+          urls: dataset.arr || [dataset.img] 
+        })
+    },
+    // 下载海报
+    async downloadPoster(){
+      this.actionSheetHidden = !this.actionSheetHidden;
+      this.$apply();
+      let url = await utils.getImage(this.currentQuote.pic);
+      utils.saveImageToPhotosAlbum(url);
+      let quoteList = this.quoteList;
+      let id = this.currentQuote.id;
+      wxRequest(api.statisticsstroy,{id:id, type:'down'},'POST')
+    },
+    // 返回首页
+    goHomego(e) {
+       let formId = e.detail.formId;
+       this.saveFormId(formId)
+        wx.switchTab({url: '/pages/index/main'});
+        wxRequest(api.clickbutton,{type:'index'},'POST');
+    },
+  }
+
+  saveFormId(formId){
+    wxRequest(api.saveFormId, { formid: formId },'post');
+  }
+
+  async getDayQuote(page){
+     let json = await wxRequest(api.dayQuote,{page:page},'POST');
+     if(json.data.code===api.STATUS){
+       console.log(json.data.data)
+        return json.data.data;
+     }
+  }
+
+  async onShow(){
+     let token = ''; 
+     if(!wx.getStorageSync('token')){
+        let getToken = await utils.getToken();
+        token = getToken.data.data.token;
+     }
+      let quoteList = await this.getDayQuote(1);
+      let _quoteList = [...quoteList];
+      let qrocdeList = JSON.parse(JSON.stringify(_quoteList));
+      console.log('qrocdeList', qrocdeList)
+      this.currentQuote = _quoteList[0].list[0];
+      quoteList[0].list.shift();
+      for(let i=0,len = quoteList.length;i<len;i++){
+        quoteList[i].imageArr=[];
+        for(let j = 0,leng = quoteList[i].list.length; j<leng; j++){
+           quoteList[i].imageArr.push(quoteList[i].list[j].pic);
+        }
+      }
+      this.quoteList = quoteList;
+      this.$apply();
+  }
+
+  onLoad(options){
+    console.log('页面参数',options)
+    if(options.show_home){
+      this.showHome = true;
+      this.$apply();
+    }else if(options.scene){
+      let scene = decodeURIComponent(options.scene);
+      this.showHome = utils.getQueryString('show_home', scene);
+      this.$apply();
+      let share = utils.getQueryString('share_user_id', scene);
+      if(share){
+        wxRequest(api.clickbutton,{type:`story`},'POST');
+      }
+    }
+  }
+
+  onShareAppMessage(e){
+     this.actionSheetHidden = true;
+     this.$apply();
+     let nickName = wx.getStorageSync('userInfo').nickName || '我';
+     let quoteList = this.quoteList;
+     let id = this.currentQuote.id;
+     wxRequest(api.statisticsstroy,{id:id, type:'share'},'POST')
+     return {
+        title: `${nickName}送你一段今日最佳物语，请查收！`,
+        path: '/pages/subPackages02/pages/dayQuote/main?show_home=1'
+     }
+  }
+
+
+}
+</script>
+
+<style lang="less" scoped>
+.today{
+  width: 362rpx;
+  height: 632rpx;
+  box-shadow: 0 0 18rpx rgba(0, 0, 0, .1);
+  border-radius: 10rpx;
+  margin:20rpx auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  image{
+    display: block;
+    width: 100%;
+  }
+}
+
+.action-item0{
+    position: relative;
+}
+
+.action-item0::after{
+    content: '';
+    display: block;
+    width: 100%;
+    border-bottom: 1px solid rgba(0, 0, 0, .1);
+    transform: scaleY(.5);
+    position: absolute;
+    left: 0;
+    bottom: 0;
+}
+.share{
+  background: #fe8e40;
+  color: #fff;
+  width: 260rpx;
+  height: 60rpx;
+  line-height: 60rpx;
+  font-size: 30rpx;
+  margin-top: 40rpx;
+  box-shadow: 0 0 18rpx #fe8e40;
+}
+
+.list{
+  padding: 60rpx 40rpx 0 40rpx;
+  position: relative;
+}
+
+.submit{
+  position: absolute;
+  right: 40rpx;
+  color: #647ffb;
+  font-size: 30rpx;
+  font-weight: bold;
+  top: 76rpx;
+}
+
+// .submit2{
+//   top: 80rpx;
+// }
+
+.item-main{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+.d-image:not(:nth-of-type(3n)){
+  margin-right: 56rpx;
+}
+
+.mon{
+  font-size: 40rpx;
+  margin-bottom: 40rpx;
+}
+
+.d-image{
+  width: 184rpx;
+  height: 334rpx;
+  border:10rpx solid #fff;
+  overflow: hidden;
+  box-shadow: 0 0 18rpx rgba(0, 0, 0, .1);
+  border-radius: 10rpx;
+  margin-bottom: 40rpx;
+  image{
+    width: 100%;
+  }
+  
+}
+</style>

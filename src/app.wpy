@@ -14,28 +14,19 @@ export default class extends wepy.app {
     pages: [
       'pages/news/main',
       'pages/index/main',
-      'pages/commList/main',
       'pages/details/main',
-      'pages/editUserInfo/main',
-      'pages/followers/main',
-      'pages/following/main',
-      'pages/likesList/main',
-      'pages/messageDetail/main',
       'pages/message/main',
       'pages/mycenter/main',
-      'pages/myWallet/main',
-      'pages/shop/main',
-      'pages/gradeDetail/main',
       'pages/exchangeType/main',
       'pages/addressManage/main',
       'pages/inputComment/main',
       'pages/checkIn/main',
-      'pages/dayQuote/main',
       'pages/ExchangeSuccess/main',
       'pages/ExchangeList/main',
-      'pages/ExpressInfo/main',
-      'pages/EditDayQuote/main',
-      'pages/cropper/main'
+      
+      'pages/cropper/main',
+      'pages/getScore/main',
+      'pages/newsDetail/main'
     ],
     subPackages:[{
       root:'pages/subPackages01',
@@ -46,10 +37,25 @@ export default class extends wepy.app {
         'pages/search/main',
         'pages/feedback/main',
         'pages/writeSolveProblems/main',
-        'pages/newsDetail/main',
         'pages/quoteList/main',
         'pages/collectList/main',
-        'pages/quoteImageList/main'
+        'pages/quoteImageList/main',
+        'pages/myWallet/main',
+        'pages/messageDetail/main',
+        'pages/likesList/main',
+        'pages/shop/main',
+        'pages/commList/main'
+      ]
+    },{
+      root: 'pages/subPackages02',
+      pages:[
+        'pages/followers/main',
+        'pages/following/main',
+        'pages/gradeDetail/main',
+        'pages/EditDayQuote/main',
+        'pages/dayQuote/main',
+        'pages/editUserInfo/main',
+        'pages/ExpressInfo/main',
       ]
     }],
     window: {
@@ -78,6 +84,11 @@ export default class extends wepy.app {
           text: "话题",
           iconPath: "pages/image/tabbar-icon-topic.png",
           selectedIconPath: "pages/image/tabbar-icon-topic-active.png"
+        },{
+          pagePath: "pages/getScore/main",
+          text: "赚积分",
+          iconPath: "pages/image/tabbar-icon-get-score.png",
+          selectedIconPath: "pages/image/tabbar-icon-get-score.png"
         },{
           pagePath: "pages/message/main",
           text: "消息",

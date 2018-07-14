@@ -266,7 +266,7 @@ export default class checkIn extends wepy.page{
     async dayCheck(e){
       let dataset = e.detail.target.dataset;
       if(dataset.type==='goshop'){
-          wx.navigateTo({url:'/pages/shop/main'});
+          wx.navigateTo({url:'/pages/subPackages01/pages/shop/main'});
           this.$emit('checkTap', 'toshop')
       }else if(dataset.type==='check'){
           let check = await wxRequest(api.chunk,{},'POST');

@@ -160,11 +160,11 @@ export default class Message extends wepy.page{
         nav[1].msgNum = msg.data.data.sysNum;
         
         if(nav[1].msgNum>0){
-           wx.setTabBarBadge({ index: 2, text: nav[1].msgNum.toString()});
+           wx.setTabBarBadge({ index: 3, text: nav[1].msgNum.toString()});
         }else if(nav[0].msgNum>0){
-           wx.setTabBarBadge({ index: 2, text: nav[0].msgNum.toString()});
+           wx.setTabBarBadge({ index: 3, text: nav[0].msgNum.toString()});
         }else{
-           wx.removeTabBarBadge({ index: 2 });
+           wx.removeTabBarBadge({ index: 3 });
         }
         this.nav = nav;
         this.$apply();
@@ -220,7 +220,7 @@ export default class Message extends wepy.page{
         })
       }else if(dataset.type==='sys'){
         wx.navigateTo({
-          url:`/pages/messageDetail/main?id=${dataset.reid}`
+          url:`/pages/subPackages01/pages/messageDetail/main?id=${dataset.reid}`
         })
       }else if(dataset.type==='chat'){
         wx.navigateTo({

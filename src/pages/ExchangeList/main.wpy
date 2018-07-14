@@ -35,7 +35,7 @@
                 data-id="{{item.order_id}}"
                 data-idx="{{index}}"
                 @tap="changePost">确认收货</navigator>
-              <navigator url="/pages/ExpressInfo/main?order_id={{item.order_id}}" wx:if="{{item.type!='virtual'}}">查看物流</navigator>
+              <navigator url="/pages/subPackages02/pages/ExpressInfo/main?order_id={{item.order_id}}" wx:if="{{item.type!='virtual'}}">查看物流</navigator>
           </view>
       </view>
     </view>

@@ -49,9 +49,7 @@
         </view>
       </view>
 
-      <!-- <listItem :itemData="listData"></listItem> -->
-
-      <div class="list-item">
+      <view class="list-item">
         <navigator class="messageList readBg space_b" 
                     wx:for="{{listData}}" 
                     wx:key="{{item.url}}"
@@ -63,321 +61,337 @@
           </view>
           <image class="jump" src="../image/jump.png" />
         </navigator>
-      </div>
+
+        <view class="wxtext">
+          <view class="text-l">
+            <view class="text01">添加<text class="text-bold">萤宝宝</text>微信，实时获取福利秘籍哟</view>
+            <view class="text02">微信号：INBaby922 </view>
+          </view>
+          <view class="copy-btn" @tap="copywx">点击复制</view>
+        </view>
+      </view>
 
   </div>
 </template>
 
 <script>
 import wepy from 'wepy';
-import wxRequest from "../../utils/http.js";
-import api from "../../utils/api.js";
-import listItem from './components/list-item';
-import aboutMe from './components/about-me';
+import wxRequest from '../../utils/http.js';
+import api from '../../utils/api.js';
+import tips from '../../utils/tips.js';
 
-export default class myCenter extends wepy.page{
+export default class myCenter extends wepy.page {
   config = {
-     "navigationBarTitleText":"个人中心",
-     disableScroll: true
-  }
+    navigationBarTitleText: '个人中心'
+  };
   data = {
-        people: {
-          name: "Linux",
-          gender: 1,
-          img: "../image/touxiang.png",
-          comment: 20,
-          like: 17
-        },
-        userInfo:{},
-        listData:[
-        //   {
-        //     url: '/pages/message/main',
-        //     text: '我的信息',
-        //     iconPath: 'https://gcdn.playonwechat.com/mycenter-icon-message.png',
-        //     msgNum: 0
-        //  },
-         {
-           url: '/pages/myWallet/main',
-           text: '我的钱包',
-           iconPath: 'https://gcdn.playonwechat.com/mycenter-icon-wallt.png',
-           msgNum: 0
-         },
-         {
-           url: '/pages/shop/main',
-           text: '积分商城',
-           iconPath: 'https://gcdn.playonwechat.com/mycenter-icon-shop.png',
-           msgNum: 0
-         },
-         {
-            url: '../dayQuote/main',
-            text: '每日物语',
-            iconPath: 'http://p766oymet.bkt.clouddn.com/nvzhu/day-yu-ico1n.png',
-            msgNum: 0
-         },
-         
-         {
-           url: '/pages/subPackages01/pages/feedback/main',
-           text: '意见反馈',
-           iconPath: 'https://gcdn.playonwechat.com/mycenter-icon-suggest.png',
-           msgNum: 0
-         }],
-        listNav:[{
-          url:'/pages/likesList/main',
-          num:'0',
-          text:'点亮'
-        },{
-          url:'/pages/commList/main',
-          num:'0',
-          text:'评论'
-        },{
-          url: '/pages/subPackages01/pages/collectList/main',
-          num: '0',
-          text: '收藏'
+    people: {
+      name: 'Linux',
+      gender: 1,
+      img: '../image/touxiang.png',
+      comment: 20,
+      like: 17
+    },
+    userInfo: {},
+    listData: [
+      //   {
+      //     url: '/pages/message/main',
+      //     text: '我的信息',
+      //     iconPath: 'https://gcdn.playonwechat.com/mycenter-icon-message.png',
+      //     msgNum: 0
+      //  },
+      {
+        url: '/pages/subPackages01/pages/myWallet/main',
+        text: '我的钱包',
+        iconPath: 'https://gcdn.playonwechat.com/mycenter-icon-wallt.png',
+        msgNum: 0
+      },
+      {
+        url: '/pages/subPackages01/pages/shop/main',
+        text: '积分商城',
+        iconPath: 'https://gcdn.playonwechat.com/mycenter-icon-shop.png',
+        msgNum: 0
+      },
+      {
+        url: '/pages/subPackages02/pages/dayQuote/main',
+        text: '每日物语',
+        iconPath: 'http://p766oymet.bkt.clouddn.com/nvzhu/day-yu-ico1n.png',
+        msgNum: 0
+      },
+
+      {
+        url: '/pages/subPackages01/pages/feedback/main',
+        text: '意见反馈',
+        iconPath: 'https://gcdn.playonwechat.com/mycenter-icon-suggest.png',
+        msgNum: 0
+      }
+    ],
+    listNav: [
+      {
+        url: '/pages/subPackages01/pages/likesList/main',
+        num: '0',
+        text: '点亮'
+      },
+      {
+        url: '/pages/subPackages01/pages/commList/main',
+        num: '0',
+        text: '评论'
+      },
+      {
+        url: '/pages/subPackages01/pages/collectList/main',
+        num: '0',
+        text: '收藏'
+      }
+      // ,{
+      //   url:'/pages/subPackages02/pages/following/main',
+      //   num:'0',
+      //   text:'关注'
+      // },{
+      //   url:'/pages/subPackages02/pages/followers/main',
+      //   num:'0',
+      //   text:'粉丝'
+      // }
+    ],
+    lvIconArr: [], // 等级图标数组
+    todaySign: 0 //  今天是否签到
+  };
+  methods = {
+    // 复制微信号
+    copywx(){
+      wx.setClipboardData({
+        data: 'INBaby922',
+        success: function(res) {
+          // tips.success('复制成功')
+          tips.alertText('微信号已复制');
         }
-        // ,{
-        //   url:'/pages/following/main',
-        //   num:'0',
-        //   text:'关注'
-        // },{
-        //   url:'/pages/followers/main',
-        //   num:'0',
-        //   text:'粉丝'
-        // }
-        ],
-        lvIconArr: [],    // 等级图标数组
-        todaySign: 0     //  今天是否签到
-    }
-  components={
-    listItem,
-    aboutMe
-  }
-  methods={
-    editInfo(){
-      wx.navigateTo({
-        url: '/pages/editUserInfo/main'
       })
+    },
+    editInfo() {
+      wx.navigateTo({
+        url: '/pages/subPackages02/pages/editUserInfo/main'
+      });
     },
     // 查看等级
-    toGrade(){
+    toGrade() {
       wx.navigateTo({
-        url:'/pages/gradeDetail/main'
-      })
+        url: '/pages/subPackages02/pages/gradeDetail/main'
+      });
     },
     // 签到
-    async checkIn(e){
-      wx.navigateTo({url: `/pages/checkIn/main?title=${e}`})
+    async checkIn(e) {
+      wx.navigateTo({ url: `/pages/checkIn/main?title=${e}` });
     }
+  };
+
+  onLoad() {
+    wx.setNavigationBarColor({
+      frontColor: '#ffffff',
+      backgroundColor: '#7c48c6',
+      animation: {
+        duration: 400,
+        timingFunc: 'easeIn'
+      }
+    });
   }
 
-  onLoad(){
-    wx.setNavigationBarColor({
-    frontColor: '#ffffff',
-    backgroundColor: '#7c48c6',
-        animation: {
-            duration: 400,
-            timingFunc: 'easeIn'
-        }
-    })
-  }
-  
-  async onShow(){
-    let info = await wxRequest(api.getUserInfo,{},'POST');
-    if(info.data.code === api.STATUS){
+  async onShow() {
+    let info = await wxRequest(api.getUserInfo, {}, 'POST');
+    if (info.data.code === api.STATUS) {
       this.userInfo = info.data.data;
       let _info = info.data.data;
       let listNav = this.listNav;
       let listData = this.listData;
       this.todaySign = _info.is_signin;
-      console.log('_info.id',_info.id)
+      console.log('_info.id', _info.id);
       listNav[0].num = _info.likeNum;
       listNav[1].num = _info.commentNum;
       listNav[2].num = _info.collectNum;
       // listNav[2].url = `../following/main?user_id=${_info.id}`;
       // listNav[3].url = `../followers/main?user_id=${_info.id}`;
       this.listNav = listNav;
-      if(_info.msgNum>0){
-        wx.setTabBarBadge({index: 2,text: _info.msgNum.toString()})
-      }else{
-        wx.removeTabBarBadge({index:2})
+      if (_info.msgNum > 0) {
+        wx.setTabBarBadge({ index: 2, text: _info.msgNum.toString() });
+      } else {
+        wx.removeTabBarBadge({ index: 3 });
       }
 
       let lvIconArr = [];
-      for(let i=0;i<_info.icon_num;i++){
-        lvIconArr.push(_info.icon_url)
+      for (let i = 0; i < _info.icon_num; i++) {
+        lvIconArr.push(_info.icon_url);
       }
       this.lvIconArr = lvIconArr;
       this.$apply();
     }
   }
 
-  onPullDownRefresh(){
-    wx.stopPullDownRefresh()
+  onPullDownRefresh() {
+    wx.stopPullDownRefresh();
   }
 }
 </script>
 
 <style lang="less" scoped>
-  page {
-    background-color: #F3F6F8;
-  }
-  
-  .my-info{
-    width: 750rpx;
-    height: 350rpx;
-    background: url(https://gcdn.playonwechat.com/nvzhu/mycenter-bg.png) no-repeat;
-    background-size: 100% 100%;
-    .myCenterImg {
-      width: 120rpx;
-      height: 120rpx;
-      border-radius: 50%;
-      overflow: hidden;
-      flex-shrink: 0;
-      margin: 0 auto;
-      display: block;
-    }
-    .nick-name{
-      text-align: center;
-      margin: 20rpx 0;
-      font-size: 30rpx;
-    }
-    .grade-out{
-      display: flex;
-      align-items: center;
-      color: #ffd767;
-      justify-content: center;
-      .grade{
-        margin-right: 14rpx;
-      }
-      image{
-        width: 28rpx;
-      }
-    }
-    .sign_btn{
-      margin: 20rpx auto 0 auto;
-      width: 136rpx;
-      height: 46rpx;
-      background: #fc9a12;
-      color: #fff;
-      text-align: center;
-      line-height: 46rpx;
-      border-radius: 40rpx;
-      font-size: 24rpx;
-    }
-  }
 
+page {
+  // background-color: #f3f6f8;
+}
+
+.my-info {
+  width: 750rpx;
+  height: 350rpx;
+  background: url(https://gcdn.playonwechat.com/nvzhu/mycenter-bg.png) no-repeat;
+  background-size: 100% 100%;
   .myCenterImg {
-    width: 150rpx;
-    height: 150rpx;
+    width: 120rpx;
+    height: 120rpx;
     border-radius: 50%;
     overflow: hidden;
     flex-shrink: 0;
     margin: 0 auto;
     display: block;
   }
-
-  .msg-tag{
-    display: inline-block;
-    min-width: 36rpx;
-    min-height: 20rpx;
-    padding: 0 10rpx;
-    background: tomato;
-    color: #fff;
-    font-size: 24rpx;
-    position: absolute;
-    right: 20rpx;
-    text-align: center;
-    border-radius: 20rpx;
-    flex-shrink: 0;
-  }
-
   .nick-name {
-    font-size: 36rpx;
-    color: #FFFFFF;
-    margin-right: 6rpx;
-    margin-bottom: 30rpx;
-  }
-  .mg_15 {
-    margin-top: 20rpx;
-    flex-shrink: 0;
-  }
-  .d_p {
-    display: flex;
-    justify-content: space-between;
-    display: flex;
-    width: 100%;
-  }
-  .myLike {
-    font-size: 36rpx;
-    color: #FFFFFF;
-    font-weight: bold;
     text-align: center;
+    margin: 20rpx 0;
+    font-size: 30rpx;
   }
-  .mysetsys {
-    color: #EEEEEE;
-    font-size: 20rpx;
+  .grade-out {
+    display: flex;
+    align-items: center;
+    color: #ffd767;
+    justify-content: center;
+    .grade {
+      margin-right: 14rpx;
+    }
+    image {
+      width: 28rpx;
+    }
   }
-  .m_r_45 {
-    margin-right: 45rpx;
+  .sign_btn {
+    margin: 20rpx auto 0 auto;
+    width: 136rpx;
+    height: 46rpx;
+    background: #fc9a12;
+    color: #fff;
+    text-align: center;
+    line-height: 46rpx;
+    border-radius: 40rpx;
+    font-size: 24rpx;
   }
+}
 
-  .require {
-    width: 32rpx;
-    height: 32rpx;
-    margin-right: 20rpx;
-  }
- 
+.myCenterImg {
+  width: 150rpx;
+  height: 150rpx;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  margin: 0 auto;
+  display: block;
+}
 
- .about-me{
+.msg-tag {
+  display: inline-block;
+  min-width: 36rpx;
+  min-height: 20rpx;
+  padding: 0 10rpx;
+  background: tomato;
+  color: #fff;
+  font-size: 24rpx;
+  position: absolute;
+  right: 20rpx;
+  text-align: center;
+  border-radius: 20rpx;
+  flex-shrink: 0;
+}
+
+.nick-name {
+  font-size: 36rpx;
+  color: #ffffff;
+  margin-right: 6rpx;
+  margin-bottom: 30rpx;
+}
+.mg_15 {
+  margin-top: 20rpx;
+  flex-shrink: 0;
+}
+.d_p {
+  display: flex;
+  justify-content: space-between;
+  display: flex;
+  width: 100%;
+}
+.myLike {
+  font-size: 36rpx;
+  color: #ffffff;
+  font-weight: bold;
+  text-align: center;
+}
+.mysetsys {
+  color: #eeeeee;
+  font-size: 20rpx;
+}
+.m_r_45 {
+  margin-right: 45rpx;
+}
+
+.require {
+  width: 32rpx;
+  height: 32rpx;
+  margin-right: 20rpx;
+}
+
+.about-me {
   background: #fff;
   border-radius: 16rpx 16rpx 0 0;
   margin-top: -10rpx;
-   .list{
-     display: flex;
-     height: 124rpx;
-     align-items: center;
+  .list {
+    display: flex;
+    height: 124rpx;
+    align-items: center;
     //  padding: 30rpx 0 46rpx 0;
-     border-bottom: 12rpx solid #f3f6f8;
-     navigator{
-       flex: 1;
-       min-width: 40rpx;
+    border-bottom: 12rpx solid #f3f6f8;
+    navigator {
+      flex: 1;
+      min-width: 40rpx;
       //  width: 25%;
-       justify-content: center;
-       position: relative;
-       align-items: center;
-       view{
-         text-align: center;
-         color: #444;
-       }
-       .num{
-         font-size: 32rpx;
-         font-weight: bold;
-       }
-       .text{
-         font-size: 20rpx;
-         color: #444;
-       }
-     }
-     navigator:before{
-       content:'';
-       display: block;
-       position: absolute;
-       left: -22rpx;
-       height: 30rpx;
-       top: 50%;
-       margin-top: -15rpx;
-       border-left: 1px solid rgba(172,115,253,.5);
-     }
-     navigator:nth-of-type(1):before{
-       display: none;
-     }
-   }
+      justify-content: center;
+      position: relative;
+      align-items: center;
+      view {
+        text-align: center;
+        color: #444;
+      }
+      .num {
+        font-size: 32rpx;
+        font-weight: bold;
+      }
+      .text {
+        font-size: 20rpx;
+        color: #444;
+      }
+    }
+    navigator:before {
+      content: '';
+      display: block;
+      position: absolute;
+      left: -22rpx;
+      height: 30rpx;
+      top: 50%;
+      margin-top: -15rpx;
+      border-left: 1px solid rgba(172, 115, 253, 0.5);
+    }
+    navigator:nth-of-type(1):before {
+      display: none;
+    }
+  }
 }
 
 // 列表
 .messageList {
   padding: 40rpx 20rpx;
-  background-color: #FFFFFF;
-  border-bottom: 1rpx solid #E5E5E5;
+  background-color: #ffffff;
+  border-bottom: 1rpx solid #e5e5e5;
   flex: 1;
   .readBg {
     flex: 1;
@@ -389,13 +403,47 @@ export default class myCenter extends wepy.page{
   margin-right: 20rpx;
 }
 .messageTxt {
-    color: #333333;
-    font-size: 30rpx;
-    flex:1;
-    width: 100%;
+  color: #333333;
+  font-size: 30rpx;
+  flex: 1;
+  width: 100%;
+}
+.jump {
+  width: 16rpx;
+  height: 25rpx;
+}
+
+.wxtext{
+  display: flex;
+  justify-content: space-between;
+  padding: 20rpx;
+  align-items: center;
+  border-top: 20rpx solid #f3f6f8;
+  border-bottom: 20rpx solid #f3f6f8;
+  .text-l{
+    flex: 1;
   }
- .jump {
-    width: 16rpx;
-    height: 25rpx;
+  .text01{
+    font-size: 28rpx;
   }
+  .text-bold{
+    font-weight: bold;
+  }
+  .text02{
+    font-size: 28rpx;
+    color: #999;
+    margin-top: 10rpx;
+  }
+  .copy-btn{
+    width: 180rpx;
+    height: 60rpx;
+    color: #fff;
+    background: #c278ec;
+    border-radius: 40rpx;
+    text-align: center;
+    line-height: 60rpx;
+    font-size: 28rpx;
+  }
+}
+
 </style>

@@ -4,7 +4,6 @@
      scroll-y 
      scroll-into-view="{{toView}}" 
      enable-back-to-top
-     @scroll="scrollViewScroll"
      style="width:100vw;height:100vh;box-sizing:border-box;background:#fff;" @scrolltolower="LoadMore">
         <!-- 话题主题 -->
       <view class="topic" id="topic">
@@ -18,74 +17,19 @@
         <!-- 文章正文 -->
         <form bindsubmit="saveFormId" report-submit="true">
           <view class="content" @tap="inputBlur">
-                  <rich-text class="richtext" nodes="{{ArticleContent}}"></rich-text>
+             <rich-text class="richtext" nodes="{{ArticleContent}}"></rich-text>
           </view>
-          
-          <!-- 肌肤测试 -->
-          <view class="articl-test" wx:if="{{ArticleId=='1924'}}" @tap="openSkinTest"></view>
-
-          <navigator wx:if="{{is_story=='1'?true:false}}" url="/pages/subPackages02/pages/dayQuote/main" style="text-align:center;color:#647ffb;margin-bottom:50rpx" hover-class="none">>>每日物语海报下载</navigator>
+          <view class="article-options">
+             <view class="a-zan {{Article_likestatus=='1'?'a-zan-active':''}}"
+                   @tap="likeArticle">
+               <view class="icon"></view>{{Article_liketimes}}人点亮</view>
+              
+              <view class="share-options">
+                 <button class="share-btn share-btn01" open-type="share"></button>
+                 <button class="share-btn share-btn02" @tap="BtndownloadPoster"></button>
+              </view>
+          </view>
         </form>
-
-        <!-- 解忧栏 -->
-          <view class="solve-problems" wx:if="{{is_letter}}">
-              <button lang="zh_CN"
-                      wx:if="{{is_accredit=='1'?false:true}}"
-                      @getuserinfo="getUserInfo"
-                      class="write-email"
-                      open-type="getUserInfo">
-                <view class="solve-btn"></view>
-              </button>
-              <button class="write-email" @tap="toWriteSolveProblems" wx:else><view class="solve-btn"></view></button>
-          </view>
-
-          <!-- 投票 -->
-          <view class="vote" wx:if="{{voteList.length}}">
-            <!-- 占位用的 -->
-            <view class="zanwei">
-              <view class="vote-item" 
-                    wx:for="{{voteList}}" 
-                    wx:key="{{index}}">
-                     <view style="width:300rpx;height:300rpx;"></view>
-                <!-- <view class="item {{item.active?'text-active':''}}">{{item.text}}</view> -->
-              </view>
-            </view>
-            <!-- 投票内容 -->
-            <view class="vote-in">
-              <view class="vote_title">{{vote_title}}</view>
-            <view class="info">
-              <view class="player">
-              参与人数：<text>{{vote_total}}</text>
-              </view>    
-              <view class="remain"><text>剩余天数：</text><view class="time">{{voteDeadLine}}</view></view>  
-            </view>  
-            <view class="vote-main vote-before" wx:if="{{vote_status=='0'?true:false}}">
-              <view class="vote-item" 
-                    wx:for="{{voteList}}" 
-                    wx:key="{{index}}"
-                    data-idx="{{index}}"
-                    data-id="{{item.id}}"
-                    @tap="changeVote">
-                <view class="circle {{item.active?'circle-active':''}}"></view>
-                <view class="item {{item.active?'text-active':''}}">{{item.votetitle}}</view>
-              </view>
-              <button class="vote-btn" @tap="VoteBtn">投一票</button>
-            </view>    
-            <view class="vote-main vote-after" wx:else>
-              <view class="v-item" 
-                     wx:for="{{voteList}}"
-                     wx:key="{{index}}">
-                <view class="v-title">{{item.votetitle}}{{item.is_select?'(已选)':''}}</view>
-                <view class="v-vote-bar">
-                  <view class="bar-in" style="width:{{(536/vote_total) * item.involveNum}}rpx;">{{item.involveNum}}票</view>
-                  <text>{{item.percent+'%'}}</text>
-                </view>
-              </view>
-              <button open-type="share" class="invate-btn" data-type="vote">召集小伙伴投票</button>
-            </view>    
-          </view>
-        </view>
-
 
           <view class="article-info">
               <view class="info-item brower"><text>阅读</text>{{Article_readtimes}}</view>
@@ -136,8 +80,8 @@
                 <view>
                   <view class="display_flex flex_warp">
                     <view class="comment_name">{{comm.nickName}}<text style="color:red">{{comm.friend?'('+comm.friend+')':''}}</text></view>
-                    <image wx:if="{{comm.gender==='1'}}" src="../image/boy.png" class="gender" />
-                    <image wx:if="{{comm.gender==='2'}}" src="../image/girl.png" class="gender" />
+                    <image wx:if="{{comm.gender==='1'}}" src="../../../image/boy.png" class="gender" />
+                    <image wx:if="{{comm.gender==='2'}}" src="../../../image/girl.png" class="gender" />
                     <view class="lv-icon">
                         <image wx:for="{{comm.icon_url_arr}}" 
                                wx:for-item="icon" 
@@ -347,10 +291,10 @@
 
                     <view class="comment_name">{{comm.nickName}}<text style="color:red">{{comm.friend?'('+comm.friend+')':''}}</text></view>
                     <image wx:if="{{comm.gender==='1'}}" 
-                           src="../image/boy.png" 
+                           src="../../../image/boy.png" 
                            class="gender" />
                     <image wx:if="{{comm.gender==='2'}}" 
-                           src="../image/girl.png" 
+                           src="../../../image/girl.png" 
                            class="gender"/>
                     <view class="lv-icon">
                         <image wx:for="{{comm.icon_url_arr}}" 
@@ -424,7 +368,6 @@
 
             <view class="com_comments" 
                   wx:if="{{comm.follow_comment.length>0}}">
-                  <!-- v-for="(follow, fidx) in comm.follow_comment" -->
               <view class="font_24 border_bottom last-noborder" 
                     wx:for="{{comm.follow_comment}}"
                     wx:for-item="follow"
@@ -529,9 +472,14 @@
       </block>
 
       <view class="input-op">
-        <view class="a-op">
+        <!-- <view class="a-op">
            <view class="a-icon like {{Article_likestatus=='1'?'like-active':''}}" @tap="likeArticle"></view>
            <view class="num">{{Article_liketimes}}</view>
+        </view> -->
+
+        <view class="a-op">
+           <view class="a-icon collect {{Article_collect=='1'?'collect-active':''}}" @tap="ArticleCollect"></view>
+           <view class="num">{{Article_collect_Num}}</view>
         </view>
         <view class="a-op">
            <view class="a-icon comm" @tap="toComment"></view>
@@ -550,14 +498,12 @@
  <!-- <button @tap="addComment" style="position:fixed;left:20rpx;top:500rpx">发送</button> -->
 
   <!-- loading -->
-  <view class="loading" wx:if="{{pageLoad}}">
+  <!-- <view class="loading" wx:if="{{pageLoad}}">
       <image mode="widthFix" style="width:100rpx;height:100rpx" src="https://gcdn.playonwechat.com/nvzhu/Spinner-1s-100px.gif"/>
-  </view>
-  <!-- 小房子回首页 -->
-  <!-- <form bindsubmit="goHomego" report-submit="true">
-    <button formType="submit" class="go-home"></button>
-  </form> -->
+  </view> -->
 
+  
+  <!-- 小房子回首页 -->
   <form bindsubmit="goHomego" report-submit="true">
     <button formType="submit" class="home-icon"></button>
   </form>
@@ -595,29 +541,26 @@
               @payMoney.user="payMoney"
               @changeRewardMoney.user="changeRewardMoney"></RewardPoup>
 
-<!-- 页面 点击肌肤测试 -->
-  <view wx:if="{{ArticleId=='1924'}}" class="click-test {{clickBtnShow?'click-show':'click-hide'}}" @tap="openSkinTest"></view>
 
 </scroll-view>
 </template>
 
 <script>
 import wepy from 'wepy';
-import wxRequest from '../../utils/http.js';
-import api from '../../utils/api.js';
+import wxRequest from '@/utils/http.js';
+import api from '@/utils/api.js';
 
-import tips from '../../utils/tips.js';
-import sharPop from '../../components/shareItem';
-import utils from '../../utils/utils';
-import myToast from '../../components/myToast';
-import qiniuUploader from '../../utils/qiniuUploader';
-import RewardPoup from '../../components/rewardPopup';
+import tips from '@/utils/tips.js';
+import sharPop from '@/components/shareItem';
+import utils from '@/utils/utils';
+import myToast from '@/components/myToast';
+import qiniuUploader from '@/utils/qiniuUploader';
+import RewardPoup from '@/components/rewardPopup';
 export default class Detail extends wepy.page {
   config = {
     navigationBarTitleText: '话题详情'
   };
   data = {
-    clickBtnShow: false,          // 是否显示点击测试按钮
     name: 'myHtmlParserKiner1',
     ArticleContent: '',            // 文章内容
     topComment: '',                // 热门评论
@@ -651,6 +594,8 @@ export default class Detail extends wepy.page {
     Article_cover: null,           // 文章封面
     Article_comments: 0,           // 文章被评论次数
     ArticleTtictle: '',            // 文章标题
+    Article_collect: 0,            // 文章是否被收藏
+    Article_collect_Num: 0,        // 文章被收藏次数
     ArticleId: '',                 // 文章id
     nickName: '',                  // 用户名字
     is_accredit: null,             // 是否授权
@@ -856,6 +801,8 @@ export default class Detail extends wepy.page {
     this.is_announce = _page_data.is_announce;
     this.is_letter = _page_data.is_letter;
     this.Article_author = _page_data.author;
+    this.Article_collect = _page_data.is_collect;
+    this.Article_collect_Num = _page_data.collecttimes;
 
     this.systemInfo = wx.getStorageSync('systemInfo');
     this.$apply();
@@ -1018,12 +965,28 @@ export default class Detail extends wepy.page {
       el.active = false;
       el.percent = (el.involveNum/_page_data.vote_total_num*100).toFixed(0);
     })
+    
+    
+
     this.voteList = voteList;
     this.vote_total = _page_data.vote_total_num;
     this.vote_status = _page_data.vote_status;
     this.ArticleContent = _page_data.content;
     this.topComment = _page_data.topcomment;
     this.comment = _page_data.comment;
+    
+    let articleData = {
+       Article_liketimes: _page_data.liketimes,
+       ArticleTtictle: _page_data.title,
+       Article_readtimes: _page_data.readtimes,
+       Article_createtime: _page_data.create_time,
+       Article_sharetimes: _page_data.sharetimes,
+       Article_comments: _page_data.commenttimes,
+       Article_likestatus: _page_data.likestatus,
+       comment_view: _page_data.comment_view,
+       is_letter: _page_data.is_letter
+    }
+
     this.Article_liketimes = _page_data.liketimes;
     this.ArticleTtictle = _page_data.title;
     this.Article_readtimes = _page_data.readtimes;
@@ -1034,6 +997,8 @@ export default class Detail extends wepy.page {
     this.comment_view = _page_data.comment_view;
     this.is_letter = _page_data.is_letter;
     this.Article_author = _page_data.author;
+    this.Article_collect = _page_data.is_collect;
+    this.Article_collect_Num = _page_data.collecttimes;
     this.page = 2;
     this.$apply();
     wx.stopPullDownRefresh();
@@ -1133,37 +1098,6 @@ export default class Detail extends wepy.page {
   }
 
   methods = {
-    // 打开肌肤测试
-    openSkinTest(){
-      wx.navigateToMiniProgram({
-        appId: 'wx7a824def006ef999',
-        path: 'pages/index/index',
-        success(res) {
-          // 打开成功
-          console.log('打开成功')
-        }
-      })
-    },
-    // 页面滚动
-    scrollViewScroll(){
-      // console.log('页面在滚动');
-      if(this.ArticleId!=1924) return;
-      let that = this;
-      let query = wx.createSelectorQuery();
-      query.select('.article-info').boundingClientRect();
-      query.exec((res)=>{
-        let node = res[0];
-        // console.log(node.top)
-        if(node.top<600){
-          // console.log('该隐藏了')
-          that.clickBtnShow = true;
-          that.$apply();
-        }else{
-          that.clickBtnShow = false;
-          that.$apply();
-        }
-      })
-    },
     // 书写解忧
     toWriteSolveProblems(){
        wx.navigateTo({url:`/pages/subPackages01/pages/writeSolveProblems/main?article_id=${this.ArticleId}`})
@@ -1281,7 +1215,6 @@ export default class Detail extends wepy.page {
          this.$apply();
       }
     },
-
     // 删除发送图片
     deleteAddImage(e){
        let dataset = e.currentTarget.dataset;
@@ -1424,6 +1357,10 @@ export default class Detail extends wepy.page {
       this.actionSheetHidden = !this.actionSheetHidden;
       this.$apply();
     },
+    // 页面内下载海报
+    BtndownloadPoster(){
+      utils.getPoster(this.ArticleId);
+    },
     // 分享好友
     shareWechat() {},
     //   输入评论
@@ -1436,16 +1373,8 @@ export default class Detail extends wepy.page {
     goHomego(e) {
        let formId = e.detail.formId;
        this.saveFormId(formId);
-       let url = '';
-       if(this.fromPage==='news'){
-          url = '/pages/news/main'
-       }else if(this.fromPage=='index'){
-          url = '/pages/index/main'
-       }else{
-          url = '/pages/index/main'
-       }
-        wx.switchTab({url});
-        wxRequest(api.clickbutton,{type:`${this.fromPage}`},'POST');
+        wx.switchTab({url:'/pages/news/main'});
+        wxRequest(api.clickbutton,{type:'news'},'POST');
     },
     // input失去焦点
     inputBlur() {
@@ -1493,7 +1422,6 @@ export default class Detail extends wepy.page {
         this.$apply();
       }
     },
-
     // 收起评论
     collapseComment(idx, text) {
       let _comment = [];
@@ -1512,7 +1440,6 @@ export default class Detail extends wepy.page {
       }
       this.$apply();
     },
-
     // 点击追评图标
     followCommentComment(id, idx, user_id, type, nickName, comment) {
       console.log('点击一级追评图标', id, idx, user_id, type, nickName);
@@ -1644,7 +1571,6 @@ export default class Detail extends wepy.page {
       }
       this.$apply();
     },
-
     // 查看更多评论
     async readMoreFollowComm(id, idx, text) {
       console.log('点击更多评论', id, idx, text);
@@ -1754,7 +1680,6 @@ export default class Detail extends wepy.page {
       }
       this.$apply();
     },
-
     // 去用户中心
     toUserCenter(user_id) {
       console.log('用户id', user_id);
@@ -1763,6 +1688,30 @@ export default class Detail extends wepy.page {
         wx.navigateTo({
           url: `/pages/subPackages01/pages/otherUserCenter/main?user_id=${user_id}`
         });
+      }
+    },
+    // 点击收藏
+    async ArticleCollect(){
+      let data = {
+        kind_id: this.ArticleId,
+        type: 'collect'
+      }
+      if(this.Article_collect=='0'){
+        data.status = 'inc'
+      }else{
+        data.status = 'dec'
+      }
+      let json = await wxRequest(api.createcollect,data,'POST');
+      if(json.data.code===api.STATUS){
+        console.log('json 收藏', json )
+        if(this.Article_collect=='0'){
+          this.Article_collect = 1;
+          this.Article_collect_Num = Number(this.Article_collect_Num)+1;
+        }else{
+          this.Article_collect = 0;
+          this.Article_collect_Num = Number(this.Article_collect_Num) - 1;
+        }
+        this.$apply();
       }
     }
   }
@@ -2362,15 +2311,28 @@ page {
       background-size: 100rpx 100rpx;
       background-position: 0 -50rpx;
     }
-    .like{
-      background-image: url('http://p766oymet.bkt.clouddn.com/nvzhu/comm_sprites.png');
-      background-size: 100rpx 100rpx;
-      background-position: 0 0;
+    // .like{
+    //   background-image: url('http://p766oymet.bkt.clouddn.com/nvzhu/comm_sprites.png');
+    //   background-size: 100rpx 100rpx;
+    //   background-position: 0 0;
+    // }
+    // .like-active{
+    //   background-image: url('http://p766oymet.bkt.clouddn.com/nvzhu/comm_sprites.png');
+    //   background-size: 100rpx 100rpx;
+    //   background-position: -50rpx 0;
+    // }
+    .collect{
+       width: 39rpx;
+       height: 38rpx;
+       background-image: url('https://gcdn.playonwechat.com/nvzhu/collect_sprites.png');
+       background-size: 78rpx 38rpx;
+       background-position: 0 0;
+       margin-bottom: 10rpx;
     }
-    .like-active{
-      background-image: url('http://p766oymet.bkt.clouddn.com/nvzhu/comm_sprites.png');
-      background-size: 100rpx 100rpx;
-      background-position: -50rpx 0;
+    .collect-active{
+      background-image: url('https://gcdn.playonwechat.com/nvzhu/collect_sprites.png');
+       background-size: 78rpx 38rpx;
+       background-position: -39rpx 0;
     }
     .comm{
       background-image: url('http://p766oymet.bkt.clouddn.com/nvzhu/comm_sprites.png');
@@ -2445,299 +2407,62 @@ page {
    margin: 0;
 }
 
-// 投票
-.vote{
-  width: 630rpx;
-  min-height: 635rpx;
-  background-color: #e8ecff;
-  border: 1px solid #49017e;
-  background-size: 100% 100%;
-  padding: 30rpx 20rpx 0 0;
-  position: relative;
-  left: 50%;
-  margin: 0 auto 200rpx -280rpx;
-  .vote_title{
-    font-size: 34rpx;
-    font-weight: bolder;
-    padding-bottom: 60rpx;
-  }
-  .vote-in{
-    width: 630rpx;
-    min-height: 635rpx;
-    margin-left: -30rpx;
-    position: absolute;
-    left: 0;
-    top: 30rpx;
-    padding:30rpx 30rpx 60rpx 30rpx;
-    background-color: #fff;
-    border: 1px solid #49017e;
-    overflow: hidden;
-    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeAQMAAAAB/jzhAAAABlBMVEX////u7u5x8T/JAAAAEklEQVQI12MAApZBRfz///8PACz5BG7bxJ08AAAAAElFTkSuQmCC');
-    background-size: 30rpx 30rpx;
-  }
-  .info{
-    display: flex;
-    justify-content: space-between;
-    font-size: 24rpx;
-    color: #666;
-    margin-bottom: 50rpx;
-  }
-  .player{
-    display: flex;
-    text{
-      color: #f8814a;
-    }
-  }
-  .remain{
-    display: flex;
-    justify-content: flex-end;
-    .time{
-      color: #f15969;
-      min-width: 170rpx;
-      text-align: right;
-    }
-  }
-  .item{
-    width: 520rpx;
-    height: 88rpx;
-    text-align: left;
-    display: flex;
-    align-items: center;
-    margin-bottom: 30rpx;
-    padding-left: 20rpx;
-    border-radius: 10rpx;
-    position: relative;
-    // border:1px solid red;
-  }
-
-  .vote-item{
-    display: flex;
-    align-items: center;
-    position: relative;
-    .circle{
-      width: 30rpx;
-      height: 30rpx;
-      border-radius: 50%;
-      position: relative;
-      margin-right: 20rpx;
-      transform: translateY(-15rpx);
-      border:1px solid transparent;
-    }
-    .item{
-      border:1px solid transparent;
-    }
-  }
-  .vote-item:nth-of-type(odd) .circle,
-  .vote-item:nth-of-type(odd) .circle
-  {
-    border-color: #f04759;
-  }
-  .vote-item:nth-of-type(even) .circle{
-    border-color: #4cbef1;
-  }
-  .vote-item:nth-of-type(even) .item{
-    border-color: #4cbef1;
-  }
-  .vote-item:nth-of-type(odd) .item{
-    border-color: #f04759;
-  }
-  .vote-item:nth-of-type(odd) .circle-active,
-  .vote-item:nth-of-type(odd) .text-active{
-     background: #f04759;
-     color: #fff;
-  }
-  .vote-item:nth-of-type(even) .circle-active,
-  .vote-item:nth-of-type(even) .text-active{
-     background: #4cbef1;
-     color: #fff;
-  }
-
-  .vote-after{
-    .v-title{
-       margin-bottom: 20rpx;
-       display: flex;
-       align-items: center;
-    }
-    .v-item:nth-of-type(odd) .v-title:before{
-      content: '';
-      display: block;
-      width: 30rpx;
-      height: 30rpx;
-      margin-right: 20rpx;
-      border-radius: 50%;
-      background: #f04759;
-    }
-    .v-item:nth-of-type(even) .v-title:before{
-      content: '';
-      display: block;
-      width: 30rpx;
-      height: 30rpx;
-      margin-right: 20rpx;
-      border-radius: 50%;
-      background: #4cbef1;
-    }
-    .v-vote-bar{
-      width: 536rpx;
-      height: 48rpx;
-      background: #f5f4f7;
-      border-radius: 30rpx;
-      margin:0 0 40rpx 30rpx;
-      display: flex;
-      justify-content: space-between;
-      position: relative;
-      text{
-        display: inline-block;
-        font-size: 28rpx;
-        position: absolute;
-        right: 10rpx;
-        top: 50%;
-        transform: translateY(-50%);
-      }
-    }
-    .bar-in{
-      border-radius: 30rpx;
-      font-size: 26rpx;
-      line-height: 48rpx;
-      height: 48rpx;
-      color: #fff;
-      text-indent: 20rpx;
-    }
-    .v-item:nth-of-type(odd) .bar-in{
-      background: #f04759;
-    }
-    .v-item:nth-of-type(even) .bar-in{
-      background: #4cbef1;
-    }
-    .invate-btn{
-      width: 379rpx;
-      height: 118rpx;
-      background-image: url(http://p766oymet.bkt.clouddn.com/nvzhu/vote-bth-bgc.png);
-      background-size: 100% 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: #fff;
-      font-size: 30rpx;
-      background-color: transparent;
-    }
-  }
-  .vote-btn{
-      width: 379rpx;
-      height: 118rpx;
-      background-image: url(http://p766oymet.bkt.clouddn.com/nvzhu/vote-bth-bgc.png);
-      background-size: 100% 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: #fff;
-      font-size: 30rpx;
-      background-color: transparent;
-    }
-
-}
-.vote::before{
-  content: '';
-  display: block;
-  width: 128rpx;
-  height: 48rpx;
-  background-image: url('http://p766oymet.bkt.clouddn.com/nvzhu/vote-text-icon.png');
-  background-size: 100% 100%;
-  position: absolute;
-  left: -38rpx;
-  top: -2rpx;
-  z-index: 2;
-}
-
-// 解忧栏目
-.solve-problems{
-  width: 680rpx;
-  overflow: hidden;
-  background: #fff;
-  position: relative;
-  padding-top: 20rpx;
-  margin: 0 auto 40rpx auto;
-  .write-email{
-    background-color: transparent;
-    width: 700rpx;
-    height: 310rpx;
-    padding: 220rpx 0 0 0;
-    margin: 0 auto;
-    color: #fff;
-    font-size: 24rpx;
-    position: relative;
-    transform: translateX(-50%);
-    left: 50%;
-    background-image: url('https://gcdn.playonwechat.com/nvzhu/repack/letter.png');
-    background-size: 100% 100%;
-  }
-  .solve-btn{
-    width: 112rpx;
-    height: 46rpx;
-    position: absolute;
-    left:50%;
-    margin-left: -66rpx;
-    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHAAAAAuCAMAAADHum3+AAAAn1BMVEUAAAA0bQE0bQE0bQE0bQE0bQE0bQE0bQE0bQE0bQFtsi9apTxiqzY0bQH+/v5eqDlpsDFlrTRnrjPC3LOmzYru9eqcxY+917Xt9OuhyY2cyHtGhRG62KWkzItdoy9mqSlBgRPm8ODL4b7H3cCOwWxur016uEbc6tW006h3smJPkyZZmyBLjR5UlBv2+fTT5cuFvVqoy5yu0JmRv4FUnTPlNoxxAAAACnRSTlMA4lT4qwbaiVuUFCaGOgAABFBJREFUWMO9mGlz2jAQhoFAmi5r7a5sEgKEK1ebo+n1/39bpbUOOwZnJjP0+QDMIOnRvpIF9kCZjMbDs+KEnJ2PR5NBYnRebJ/W6GCQqYMIiYSmhAyA0yYkgooVUupu7AAA/Y6mHf4+bYvzUfR9KbZr7SccR3e9XD8LjnZ3ZMEgEtfWvzrCJMSJJRi7zm3xJfpeBP3MGUDiuIJ1fUzv6gMARj+9MBXCRFZOD/JSG0fFi86J/VDTgPbxZbR9mp7DJ1r7QpEZndFhI70ULtXJcCvWixA4l0NxfB9gylDE1QZqJLB5Gi10StS1kbW4HU4GF8UmJIlC7xvpdhDLbB3+1TltXSNQs/BOrs1ByCGay7q4GIyXMUnqBqFLxX7WGXRKRyqwayQMWaX9EMeR7XgwfGZLx4SWMRQJHuuXDlQr2BLaVoVi20aPgPc+DQdna+yImgORukQA6sSJazW1sodkFJ+9z68Zqse3oPXZoOheNu2moAilVgy2c61xKFzfwMGNBiQ57GJQSL/QgmLd51ih9m/HIhBgyzF9Svsz+VTY49PrLgnZjeaHQ+oKER6CL4itjk/e1hR4IfcWKBCFU4rhYha+/brX9287s+CGr7GmwZeF9oCIkvCxDFxdXZXKIyq6hb4bc6stfxnzhn63RDj5WqOSj7QrjJNy7U0XDPjCzI/QZXf7W8+7BAayT6d4UIhCcXexMZVyc+lx71GojR7N7aWZB2az+Xw3a5eY89RaVXjo4sN0zhgDsKgewmFkQZww4hO9uzQtkrC9l/1BTEeE1qcRT1IVzsw+CAmwLDFxZcz0PlyIahB4eLeK9Uma3F0hWeCQhG7RqvLCVVVdKtX1ffbd/3DC6Z8rT1mzgIzkX6vjQgoNKRTo8MIGmCmNF7YyraBBFAILodBRIXrSIaPC0hEKyb5ro8LvWvpNde35CQ04jqFFdoR5LcIpxBAwBhzWVw2tQMt+IVhMg8gxIbLDiuhFnIXhPBbAzLed+8Yei1RBiqMcrZDy5dsQzhLzefSR3Pmp2D+3edPcLqAFS/zQK9Q0MwvTAiNc1y71UrDOATp8LFSgwUOzYxZyCPvnPle4vzsmlA+Enal2hWl1TYPPVpgXe78vE48ruDPzVGAWVtdul97cVMeFcFQo7E8oib72RV9CFYUWklBfov8Ycuxog3esfleJVQWrWkgILaGnX8h4+PBG6OfNlCnQ7hr2Cn2J3d9D7pEtVuXOmG/Jl4WzQI8QhCT84nPrKO1hZRz7pm/RjbS3RCJxQqD+AjO7Wblg9UXhbAZw514CVfXQYyR0OGHznsnCRzA53+ewtfBsA5z/hX4sFIbPYgndX/3z53gcojjhSbH4NNTbNcB4xMBp4eU43JAS4f8QbooLd8u9zH/MBU7LcjjxDxVegdOJfFJei5E+NvFG+g/C1/ig5mux3PDJE90si6+NR1/L5zWdsMDN89I/+kpMLk79cG84vpio6h+t7PegIf3+6AAAAABJRU5ErkJggg==');
-    background-size: 100% 100%;
-    animation: shan 2s linear infinite;
-    transition: 1.5s;
-  }
-  @keyframes shan {
-    0%,100%{
-      opacity: .9;
-    }
-    50%{
-      opacity: .2;
-    }
-  }
-}
-
-.click-test{
-  width: 237rpx;
-  height: 132rpx;
-  background-image: url('https://gcdn.playonwechat.com/nvzhu/click-btn.png');
-  background-size: 100% 100%;
-  position: fixed;
-  right: -50rpx;
-  top: 500rpx;
-  transition: 1s;
-}
-
-.articl-test{
-  width: 352rpx;
-  height: 78rpx;
-  background-image: url('https://gcdn.playonwechat.com/nvzhu/article-test.png');
-  background-size: 100% 100%;
+// 文章点赞
+.a-zan{
+  width: 318rpx;
+  height: 90rpx;
+  border:1px solid #f8814a;
+  border-radius: 50rpx;
   margin: 0 auto 50rpx auto;
-  position: relative;
-}
-
-.click-show{
-  animation: fadeOut 1s forwards;
-}
-
-@keyframes fadeOut {
-  0%{
-    transform: translateX(-5%);
-  }
-  100%{
-    transform: translateX(200%);
-  }
-}
-
-.click-hide{
-  animation: btnfadeOut 1s forwards;
-}
-
-@keyframes btnfadeOut {
-  0%{
-    transform: translateX(200%);
-  }
-  100%{
-    transform: translateX(-5%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #f8814a;
+  transition: .5s;
+  .icon{
+    width: 41rpx;
+    height: 41rpx;
+    margin-right: 20rpx;
+    background-image: url('https://gcdn.playonwechat.com/nvzhu/zan_sprites.png');
+    background-size: 82rpx 41rpx;
+    background-position: 0 0;
   }
 }
 
+.a-zan-active{
+   background: #f8814a;
+   color: #fff;
+   transition: .5s;
+   .icon{
+     background-image: url('https://gcdn.playonwechat.com/nvzhu/zan_sprites.png');
+    background-size: 82rpx 41rpx;
+    background-position: -41rpx 0;
+   }
+}
 
+.share-options{
+  display: flex;
+  margin: 0 auto 50rpx auto;
+  justify-content: center;
+  .share-btn{
+    padding: 0;
+    margin: 0;
+    border: none;
+    width: 80rpx;
+    height: 80rpx;
+    margin: 0 20rpx;
+  }
+  .share-btn01{
+    background: url('https://gcdn.playonwechat.com/nvzhu/share_sprites.png') -79rpx 0;
+    background-size: 158rpx 80rpx;
+    background-repeat: no-repeat;
+  }
+  .share-btn02{
+    background: url('https://gcdn.playonwechat.com/nvzhu/share_sprites.png') 0 0;
+    background-size: 158rpx 80rpx;
+    background-repeat: no-repeat;
+  }
+}
 
 
 </style>

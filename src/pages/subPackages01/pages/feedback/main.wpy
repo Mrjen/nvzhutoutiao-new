@@ -14,6 +14,7 @@
 import wepy from 'wepy';
 import wxRequest from "../../../../utils/http.js";
 import api from "../../../../utils/api.js";
+import utils from '../../../../utils/utils.js';
 export default class Detail extends wepy.page {
   config = {
      "navigationBarTitleText":"消息反馈"
@@ -28,7 +29,9 @@ export default class Detail extends wepy.page {
 
   methods = {
     async sendFeedBack(){
-        let send = await wxRequest(api.feedBackMsg, { message:this.message })
+        let mobile = await utils.getSystemInfoSync();
+        if(!this.message) return;
+        let send = await wxRequest(api.feedBackMsg, { message: this.message, phone:mobile })
         if(send.data.code === api.STATUS){
             // tips.success('反馈成功')
             this.message = '';

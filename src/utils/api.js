@@ -226,6 +226,9 @@ const calendartextlist =  `${domainUrl}/calendar/calendartextlist`
 // 语录图库
 const calendarpiclist = `${domainUrl}/calendar/calendarpiclist`
 
+// 赚取积分
+const todaytntegral = `${domainUrl}/integral/todaytntegral`
+
 export default {
   STATUS,
   domainUrl,
@@ -302,5 +305,6 @@ export default {
   collectlist,
   delcollect,
   calendartextlist,
-  calendarpiclist
+  calendarpiclist,
+  todaytntegral
 };

@@ -1,19 +1,25 @@
 <template>
+<view>
     <canvas
     class="cropper"
     disable-scroll="{{disable}}"
     @touchstart="ts"
     @touchmove="tm"
     @touchend="te"
-    style="width:{{cropperOpt.width}}px;height:{{cropperOpt.height}}px;background-color: rgba(0, 0, 0, .8);position: relative;z-index:2"
+    style="width:{{cropperOpt.width}}px;height:{{cropperOpt.height-54}}px;background-color: rgba(0, 0, 0, .8);position: relative;z-index:2;box-sizing:border-box"
     @error="canvasError"
     canvas-id="cropper">
-     <cover-view class="cropper-buttons">
+     <!-- <cover-view class="cropper-buttons">
       <cover-view class="upload" @tap="uploadTap">重新选择</cover-view>
       <cover-view style="height:100px;width:1px;background:#999;"></cover-view>
       <cover-view class="getCropperImage" @tap="getCropperImage">确定</cover-view>
-    </cover-view>
+    </cover-view> -->
   </canvas>
+  <view class="cropper-buttons" style="width:750rpx;">
+     <view class="upload" @tap="uploadTap">重新选择</view>
+     <view class="getCropperImage"  @tap="getCropperImage">确定</view>
+  </view>
+</view>
 </template>
 
 
@@ -22,10 +28,7 @@ import wepy from 'wepy';
 import WeCropper from 'we-cropper';
 import utils from '@/utils/utils.js';
 import tips from '../../utils/tips.js';
-const device = wx.getSystemInfoSync();
-const dpr = device.pixelRatio;
-const width = device.windowWidth;
-const height = device.windowHeight;
+
 export default class wxcropper extends wepy.page {
   config = {
     disableScroll: true
@@ -33,13 +36,13 @@ export default class wxcropper extends wepy.page {
   data = {
     $: null,
     cropperOpt: {
-      width: width,
-      height: height,
+      width: wx.getSystemInfoSync().width,
+      height: wx.getSystemInfoSync().height,
       scale: 2.5,
       zoom: 8,
       cut: {
-        x: (width - 668 / 2) / 2,
-        y: (height - 908 / 2) / 2,
+        x: (wx.getSystemInfoSync().width - 668 / 2) / 2,
+        y: (wx.getSystemInfoSync().height - 908 / 2) / 2,
         width: 668 / 2,
         height: 908 / 2
       }
@@ -64,14 +67,22 @@ export default class wxcropper extends wepy.page {
 
   onLoad(options) {
     console.log(options);
-    console.log('canIUse', wx.canIUse('cover-view'));
+    const device = wx.getSystemInfoSync();
+    const dpr = device.pixelRatio;
+    const width = device.windowWidth;
+    const height = device.windowHeight;
+    // console.log('canIUse', wx.canIUse('cover-view'));
     if (options) {
-      let cropperOpt = this.cropperOpt;
-      cropperOpt.cut = {
-        x: (width - options.w / 2) / 2,
-        y: (height - options.h / 2) / 2,
-        width: options.w / 2,
-        height: options.h / 2
+      let cropperOpt = {
+        ...this.cropperOpt,
+        width: width,
+        height: height,
+        cut:{
+          x: (width - options.w / 2) / 2,
+          y: (height - options.h / 2) / 2,
+          width: options.w / 2,
+          height: options.h / 2
+        }
       };
       cropperOpt.options = options;
       this.cropperOpt = cropperOpt;
@@ -190,27 +201,34 @@ export default class wxcropper extends wepy.page {
   position: fixed;
   left: 0;
   bottom: 0;
-  height: 100rpx;
+  height: 54px;
   background: transparent;
   width: 750rpx;
   border: 1px solid transparent;
   .upload {
     flex: 1;
     text-align: center;
-    height: 100rpx;
-    line-height: 100rpx;
+    height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     position: relative;
     color: #333;
     background: #fff;
+    border-right: 1px solid #999;
+    bottom: 0;
   }
   .getCropperImage {
     flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     text-align: center;
-    height: 100rpx;
+    height: 54px;
     background: #fff;
-    line-height: 100rpx;
     position: relative;
     color: #333;
+    bottom: 0;
   }
 }
 </style>

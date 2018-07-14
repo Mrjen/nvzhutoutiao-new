@@ -77,7 +77,7 @@ export default class quoteImageList extends wepy.page{
       }else{
           str = `?cover=${url}&from=quotelist`
       }
-      wx.redirectTo({url: `/pages/EditDayQuote/main${str}`})
+      wx.redirectTo({url: `/pages/subPackages02/pages/EditDayQuote/main${str}`})
     },
     // 点击取消
     ModalCancel(){

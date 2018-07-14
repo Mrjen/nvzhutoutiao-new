@@ -131,7 +131,7 @@ export default class collectList extends wepy.page{
         console.log('收藏选择', e.currentTarget.dataset)
        let dataset = e.currentTarget.dataset;
        wx.navigateTo({
-         url: '/pages/subPackages01/pages/newsDetail/main?id=' + dataset.id
+         url: '/pages/newsDetail/main?id=' + dataset.id
        })
     },
      //手指刚放到屏幕触发

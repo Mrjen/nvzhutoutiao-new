@@ -115,7 +115,7 @@ export default class quoteList extends wepy.page{
        }else{
          str = `?quote=${text}&author=${author}&from=quotelist`
        }
-       wx.redirectTo({url: `/pages/EditDayQuote/main${str}`})
+       wx.redirectTo({url: `/pages/subPackages02/pages/EditDayQuote/main${str}`})
     },
     // 点击取消
     ModalCancel(){
@@ -154,7 +154,7 @@ export default class quoteList extends wepy.page{
   background: #f6f7f9;
   .nav{
     width: 750rpx;
-	height: 98rpx;
+   	height: 98rpx;
     background-color: #7c48c6; 
     display: flex; 
     .n-item{

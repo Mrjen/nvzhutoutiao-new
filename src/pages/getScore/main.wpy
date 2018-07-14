@@ -1,0 +1,334 @@
+<template>
+<view class="get-score">
+   <view class="my-score">
+       <view class="text title">我的积分</view>
+       <view class="text score">{{work.totalintegral}}</view>
+       <navigator class="to-shop" url="/pages/subPackages01/pages/shop/main"><text class="icon"></text>兑换礼品</navigator>
+   </view>
+   
+   <view class="score-bar">
+     <view class="item-bar">
+        <view class="bar-score">{{work.can_get_integral}}</view>
+        <view class="bar-text">今日可赚积分</view>
+     </view>
+     <view class="item-bar">
+        <view class="bar-score">{{work.todayhadintegral}}</view>
+        <view class="bar-text">已获得积分</view>
+     </view>
+   </view>
+
+   <view class="work-list">
+      <view class="w-item" wx:for="{{workList}}" wx:key="{{index}}">
+        <view class="w-left">
+           <view class="w-icon w-icon{{index}}"></view>
+           <view class="w-main">
+              <view class="w-title">
+                 <text class="w-t-text">{{item.text}}</text>
+                 <text class="w-t-tip">{{item.totalinfo}}</text>
+              </view>
+              <view class="w-t-tips">{{item.tips}}　</view>
+              <view class="w-content">
+                <view class="complete">完成<text class="complete-num">{{item.hadnum}}</text>/{{item.totalnum}}</view>
+                <view class="solve">{{item.hadinfo}}</view>
+              </view>
+           </view>
+        </view>
+        <view class="w-right">
+          <view class="has-complete btn" wx:if="{{item.hadnum==item.totalnum}}">已入账</view>
+          <block wx:else>
+            <view class="complete-btn btn" 
+                  wx:if="{{index!=7}}" 
+                  data-url="{{item.url}}"
+                  @tap="toComplete" 
+                  data-navtype="{{item.navtype}}">{{item.btnText}}</view>
+            <button class="complete-btn btn" 
+                    wx:else 
+                    open-type="share" 
+                    data-type="invite">邀请</button>
+          </block>
+            
+        </view>
+      </view>
+   </view>
+</view>  
+</template>
+
+<script>
+import wepy from 'wepy';
+import wxRequest from "../../utils/http.js";
+import api from "../../utils/api.js";
+export default class getScore extends wepy.page{
+  config = {
+     "navigationBarTitleText":"赚积分"
+  }
+  data={
+    workList:[],
+    work: {}
+  }
+  
+  onLoad(options){
+    wx.setBackgroundColor({backgroundColor: '#7c48c6'});
+  }
+
+  async onShow(){
+    let json = await wxRequest(api.todaytntegral,{},'POST');
+    if(json.data.code===api.STATUS){
+      console.log('json', json);
+      let data = json.data.data;
+      let workList = data.list;
+      workList[0] = {...workList[0], text:'登录', url:'', navtype:'nav', btnText: '去登录',tips: ''};
+      workList[1] = {...workList[1], text:'签到', url:'/pages/checkIn/main', navtype:'nav', btnText: '去签到'};
+      workList[2] = {...workList[2], text:'点亮5次', url:'/pages/index/main', navtype:'switch', btnText: '去点亮',tips: '点亮文章/话题/评论+10/次'};
+      workList[3] = {...workList[3], text:'打赏5次', url:'/pages/index/main', navtype:'switch', btnText: '去打赏',tips: '打赏评论人+20/次'};
+      workList[4] = {...workList[4], text:'评论5次', url:'/pages/index/main', navtype:'switch', btnText: '去评论',tips: '评论文章/话题+20/次'};
+      workList[5] = {...workList[5], text:'热门评论2次', url:'/pages/index/main', navtype:'switch', btnText: '去评论',tips: '评论被点亮20次上热门 +50/次'};
+      workList[6] = {...workList[6], text:'分享文章', url:'/pages/news/main', navtype:'switch', btnText: '去分享',tips: '好友阅读文章/话题+20/人'};
+      workList[7] = {...workList[7], text:'邀请新朋友', url:'/pages/news/main', navtype:'switch', btnText: '去邀请',tips: '每增加一位新朋友+20'};
+
+      this.work = data;
+      this.workList = workList;
+      this.$apply();
+    }
+  }
+
+  methods={
+    // 去完成
+    toComplete(e){
+      let dataset = e.currentTarget.dataset;
+      if(dataset.navtype==='switch'){
+         wx.switchTab({url:dataset.url})
+      }else if(dataset.navtype==='nav'){
+         wx.navigateTo({url:dataset.url})
+      }
+    }
+  }
+  
+  onShareAppMessage(e){
+    // console.log(e)
+    if(e.from==='button'){
+      let dataset = e.target.dataset;
+      if(dataset.type==="invite"){
+        return {
+          title: '发现一个超棒的女性资讯社区，快来一起玩！',
+          path: `/pages/news/main?share_user_id=${wx.getStorageSync('myid')}`,
+          imageUrl: 'https://gcdn.playonwechat.com/nvzhu/share_poster.jpg'
+        }
+      }
+    }
+  }
+
+  onPullDownRefresh(){
+    wx.stopPullDownRefresh();
+  }
+
+}
+</script>
+
+<style lang="less" scoped>
+.my-score{
+  width: 750rpx;
+  height: 350rpx;
+  background-image: url(https://gcdn.playonwechat.com/nvzhu/get-score-bg.png);
+  background-size: 100% 100%;
+  padding-top: 1px;
+  position: relative;
+  z-index: 1;
+  .text{
+    text-align: center;
+  }
+  .title{
+    margin:50rpx 0 20rpx 0;
+    color: #c792fe;
+    line-height: 1;
+  }
+  .score{
+    font-size: 72rpx;
+    color: #fff;
+    margin-bottom: 40rpx;
+    line-height: 1;
+  }
+  .to-shop{
+    display: block;
+    width: 232rpx;
+    height: 64rpx;
+    border:1px solid #fff;
+    margin: 0 auto;
+    line-height: 64rpx;
+    text-align: center;
+    color: #fff;
+    border-radius: 40rpx;
+    font-size: 24rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    .icon{
+      display: inline-block;
+      width: 27rpx;
+      height: 27rpx;
+      background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABsAAAAbCAMAAAC6CgRnAAAAb1BMVEUAAAD//v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v9jxebsAAAAJHRSTlMA0OHwYKDAL3Du+fTYE+XMrAPqx4mDdktEKg7cubGifm06GQaesZqOAAAAqUlEQVQoz+WNyQ7CIBRFb0GlQEftYOus9/+/UQpNpEldu/AsbnI4JA+B+ia4b15QZ2MODyxoaEvJyyB5SmiGOI1GPzEmLNgBd27jpli5PZIZgJyHKDnNaqCWbP2XCoE+nRDcddNe07Tds/JvPfgdUGxmBN3ECiaYSQjE+oOmtzOawFI1PwCITCNXtlCezLcsSGFV7lSKlXtCAv/QzM5j6YY2iAmt5Bol8Aa7mBpcs/wz7wAAAABJRU5ErkJggg==');
+      background-size: 100% 100%;
+      margin-right: 10rpx;
+    }
+  }
+}
+
+.score-bar{
+  display: flex;
+  width: 702rpx;
+  height: 112rpx;
+  box-shadow: 0 0 30rpx rgba(191, 119, 221, .5);
+  margin: -20rpx auto 0 auto;
+  position: relative;
+  z-index: 2;
+  background: #fff;
+  border-radius: 10rpx;
+  .item-bar{
+    flex: 1;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .item-bar:nth-of-type(1)::before{
+    content: '';
+    display: block;
+    width: 1px;
+    height: 88rpx;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    position: absolute;
+    background: #f5f5f5;
+  }
+  .bar-score{
+    font-size: 36rpx;
+    color: #f8814a;
+    font-weight: bold;
+  }
+  .bar-text{
+    font-size: 20rpx;
+  }
+}
+
+.work-list{
+  width: 750rpx;
+  padding: 0 24rpx;
+  .w-item{
+    width: 100%;
+    height: 188rpx;
+    display: flex;
+    align-items: center;
+  }
+  .w-icon{
+    width: 92rpx;
+    height: 92rpx;
+    border-radius: 50%;
+    margin-right: 28rpx;
+    background-image: url('https://gcdn.playonwechat.com/nvzhu/get_score_sprites.png');
+    background-size: 276rpx 276rpx;
+    background-repeat: no-repeat;
+  }
+  .w-icon0{
+    background-position: -92rpx -92rpx;
+  }
+  .w-icon1{
+    background-position: 0 -184rpx;
+  }
+  .w-icon2{
+    background-position: -92rpx -184rpx;
+  }
+  .w-icon3{
+    background-position: -184rpx 0;
+  }
+  .w-icon4{
+    background-position: 0 0;
+  }
+  .w-icon5{
+    background-position: -92rpx 0;
+  }
+  .w-icon6{
+    background-position: -184rpx -92rpx;
+  }
+  .w-icon7{
+    background-position: 0 -92rpx;
+  }
+  .w-left{
+    display: flex;
+    flex: 1;
+    align-items: center;
+  }
+  .w-t-text{
+    font-size: 28rpx;
+    line-height: 1;
+  }
+  .w-t-tip{
+    font-size: 28rpx;
+    color: #f8814a;
+    display: inline-block;
+    margin-left: 28rpx;
+    line-height: 1;
+  }
+  .w-t-tips{
+    font-size: 24rpx;
+    color: #999;
+    line-height: 1;
+  }
+  .w-content{
+    display: flex;
+    align-items: center;
+    line-height: 1;
+    .solve{
+      margin-left: 20rpx;
+      font-size: 24rpx;
+      display: flex;
+      align-items: center;
+    }
+    .solve::before{
+      content: '';
+      display: block;
+      width: 22rpx;
+      height: 22rpx;
+      background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAAUCAYAAABvVQZ0AAACR0lEQVQ4jYXUTYhWZRQH8N+r41dMRkYmQ4GjYPi1aBdkBCoeeilFEKSVHwtB0loJboQgoVoUI83GhbpwaiO4GOzjEFGbtBTFEfFjpShKMiAYEowJtnieq5eXd/Bsnnvvee7//M/5n3M6qkXEMLbiXazGG57ZJG7gNMbxe2Y+0WOdiBjE19iFKfyBS7iJfzAfr2A53sOrmMD2zLzYC3YCH+IzjGbmw96ILfYdbMAhLMKKzLzb+AewBZ9n5pfTgTRWU8uI2IRrWIuxxj+jntsj4u3ngVV2C3Cwvs5q+wbquRBnIuIsTik1uYUHeAkv402sQxcz+wVqwHbjP3yE/XhhGmITiljfKWn2BZOZYxirRV6M1zCvuu/iRmY+qqkOYgRX22CdiHiCnZl5bBo2TZ0+xgdY1WI+iXM4kpknG7AfsbmJ3AfoLF7Hr/izgsypGayvAUabNLu4EhHf4ufMvN7C62Ip1mbmb32CdXAMexpmo1iiqDUH/+I2flKm4aii7HH81WI2rDRxl2cCXMjMvTWlNVihCHCzReIHZXb39JC7XMvUHWh/zcz7yiCPt9LYUR/3Zub9iBjCi3iEycx8WO88BRvurUUf+yIivmnXMyJmR0Tg0ybN73EgIuZipD24PbYNuyLiAf5W2mOhUrupBmwH7uAT7IuICVxUxqm9YpbjHSxTxusx7imCLMbRTovyEDYqy3ElhvCLouhxvNW7v+p/HXyFfZ1eZ5/LTdMuVVQ7r4xX07TvK0tg5LlgFXBQaYnN+o/T4cwc/x/MVrzCvnZcZQAAAABJRU5ErkJggg==');
+      background-size: 100% 100%;
+      margin-right: 10rpx;
+    }
+  }
+  .complete{
+    font-size: 24rpx;
+  }
+  .complete-num{
+    color: #f8814a;
+  }
+  .w-main{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100rpx;
+    .w-title{
+      line-height: 1;
+    }
+    // justify-content: space-between;
+  }
+  .w-right{
+    .btn{
+      width: 142rpx;
+      height: 42rpx;
+      font-size: 24rpx;
+      text-align: center;
+      line-height: 42rpx;
+      border-radius: 40rpx;
+    }
+    .complete-btn{
+      background: #f8814a;
+      color: #fff;
+    }
+    .has-complete{
+      background: #f3f3f3;
+      color: #999;
+    }
+  }
+}
+
+</style>

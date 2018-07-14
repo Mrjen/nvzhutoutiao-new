@@ -321,6 +321,7 @@ function ApplyUpdate(){
   })
 }
 
+// 获取用户是否有未读消息
 async function upDataMsgTag(){
    let msg = await wxRequest(api.getUserInfo,{token:wx.getStorageSync('token')}, 'POST');
     // console.log('msgmsgmsgmsg',msg.data.data)
@@ -329,13 +330,23 @@ async function upDataMsgTag(){
       // 用户是否有未读通知
       let data = msg.data.data;
       if (data.msgNum) {
-          wx.setTabBarBadge({ index: 2, text: data.msgNum.toString() });
+          wx.setTabBarBadge({ index: 3, text: data.msgNum.toString() });
         }else{
-          wx.removeTabBarBadge({ index: 2 });
+          wx.removeTabBarBadge({ index: 3 });
         }
     }
 }
 
+// 获取手机信息
+function getSystemInfoSync(){
+  return new Promise((resolve,reject)=>{
+    wx.getSystemInfo({
+      success: function(res) {
+        resolve(res)
+      }
+    })
+  })
+}
 
 export default {
   formatTime,
@@ -356,5 +367,6 @@ export default {
   commentUnique,
   upLoadImageQiNiu,
   ApplyUpdate,
-  upDataMsgTag
+  upDataMsgTag,
+  getSystemInfoSync
 };

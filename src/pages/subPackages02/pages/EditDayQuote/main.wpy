@@ -1,0 +1,522 @@
+<template>
+ <view class="quote">
+    <view class="day-image">
+        <view wx:if="{{cover}}" class="cover-layout">
+            <image class="cover" src="{{cover}}"/>
+            <view class="delete-cover" @tap="DeleteCover"></view>
+        </view>
+       <view wx:else
+             class="upload" 
+             data-type="cover">
+          <view class="upload-icon" 
+                data-type="cover" 
+                @tap="upLoadImage"></view>
+          <view class="icon-text">请上传物语图片</view>
+          <view class="cover-list" @tap="selectCover">图库选择</view>
+       </view>
+       
+    </view>
+    <view class="dayquote">
+        <textarea maxlength="50"
+                  @input="inputQuote"
+                  value="{{quote}}"
+                  show-confirm-bar="{{0}}"
+                  placeholder-style="color:#dbdbdb"
+                  placeholder="请输入物语...(50字内)"></textarea>
+        <view class="word-list" @tap="selectWord">语录选择</view>
+    </view>
+    <view class="author">
+        <input type="text" placeholder="请输入作者...(选填)" value="{{author}}"
+        placeholder-style="color:#dbdbdb" @input="inputAuthor" maxlength="8"/>
+    </view>
+
+    <view class="tag">
+        <block  wx:if="{{is_nuzhu=='1'?false:true}}">
+            <label class="radio" @tap="showQuoteTag" data-type="show">
+                <radio value="1" checked="{{checkedTag}}" color="#7c48c6"/><text>显示左上角"每日物语"</text>
+            </label>
+        </block>
+        <block wx:if="{{is_nuzhu=='1'?true:false}}">
+            <label hidden="{{is_nvzhu=='1'?true:false}}" 
+                   class="show_logo" 
+                   @tap="showQuoteTag">
+                   <radio value="" checked="{{checkedTag}}"  color="#7c48c6"/>显示女主logo</label>
+        </block>
+        <label class="date" 
+               @tap="showDateTag">
+               <radio value="" 
+                      checked="{{showDate}}"  
+                      color="#7c48c6"/>显示今天日历</label>
+        <view class="qrcode">
+            <label class="qrlabel"  
+                   @tap="showQrcode" 
+                   data-type="logo">
+            <radio value="1" 
+                   checked="{{showqrcode}}" 
+                   color="#7c48c6" />
+            <text>自定义二维码</text>
+            </label>  
+            <block>
+                <view wx:if="{{logo}}" class="haslogo">
+                    <image src="{{logo}}" mode="widthFix"/>
+                    <view class="delete-cover" @tap="DeleteLogo"></view>
+                </view>
+                <view wx:else 
+                      class="uplogo" 
+                      data-type="logo" 
+                      @tap="upLoadImage">上传</view>
+            </block>
+        </view>
+    </view>
+    
+    <view class="typesetting">
+        <radio-group>
+            <label class="radio" @tap="quoteAlignTag">
+                <radio value="1" checked="{{quoteAlign?'checked':''}}"  color="#7c48c6"/><text>物语排版居左</text>
+            </label>
+            <label class="radio" @tap="quoteAlignTag">
+                <radio value="1" checked="{{quoteAlign?'':'checked'}}" color="#7c48c6"/><text>物语排版居右</text>
+            </label>
+        </radio-group>
+    </view>
+
+    <button class="takeit" @tap="getPoster">生成海报</button>
+    <view class="set-tips">预览可以直接保存或转发</view>
+     <view style="width:750rpx;height:100rpx;" wx:if="{{cover}}"></view>
+ </view>   
+</template>
+
+<script>
+import wepy from 'wepy';
+import wxRequest from "@/utils/http.js";
+import api from "@/utils/api.js";
+import utils from '@/utils/utils';
+import tips from '@/utils/tips.js';
+export default class EditDayQuote extends wepy.page{
+  data = {
+     checkedTag: true,              // 是否显示“今日物语”
+     showDate: true,                // 是否显示日期
+     quoteAlign: 1,                 // 物语对齐方式 默认 左对齐
+     cover: '',                     // 物语封面
+     logo: '',                      // 物语logo
+     quote: '',                     // 物语内容
+     copyQuote:'',
+     showqrcode: false,             // 是否显示二维码
+     isShowNvZhu: false,            // 是否显示女主logo
+     is_nuzhu: '',                  // 是否是女主
+     author: ''                     // 物语作者
+  }
+  
+  onLoad(options){
+     if(options.cover){
+        console.log('裁切的封面是',options)
+        this.cover = options.cover;
+        wx.setStorage({key:"dayCover", data: options.cover});
+        this.$apply();
+     }else if(options.logo){
+        console.log('裁切的logo是',options)
+        this.logo = options.logo;
+        this.checkedTag = true;
+        wx.setStorage({key:"dayLogo", data: options.logo});
+        this.$apply();
+     }
+     if(options.from!='copper'){
+         //  来自图片裁切
+         wx.removeStorage({key: 'dayCover'});
+         wx.removeStorage({key: 'dayLogo'});
+         wx.removeStorage({key: 'dayQuote'});
+         wx.removeStorage({key: 'dayAuthor'});
+     }
+     if(options.from==='quotelist'){
+        // 来自选择语录
+        if(options.quote) wx.setStorage({key:'dayQuote', data: options.quote});
+        if(options.author) wx.setStorage({key: 'dayAuthor', data: options.author});
+     }
+  }
+
+  async onShow(){
+    setTimeout(async () => {
+     if(wx.getStorageSync('dayCover')){
+        this.cover = wx.getStorageSync('dayCover');
+     }
+     if(wx.getStorageSync('dayLogo')){
+        this.logo = wx.getStorageSync('dayLogo');
+     }
+     if(wx.getStorageSync('dayQuote')){
+        this.quote = wx.getStorageSync('dayQuote');
+        this.copyQuote = wx.getStorageSync('dayQuote').split('\n').join('|');
+     }
+     if(wx.getStorageSync('dayAuthor')){
+         this.author = wx.getStorageSync('dayAuthor');
+     }
+     this.$apply();
+     if(!this.logo){
+        let json = await wxRequest(api.getstorylogo,{},'post');
+        if(json.data.code===api.STATUS){
+            console.log(json)
+            this.logo = json.data.data.stroy_qrcode;
+            this.is_nuzhu = json.data.data.is_nuzhu;
+            this.$apply();
+        }
+     }
+    }, 500);
+  }
+
+  onPullDownRefresh(){
+      wx.stopPullDownRefresh();
+  }
+
+  methods={
+    // 显示女主
+    showNvzhu(){
+       this.isShowNvZhu = !this.isShowNvZhu;
+       this.$apply();
+    },
+    // 去词库选择名言
+    selectWord(){
+      let str = '';
+      if(this.cover) str = `?cover=${this.cover}`;
+      wx.navigateTo({url:`/pages/subPackages01/pages/quoteList/main${str}`})
+    },
+    // 去图库选择图片
+    selectCover(){
+      let str = '';
+      if(this.quote) str=`?quote=${this.quote}`;
+      if(this.author) str=`?quote=${this.quote}&author=${this.author}`;
+      wx.navigateTo({url:`/pages/subPackages01/pages/quoteImageList/main${str}`})
+    },
+    // 选择图片
+    upLoadImage(e){
+        let dataset = e.currentTarget.dataset;
+        let that = this;
+       wx.chooseImage({
+            count: 1, 
+            sizeType: ['original'],
+            sourceType: ['album', 'camera'], 
+            success: function (res) {
+                var tempFilePaths = res.tempFilePaths[0];
+                console.log('选择的图片', res )
+                wx.getImageInfo({
+                    src: tempFilePaths,
+                    success: function (res) {
+                        console.log(res.width)
+                        console.log(res.height)
+                        if(res.width/res.height===2.5){
+                            let imageArr = [tempFilePaths];
+                            utils.upLoadImageQiNiu(imageArr).then(res=>{
+                                that.logo = res[0];
+                                that.$apply();
+                            })
+                            return;
+                        }
+                        let url = '';
+                        if(dataset.type==='cover'){ // 上传封面
+                           url = `${tempFilePaths}&w=688&h=908&type=cover`
+                        }else if(dataset.type==='logo'){ // 上传二维码
+                           url = `${tempFilePaths}&w=300&h=300&type=logo`
+                        }
+                        wx.navigateTo({url:`/pages/cropper/main?cover=${url}`})
+                    }
+                })
+                
+            }
+        })
+    },
+    // 删除封面
+    DeleteCover(){
+       this.cover = '';
+       wx.removeStorage({key: 'dayCover'});
+       this.$apply();
+    },
+    // 删除logo
+    DeleteLogo(){
+        this.logo = '';
+        wx.removeStorage({key: 'dayLogo'});
+        this.$apply();
+    },
+    // 输入物语
+    inputQuote(e){
+      let quote = e.detail.value;
+      this.quote = quote;
+      this.copyQuote = quote.split('\n').join('|');
+      wx.setStorage({key:'dayQuote', data:e.detail.value});
+      this.$apply();
+    },
+    // 输入作者
+    inputAuthor(e){
+      this.author = e.detail.value;
+      wx.setStorage({key:'dayAuthor', data:e.detail.value});
+      this.$apply();
+    },
+    // 是否显示二维码
+    showQrcode(){
+       this.showqrcode = !this.showqrcode;
+       this.$apply();
+    },
+    // 是否显示“今日物语”
+    showQuoteTag(e){
+      let dataset = e.currentTarget.dataset;
+      this.checkedTag = !this.checkedTag;
+      this.$apply();
+    },
+    // 是否要显示日期
+    showDateTag(){
+      this.showDate = !this.showDate;
+      this.$apply();
+    },
+    // 物语对齐方式
+    quoteAlignTag(){
+        console.log('this.quoteAlign', this.quoteAlign)
+       if(this.quoteAlign===0){
+           this.quoteAlign =1;
+       }else if(this.quoteAlign===1){
+           this.quoteAlign = 0;
+       }
+       this.$apply();
+    },
+    // 合成海报
+    async getPoster(){
+      let data = {
+         stroy: this.copyQuote,
+         stroyimg: this.cover,
+         show_logo: this.checkedTag?1:0,
+         show_date: this.showDate?1:0,
+         type: this.quoteAlign===1?'left':'right'
+      };
+      // 检查是否上传封面
+      if(!this.cover){
+         tips.alert('请上传封面');
+         return;
+      }   
+      // 检查是否填写物语
+      if(!this.quote){
+          tips.alert('请填写物语');
+          return;
+      }
+      // 检查是否填写作者
+      if(this.author){
+          data.author = this.author;
+      }  
+
+      if(this.showqrcode){
+          if(!this.logo){
+              tips.alert('请上传二维码');
+              return;
+          }
+          data.qrcode = this.logo;
+      }
+
+      let json = await wxRequest(api.imgmerge,data,'POST');
+      if(json.data.code===api.STATUS){
+          console.log(json)
+          wx.previewImage({
+            current: json.data.data, 
+            urls: [json.data.data] 
+          })
+      }else{
+        tips.alert('生成失败')
+      }
+
+      wxRequest(api.clickbutton,{type:'imgmerge'},'POST');
+    }
+
+  }
+}
+</script>
+
+<style lang="less" scoped>
+.day-image{
+    padding-top: 60rpx;
+    .cover-layout{
+        width: 400rpx;
+        height: 544rpx;
+        margin:0 auto 30rpx auto;
+        position: relative;
+    }
+    .upload{
+        width: 300rpx;
+        margin: 0 auto;
+        position: relative;
+        .cover-list{
+            position: absolute;
+            display: inline-block;
+            right: -172rpx;
+            bottom: 0;
+            color: #7c48c6;
+            font-size: 26rpx;
+        }
+    }
+    .cover{
+        width: 100%;
+        height: 100%;
+    }
+    .icon-text{
+        text-align: center;
+        font-size: 26rpx;
+        margin: 30rpx 0 50rpx 0;
+        color: #999;
+    }
+    .upload-icon{
+        width: 200rpx;
+        height: 200rpx;
+        background: #f2f2f2;
+        position: relative;
+        margin: 0 auto;
+    }
+    .upload-icon::before{
+        content: '';
+        display: block;
+        width: 4rpx;
+        height: 60rpx;
+        background: #a9a9a9;
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        top: 50%;
+        margin-top: -30rpx;
+    }
+    .upload-icon::after{
+        content: '';
+        display: block;
+        width: 60rpx;
+        height: 4rpx;
+        background: #a9a9a9;
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        top: 50%;
+        margin-top: -2rpx;
+    }
+}
+
+// 删除按钮
+.delete-cover{
+    width: 50rpx;
+    height: 50rpx;
+    background-color: rgba(0, 0, 0, .2);
+    position: absolute;
+    right: -20rpx;
+    top: -20rpx;
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB0AAAAdBAMAAACkvXo8AAAAJFBMVEUAAAD///////////////////////////////////////////+0CY3pAAAAC3RSTlMAmpOg947yh9zVgTu+lVAAAACJSURBVBjTRc+hEcJQFETRZWgAH4PAUQIGHxPBRFPC7yMGj0kLiX3NJbObyf3uz7linz6DeI+mfuF7rbeedTv/r2q61AKvkjoH4bvkAE4AE5gJwgRmgjBBmGAyE5h5U/0kieXZwGF/b+CwjOQwb4AzEj5GwglgAjNBmCBM0IWPYFC/M8FXYxNvnDcgi0LDLcgVogAAAABJRU5ErkJggg==');
+    background-size: 26rpx;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: 50%;
+}
+
+
+// 输入框
+.dayquote{
+  width: 650rpx;
+  height: 200rpx;
+  border:1px solid #dfdfdf;
+  margin:0 auto 30rpx auto;
+  textarea{
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 20rpx;
+    box-sizing: border-box;
+    margin-bottom: 20rpx;
+  }
+  .word-list{
+      text-align: right;
+      color: #7c48c6;
+      font-size: 26rpx;
+  }
+}
+.author{
+    width: 650rpx;
+    height: 88rpx;
+    margin: 80rpx auto 30rpx auto;
+    border:1px solid #dfdfdf;
+    input{
+      display: block;
+      width: 100%;
+      height: 100%;
+      line-height: 88rpx;
+      padding: 0 20rpx;
+      box-sizing: border-box;
+    }
+}
+
+// 左上角标签
+.tag{
+    width: 650rpx;
+    margin: 0 auto;
+    radio-group{
+        .radio{
+         display: block;
+         font-size: 28rpx;
+         display: flex;
+         align-items: center;
+         color: #444;
+         margin: 16rpx 0;
+        }
+    }
+    .uplogo{
+       display: inline-block;
+       padding: 6rpx 10rpx;
+       border:1px solid #f2f2f2;
+       border-radius: 4rpx;
+       margin-left: 20rpx;
+       color: #444;
+       font-size: 28rpx;
+    }
+    .haslogo{
+      width: 70rpx;
+      height: 70rpx;
+      margin-left: 20rpx;
+      position: relative;
+      background: #f7f7f7;
+      display: flex;
+      align-items: center;
+      image{
+          width: 70rpx;
+          height: 70rpx;
+          display: block;
+      }
+    }
+}
+
+.typesetting{
+    width: 650rpx;
+    margin: 20rpx auto;
+    color: #444;
+    label:nth-of-type(1){
+       margin-right: 30rpx;
+    }
+}
+
+.set-tips{
+    text-align: center;
+    color: #999;
+    font-size: 26rpx;
+    margin-top: 10rpx;
+}
+
+.takeit{
+   width: 650rpx;
+   margin: 0 auto;
+   background: #7c48c6;
+   color: #fff;
+   margin:50rpx auto 0 auto;
+}
+
+.qrcode{
+    display: flex;
+    align-items: center;
+    margin: 16rpx 0;
+}
+
+.show_logo{
+    width: 650rpx;
+    margin: 16rpx auto;
+    display: block;
+}
+
+.date{
+    display: block;
+    margin: 16px 0 0 0;
+}
+</style>

@@ -1,0 +1,224 @@
+<template>
+  <view class="following">
+    <block wx:for="{{followingList}}" wx:for-index="idx" wx:key="{{item.id}}">
+       <!-- <followItem @removeFollowing="removeFollowing" :itemData="item" :idx="idx"></followItem> -->
+       <div class="follow-item">
+        <view class="info">
+            <image class="avatar" @tap="toUserCenter({{item.user_id}},{{item.is_self}})" src="{{item.avatarUrl}}"/>
+            <p class="nick-name">{{item.nickName}}</p>
+            <block>
+              <image class="sex" wx:if="{{item.gender==1?true:false}}" src="../image/boy.png"/>
+              <image class="sex" wx:if="{{item.gender==2?true:false}}" src="../image/girl.png"/>
+            </block>
+        </view>
+
+        <block wx:if="{{item.is_self===0?true:false}}">
+            <button wx:if="{{item.is_both===0?true:false}}" class="add">
+              <view class="plus"></view>
+              <view @tap="addFollower({{item.user_id}},{{idx}})">关注</view>
+            </button>
+            <button wx:elif="{{item.is_both===1?true:false}}" class="add has-add">
+              <view @tap="removeFollowing({{idx}},{{item.user_id}})">已关注</view>
+            </button>
+            <button wx:elif="{{item.is_both===2?true:false}}" 
+                    class="add has-add"
+                    @tap="removeFollowing({{idx}},{{item.user_id}})">
+                    <view>相互关注</view>
+            </button>
+        </block>
+      </div>
+
+     </block>
+
+  </view>
+</template>
+
+
+<script>
+import wepy from 'wepy';
+import wxRequest from "../../../../utils/http.js";
+import api from "../../../../utils/api.js";
+export default class follower extends wepy.page {
+  config = {
+     "navigationBarTitleText":"我的粉丝"
+  }
+  data = {
+    page: 1,
+    followingList: [],
+    user_id: '',
+    requestEnd: true
+  }
+
+  async onLoad(options){
+    console.log('他的粉丝',options)
+    if(options.nav_title){
+      wx.setNavigationBarTitle({
+        title: options.nav_title
+      })
+    }
+    let json = await this.getFollowingList(this.page,15,options.user_id);
+    this.followingList = json;
+    this.user_id = options.user_id;
+    this.$apply();
+  }
+
+  async onPullDownRefresh(){
+    wx.stopPullDownRefresh()
+  }
+
+  async onShow(){
+    
+  }
+
+  async getFollowingList(page='1', page_size='15',user_id=''){
+      let json = await wxRequest(api.followerlist, {page:page,page_size:15,user_id:user_id},'post');
+      if(json.data.code === api.STATUS && json.data.data.length>0){
+        return json.data.data;
+      }else{
+        console.warn('请求错误或者没有数据', json.data)
+      }
+  }
+
+  async onReachBottom(){
+    console.log('触底了');
+    let json = await this.getFollowingList(this.page,15,this.user_id);
+    let oldList = this.followingList;
+    console.log('json', json)
+    if(json){
+      this.followingList = [...oldList,...json];
+      this.page++;
+      this.$apply();
+    }
+  }
+
+  methods = {
+    // 取消关注
+    async removeFollowing(idx, id){
+      // console.log('idx',idx, 'id', id);
+      let followingList = this.followingList;
+      let json = await wxRequest(api.delattention,{ attention_id: id},'post');
+      if(json.data.code === api.STATUS){
+         console.log('取消关注',json)
+         followingList[idx].is_both = 0;
+         this.followingList = followingList;
+         this.$apply();
+      }
+    },
+    // 添加关注
+    async addFollower(user_id,idx){
+      console.log(user_id,idx)
+      if(this.requestEnd){
+        this.requestEnd = false;
+        this.$apply();
+        let attation = await wxRequest(api.createattention,{attention_id:user_id, follower_id:wx.getStorageSync('myid')},'post');
+        if(attation.data.code === api.STATUS){
+          let followingList = this.followingList;
+          followingList[idx].is_both = 2;
+          this.followingList = followingList;
+          this.requestEnd = true;
+          this.$apply();
+        }
+      }
+       
+    },
+    // 去个人中心
+    toUserCenter(user_id,is_self){
+      if(is_self!=1){
+        wx.navigateTo({
+          url: `/pages/subPackages01/pages/otherUserCenter/main?user_id=${user_id}`
+        })
+      }  
+    }
+  }
+}
+</script>
+
+<style lang="less" scoped>
+.foll-item{
+  position: relative;
+}
+.foll-item:afeter{
+  content:'00';
+  display: block;
+  width: 100%;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  border-bottom: 1px solid rgba(229, 229, 229, 1);
+}
+
+// item
+.follow-item{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx;
+}
+.info{
+  display: flex;
+  align-items: center;
+  .avatar{
+    width: 100rpx;
+    height: 100rpx;
+    border-radius: 50%;
+    margin-right: 20rpx;
+  }
+  .nick-name{
+    margin-right: 10rpx;
+    font-size: 36rpx;
+  }
+  .sex{
+    width: 24rpx;
+    height: 24rpx;
+  }
+}
+.add {
+  display: flex;
+  padding: 0;
+  margin: 0;
+  width: 148rpx;
+  height: 60rpx;
+  border-radius: 60rpx;
+  line-height: 60rpx;
+  color: #7c48c6;
+  font-size: 28rpx;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  border:1px solid #7c48c6;
+
+  .plus {
+    position: relative;
+    width: 24rpx;
+    height: 24rpx;
+    margin-right: 10rpx;
+    color: #7c48c6;
+  }
+  .plus:before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 24rpx;
+    height: 1px;
+    background-color: currentColor;
+  }
+  .plus:after {
+    content: "";
+    position: absolute;
+    width: 24rpx;
+    top: 50%;
+    left: 0;
+    height: 1px;
+    background-color: currentColor;
+    -webkit-transform: rotate(90deg);
+    transform: rotate(90deg);
+  }
+}
+.has-add{
+  background: #d8d8d8;
+  color: #fff;
+  border-color: #d8d8d8;
+}
+</style>
+
