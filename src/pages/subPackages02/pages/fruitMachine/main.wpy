@@ -1,0 +1,348 @@
+<template>
+<view class="friut">
+    <rewardLayout @fruitMachineStart.user="fruitMachineStart" 
+                  :machine.sync="idx"
+                  :lotteryList.sync="lotteryList"
+                  :lotteryMsg.sync="lotteryMsg"
+                  :rewardPadding.sync="rewardPadding"></rewardLayout>
+    <view class="btn-option">
+        <navigator class="btn to-shop" 
+                   open-type="navigate" 
+                   hover-class="none"
+                   url="/pages/subPackages01/pages/shop/main"></navigator>
+        <navigator class="btn to-home" 
+                   hover-class="none"
+                   url="/pages/news/main"
+                   open-type="switchTab"></navigator>
+    </view>
+
+    <view class="rules">
+        <view class="title">抽奖规则：</view>
+        <view class="text">1、每人每天可免费获得1次抽奖机会</view>
+        <view class="text">2、每人每天可使用积分兑换2次抽奖机会，每次兑换将消耗200积分</view>
+        <view class="text">3、每人每天可通过邀请新朋友获得抽奖机会，最多获得2次抽奖机会</view>
+    </view>
+
+    <!-- 中奖弹窗  :giftList.sync="list"-->
+    <rewardPopup :giftList.sync="list" 
+                 :show.sync="rewardShow"
+                 @closeRewardPopup.user="closeRewardPopup"></rewardPopup>
+
+    <!-- 轮流弹幕 -->
+    <view class="danmu">
+       <view class="d-item d-item01" wx:if="{{currentDanMu[0].avatarUrl}}">
+         <image class="avatar" src="{{currentDanMu[0].avatarUrl}}"/>
+         抽中{{currentDanMu[0].type==='integral'?currentDanMu[0].integral+'积分':''}}{{currentDanMu[0].type==='packet'?currentDanMu[0].rmb/100+'元':''}}{{currentDanMu[0].type==='shop'?currentDanMu[0].name:''}}
+       </view>
+       <view class="d-item d-item02" wx:if="{{currentDanMu[1].avatarUrl}}">
+         <image class="avatar" src="{{currentDanMu[1].avatarUrl}}"/>
+         抽中{{currentDanMu[1].type==='integral'?currentDanMu[1].integral+'积分':''}}{{currentDanMu[1].type==='packet'?currentDanMu[1].rmb/100+'元':''}}{{currentDanMu[1].type==='shop'?currentDanMu[1].name:''}}
+       </view>
+       <view class="d-item d-item03" wx:if="{{currentDanMu[2].avatarUrl}}">
+         <image class="avatar" src="{{currentDanMu[2].avatarUrl}}"/>
+         抽中{{currentDanMu[2].type==='integral'?currentDanMu[2].integral+'积分':''}}{{currentDanMu[2].type==='packet'?currentDanMu[2].rmb/100+'元':''}}{{currentDanMu[2].type==='shop'?currentDanMu[2].name:''}}
+       </view>
+       <!-- <view wx:for="{{danmu}}" 
+             wx:key="{{index}}" 
+             animation="{{dmIdx===index?DanMuAnimation:''}}"  
+             class="d-item">
+         <image class="avatar" src="{{item.avatarUrl}}"/>{{item.nickName}}
+       </view> -->
+    </view>
+
+    <!-- <button @tap="clearToken" style="position:fixed;top:500rpx;right:0;">清理Token</button> -->
+
+<view style="width:100vw;height:100vh;background: #bb5afa;position: absolute;z-index:-1;left:0;top:0;"></view>
+</view>
+</template>
+
+<script>
+import wepy from 'wepy';
+import wxRequest from "@/utils/http.js";
+import api from "@/utils/api.js";
+import tips from '@/utils/tips.js';
+import utils from '@/utils/utils.js';
+import FruitMachine from '../../utils/fruitMachine.js';
+import rewardLayout from './components/layout';
+import rewardPopup from './components/rewardPopup';
+export default class Detail extends wepy.page  {
+  components = {
+    rewardLayout,
+    rewardPopup
+  }
+  data={
+    idx: 1,                   // 中奖位置
+    list:{},                  // 奖品列表及中奖信息
+    lotteryList:[],           // 奖品列表
+    lotteryMsg:{},            // 显示提示
+    rewardShow: false,        // 是否显示中奖弹窗
+    rewardPadding: false,     // 是否正在抽奖中
+    dmIdx:'',                 // 当前显示弹幕的位置
+    DanMuAnimation:{},
+    danmu:[],                 // 弹幕列表
+    currentDanMu:[],          // 当前轮播的弹幕,         
+    sharePosterType: 1        // 分享海报类型 1 2 
+  }
+  async onLoad(options) {
+    let that = this;
+    console.log('options', options)
+    try {wx.setBackgroundColor({backgroundColor: '#7c48c6'}); } catch (error) {}
+    
+    this.list = await this.getPrizeList();
+    this.lotteryList = JSON.parse(JSON.stringify(this.list.list));
+    this.lotteryMsg = JSON.parse(JSON.stringify(this.list.msgArr));
+    this.$apply();
+    // 检查是否是从分享红包来的
+    if (options.prize_user_id){
+      let data = {};
+      let token = wx.getStorageSync("token");
+      if(!token){
+        let _token = await utils.getToken();
+        token = _token.data.data.token;
+      }
+      data.prize_user_id = options.prize_user_id;
+        console.log('此用户从邀请红包进入小程序');
+        wxRequest(api.getintegralshare,data,'POST')
+    }
+
+    let json = await wxRequest(api.prizeorderlist,{},'POST');
+    if(json.data.code === api.STATUS){
+       console.log('json', json);
+       this.danmu = json.data.data;
+       this.currentDanMu = this.danmu.slice(0,3);
+       this.$apply();
+       let count = 3;
+       let len = this.danmu.length;
+       if(that.timer) clearTimeout(that.timer);
+       that.timer = setTimeout(function DanMuFunc(){
+          if(count<len){
+              that.currentDanMu.push(that.danmu[count]);
+              that.currentDanMu.shift();
+              count++;
+              that.$apply();
+              // console.log('这里',len, count)
+          }else{
+            count = 0;
+          }
+          that.timer = setTimeout(DanMuFunc,8000);
+       })
+    }
+  }
+
+  onUnload(){
+     let that = this;
+     if(that.timer) clearTimeout(that.timer);
+     this.currentDanMu = [];
+     this.$apply();
+  }
+  
+  async getPrizeList(get_key){
+     let data = {};
+     let token = wx.getStorageSync("token");
+     if(!token){
+       let _token = await utils.getToken();
+       token = _token.data.data.token;
+     }
+     data.token = token;
+     if(get_key) data.get_key = get_key;
+     let json = await wxRequest(api.prizelist,data,'POST');
+     if(json.data.code === api.STATUS){
+        return json.data.data;
+     }else{
+        console.log('请求出错', json);
+        tips.alertText(json.data.data);
+     }
+  }
+
+  methods={
+    // 清理
+    clearToken(){
+      wx.removeStorage({
+      key: 'token',
+      success: function(res) {
+        tips.success('成功')
+      } 
+    })
+    },
+    // 抽奖
+    async fruitMachineStart(){
+        let that = this;
+        let json = await this.getPrizeList(1);
+        console.log('json44444', json);
+        this.list = json;
+        this.lotteryList = JSON.parse(JSON.stringify(this.list.list));
+        this.lotteryMsg = JSON.parse(JSON.stringify(this.list.msgArr));
+        this.$apply();
+        // return;
+        this.fruitMachine = new FruitMachine(this, {
+            ret: json.key, 
+            speed: 100,
+            len: 12,
+            callback: () => {
+                this.fruitMachine.reset()
+                that.rewardShow = true;
+                setTimeout(() => {
+                  that.rewardPadding = false;  
+                  that.$apply();
+                }, 500);
+                
+                that.$apply();
+            }            
+        })
+        this.fruitMachine.start();
+        this.rewardPadding = true;
+        this.$apply();
+        console.log('开始抽奖')
+    },
+    // 关闭中奖弹窗
+    closeRewardPopup(){
+       this.rewardShow = false;
+       this.$apply();
+    }
+  }
+
+  onShareAppMessage(e){
+    console.log(e)
+    // if(e.target){
+      // let dataset = e.target.dataset;
+      // if(dataset.type==='lottery'){
+          if(this.sharePosterType===1){
+            this.sharePosterType = 2;
+            this.$apply();
+            return {
+             title: '我给你发一个拼手气红包，赶紧拆开！',
+             path: `/pages/subPackages02/pages/fruitMachine/main?prize_user_id=${wx.getStorageSync('myid')}`,
+             imageUrl: 'https://gcdn.playonwechat.com/nvzhu/lottery-share-poster.png'
+           }
+          }else if(this.sharePosterType===2){
+              this.sharePosterType = 1;
+              this.$apply();
+              return{
+                title: '[@你]100%中奖，速度点开！',
+                path: `/pages/subPackages02/pages/fruitMachine/main?prize_user_id=${wx.getStorageSync('myid')}`,
+                imageUrl: 'https://gcdn.playonwechat.com/nvzhu/lottery-share-poster02.png'
+              }
+              
+          }
+          
+      // }
+    // }
+  }
+
+  async onPullDownRefresh(){
+     wx.stopPullDownRefresh()
+  }
+}
+</script>
+
+<style lang="less" scoped>
+.friut{
+  width: 750rpx;
+  min-height: 1347rpx;
+  background-image: url('https://gcdn.playonwechat.com/nvzhu/gift-bg.png');
+  background-size: 100% 100%;
+  .btn-option{
+    display: flex;
+    justify-content: space-between;
+    padding: 0 40rpx;
+    margin-top: 48rpx;
+    .btn{
+       width: 303rpx;
+       height: 115rpx;
+       display: block;
+    }
+    .to-shop{
+        background-image: url(https://gcdn.playonwechat.com/nvzhu/lottery-go-shop.png);
+        background-size: 100% 100%;
+    }
+    .to-home{
+        background-image: url(https://gcdn.playonwechat.com/nvzhu/lottery-go-home.png);
+        background-size: 100% 100%;
+    }
+  }
+  .rules{
+      width: 750rpx;
+      padding: 0 60rpx;
+      color: #fde166;
+      .title{
+          color: #fde166;
+          margin: 20rpx 0 10rpx 0;
+          font-size: 30rpx;
+      }
+      .text{
+          color: #fde166;
+          font-size: 26rpx;
+          padding: 5rpx 0;
+          line-height: 44rpx;
+      }
+  }
+  .danmu{
+    width: 300rpx;
+    height: 300rpx;
+    position: absolute;
+    top: 20rpx;
+    left: 0;
+    .d-item{
+      width: 240rpx;
+      height: 50rpx;
+      background: rgba(0, 0, 0, .5);
+      display: flex;
+      align-items: center;
+      padding: 0 10rpx;
+      color: #fff;
+      font-size: 20rpx;
+      border-radius:0 40rpx 40rpx 0;
+      position: absolute;
+      top: 10rpx;
+      left: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      transform: translate(-101%,50rpx);
+    }
+    .d-item01{
+       animation: danmu 9s linear infinite;
+    }
+    .d-item02{
+       animation: danmu 9s 3.2s linear infinite;
+    }
+    .d-item03{
+       animation: danmu 9s 6s linear infinite;
+    }
+    
+    @keyframes danmu {
+      0%,30%{
+        transform: translate(-101%,50rpx);
+        opacity: 0;
+      }
+      40%,50%{
+        opacity: 1;
+        transform: translate(0,50rpx);
+      }
+      60%,80%{
+        transform: translate(0,-10rpx);
+        opacity: 1;
+      }
+      90%{
+        opacity: 1;
+        transform: translate(0,-80rpx);
+      }
+      91%{
+        transform: translate(0,-80rpx);
+        opacity: 0;
+      }
+      100%{
+        transform: translate(-101%,-80rpx);
+        opacity: 0;
+      }
+    }
+
+    .avatar{
+      width: 34rpx;
+      height: 34rpx;
+      margin-right: 10rpx;
+      border-radius: 50%;
+      overflow: hidden;
+    }
+  }
+}
+</style>

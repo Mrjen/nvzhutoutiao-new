@@ -149,7 +149,7 @@ export default class editUserInfo extends wepy.page {
           success(res) {
             var filePath = res.tempFilePaths[0];
             wx.navigateTo({
-              url:`/pages/cropper/main?cover=${filePath}&w=300&h=300&type=avatar`
+              url:`/pages/subPackages02/pages/cropper/main?cover=${filePath}&w=300&h=300&type=avatar`
             })
           }
         })

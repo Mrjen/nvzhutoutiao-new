@@ -229,6 +229,15 @@ const calendarpiclist = `${domainUrl}/calendar/calendarpiclist`
 // 赚取积分
 const todaytntegral = `${domainUrl}/integral/todaytntegral`
 
+// 抽奖物品列表
+const prizelist = `${domainUrl}/prize/prizelist`
+
+// 关闭抽奖弹窗
+const closeprize = `${domainUrl}/user/closeprize`
+
+// 抽奖弹幕
+const prizeorderlist =`${domainUrl}/prize/prizeorderlist`
+
 export default {
   STATUS,
   domainUrl,
@@ -306,5 +315,8 @@ export default {
   delcollect,
   calendartextlist,
   calendarpiclist,
-  todaytntegral
+  todaytntegral,
+  prizelist,
+  closeprize,
+  prizeorderlist
 };

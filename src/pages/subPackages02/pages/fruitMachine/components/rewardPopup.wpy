@@ -1,0 +1,100 @@
+<template>
+<view class="reward" wx:if="{{show}}">
+   <view class="main {{show?'check_active':''}}"  @tap="closeRewardPopup">
+      <view class="gift">
+          <view class="gift-icon">
+              <image mode="widthFix" style="height:100rpx" src="{{giftList.prize.pic}}"/>
+          </view>
+          <view class="gift-name">{{giftList.prize.name}}</view>
+      </view>
+      <view class="get-text" wx:if="{{giftList.prize.type==='shop'}}">请到积分商城以0积分完成兑换</view>
+      <view class="get-text" wx:if="{{giftList.prize.type==='integral'}}">已实时入账至你的积分</view>
+      <view class="get-text" wx:if="{{giftList.prize.type==='packet'}}">已存入“个人中心>>我的钱包”</view>
+   </view>
+   <view class="close" @tap="closeRewardPopup"></view>
+</view>
+</template>
+
+<script>
+import wepy from 'wepy';
+export default class rewardPopup extends wepy.component  {
+ data={}
+ props={
+   show:{
+     type: Boolean,
+     default: false
+   },
+   giftList:{
+      type: Object,
+      default: {
+         prize:{
+           pic: 'https://gcdn.playonwechat.com/nvzhu/git-icon01.png',
+           name:'测试礼物',
+           type: 'packet'
+         }
+      }
+   }
+ }
+
+ methods={
+    closeRewardPopup(){
+      this.$emit('closeRewardPopup')
+    }
+ }
+}
+</script>
+
+<style lang="less" scoped>
+.reward{
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    background: rgba(0, 0, 0, .5);
+    position: fixed;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    .main{
+      width: 597rpx;
+      height: 753rpx;
+      background-image: url(https://gcdn.playonwechat.com/nvzhu/reword-bg.png);
+      background-size: 100% 100%;
+      .gift{
+        width: 249rpx;
+        height: 224rpx;
+        margin: 240rpx auto 0 auto;
+        padding-top: 20rpx;
+        background-image: url(https://gcdn.playonwechat.com/nvzhu/reword-gift-bg.png);
+        background-size: 100% 100%;
+      }
+    }
+    .get-text{
+       text-align: center;
+       margin-top: 30rpx;
+       color: #fff;
+       font-size: 26rpx;
+    }
+    .gift-icon{
+       image{
+           display: block;
+           width: 158rpx;
+           height: 100rpx;
+           margin: 15rpx auto 10rpx auto;
+       }
+    }
+    .gift-name{
+      text-align: center;
+      font-size: 26rpx;
+      color: #a30101;
+    }
+    .close{
+      width: 70rpx;
+      height: 70rpx;
+      background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEkAAABJCAMAAABGrfvuAAAAbFBMVEUAAAD///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8+T+BWAAAAI3RSTlMA8Tf31yD0t1hBBd7RvamfZAyw6ufJwYqAe3RcT0wwKxwKaHQSHBcAAAI4SURBVFjDnJTrgoIgEIUnERDWe/e00nj/d1wHM9RdB+38sBT4YM7MAJR4dS7jAzPGsENcnisO36iIsh8z108WFRs5KmXmf7FUbeBEsVspwmNSJsdQuE9xtJJzDweIvKkGBjXqJgdceAe/uDRWu0xpmEurbGespNf9XPTW5u3ChDbvEyFyOmFpf/iItrEPPy2IyOwUdtVAS1+Z3XAxwmCP4ye+xs0TTt0HCyBr5kXDGumLTUuwCGI1rFXNFlB8v7gHEDHs+Z+shQh6whY9ERXOM5hiaAFsU4ABprOCRP9q2Koal+UTkwRmDbYLMyjGVkmsIw3bpbGu5Kj70SQO34ijVe5mwLxdRzmRyYNY/EjkKMdXzN+nI/FFT2LdBWQZyVF8eIyh42P73ykxiKLqMQGUO0cMVgrvo8nxd8uowI5Ngsf7Sn2KMp9PdyjvSD6UZ8G6sZZcQH9vu4+seMeZEUv8G2To8/tX0bvTIGt01hsmNOGI3z0tbMp4X+4EigK5ZuNQdc8bECg/CG7dUAVnaxOFokDOqDOU3bMBEuUDQdMNltgqAoBGkSCUwIY5YCt7UC8aZC+TAzBjjuBBGQ8IjsYwsJ1NokiQuz3AmkXpZUm/rdhJDQAwDAPBYAl/kJYJ+DVFUDWpj/1bp2Nzd3Lv5Gbn9sntuPt3TgucPjHNdDruvMX5HfNglwtYVnH5iWU6lzNZ9nV5nHUE1ltcl2L9jnVO1oNZN2e8gDEMxVUY61H8STIxz+k8O3Q8M8EmgNjQoOZlAAAAAElFTkSuQmCC');
+      background-size: 100% 100%;
+  }
+}
+</style>

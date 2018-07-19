@@ -81,6 +81,10 @@
           </block>
       </view>
 
+       <!-- 抽奖弹层 -->
+  <lotteryPopup @closeLottery.user="closeLottery"
+                :showLottery.sync="showLottery"></lotteryPopup>
+
       <!-- 提示弹层 -->
       <myToast :title.sync="toastTitle" 
                :jifen.sync="toastJiFen" 
@@ -89,7 +93,7 @@
 
 
       <!-- 签到弹层 -->
-      <block wx:if="{{show_check===1?1:''}}">
+      <!-- <block wx:if="{{show_check===1?1:''}}">
         <check :continue.sync="continue_sign"
               :total.sync="total_sign"
               :checkList.sync="checkList"
@@ -99,7 +103,8 @@
               @checkTap.user="checkTap"
               @getRedPack.user="getRedPack"
               @closePopup.user="closePopup"></check>
-      </block>
+      </block> -->
+
       <!-- 红包未拆开 -->
       <redPack :redPackIsShow.sync="redPackIsShow"
                @openRedPack.user="openRedPack"
@@ -157,6 +162,7 @@ import redPackOpen from './components/redpackOpen';
 import joinGrop from './components/joinGroup';
 import tips from '../../utils/tips.js';
 import Loading from '../../components/loading';
+import lotteryPopup from '@/components/lotteryPopup';
 
 const app = getApp();
 
@@ -182,6 +188,7 @@ export default class Index extends wepy.page {
     toastJiFen: '',
     toastJingyan: '',
     toastShow: false,
+    showLottery: 0,                        // 是否显示抽奖弹层
 
     // 签到                      
     show_check: 0,                         // 是否显示签到弹层
@@ -230,7 +237,8 @@ export default class Index extends wepy.page {
     redPack,
     redPackOpen,
     joinGrop,
-    Loading
+    Loading,
+    lotteryPopup
   };
 
   // 获取首页数据
@@ -354,6 +362,12 @@ export default class Index extends wepy.page {
   }
 
  methods = {
+  // 关闭抽奖弹层
+  closeLottery(){
+    this.showLottery = 0;
+    this.$apply();
+    wxRequest(api.closeprize,{},'POST');
+  },
   //  我也要拆红包
   async createdMySelf(){
      console.log('我也要拆红包');
@@ -642,6 +656,7 @@ export default class Index extends wepy.page {
       if (msg.data.code === api.STATUS) {
         wx.setStorage({key:'userInfo', data: msg.data.data});
         this.hasIuserInfo = msg.data.data;
+        this.showLottery = msg.data.data.prize_view;
         // 用户是否有未读通知
         let data = msg.data.data;
         if (data.msgNum) {

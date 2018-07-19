@@ -15,6 +15,7 @@
               <text class="orgin_author">{{Article_author}}</text>
               <text class="create_time">{{Article_createtime}}</text>
           </view>
+
         <!-- 文章正文 -->
         <form bindsubmit="saveFormId" report-submit="true">
           <view class="content" @tap="inputBlur">
@@ -22,9 +23,14 @@
           </view>
           
           <!-- 肌肤测试 -->
-          <view class="articl-test" wx:if="{{ArticleId=='1924'}}" @tap="openSkinTest"></view>
+          <view class="articl-test" 
+                wx:if="{{ArticleId=='1924'}}" 
+                @tap="openSkinTest"></view>
 
-          <navigator wx:if="{{is_story=='1'?true:false}}" url="/pages/subPackages02/pages/dayQuote/main" style="text-align:center;color:#647ffb;margin-bottom:50rpx" hover-class="none">>>每日物语海报下载</navigator>
+          <navigator wx:if="{{is_story=='1'?true:false}}" 
+                     url="/pages/subPackages02/pages/dayQuote/main" 
+                     style="text-align:center;color:#647ffb;margin-bottom:50rpx" 
+                     hover-class="none">>>每日物语海报下载</navigator>
         </form>
 
         <!-- 解忧栏 -->
@@ -36,7 +42,9 @@
                       open-type="getUserInfo">
                 <view class="solve-btn"></view>
               </button>
-              <button class="write-email" @tap="toWriteSolveProblems" wx:else><view class="solve-btn"></view></button>
+              <button class="write-email" 
+                      @tap="toWriteSolveProblems" 
+                      wx:else><view class="solve-btn"></view></button>
           </view>
 
           <!-- 投票 -->
@@ -59,7 +67,8 @@
               </view>    
               <view class="remain"><text>剩余天数：</text><view class="time">{{voteDeadLine}}</view></view>  
             </view>  
-            <view class="vote-main vote-before" wx:if="{{vote_status=='0'?true:false}}">
+            <view class="vote-main vote-before" 
+                  wx:if="{{vote_status=='0'?true:false}}">
               <view class="vote-item" 
                     wx:for="{{voteList}}" 
                     wx:key="{{index}}"
@@ -69,7 +78,8 @@
                 <view class="circle {{item.active?'circle-active':''}}"></view>
                 <view class="item {{item.active?'text-active':''}}">{{item.votetitle}}</view>
               </view>
-              <button class="vote-btn" @tap="VoteBtn">投一票</button>
+              <button class="vote-btn" 
+                      @tap="VoteBtn">投一票</button>
             </view>    
             <view class="vote-main vote-after" wx:else>
               <view class="v-item" 
@@ -77,25 +87,38 @@
                      wx:key="{{index}}">
                 <view class="v-title">{{item.votetitle}}{{item.is_select?'(已选)':''}}</view>
                 <view class="v-vote-bar">
-                  <view class="bar-in" style="width:{{(536/vote_total) * item.involveNum}}rpx;">{{item.involveNum}}票</view>
+                  <view class="bar-in" 
+                        style="width:{{(536/vote_total) * item.involveNum}}rpx;">{{item.involveNum}}票</view>
                   <text>{{item.percent+'%'}}</text>
                 </view>
               </view>
-              <button open-type="share" class="invate-btn" data-type="vote">召集小伙伴投票</button>
+              <button open-type="share" 
+                      class="invate-btn" 
+                      data-type="vote">召集小伙伴投票</button>
             </view>    
           </view>
         </view>
-
-
           <view class="article-info">
               <view class="info-item brower"><text>阅读</text>{{Article_readtimes}}</view>
-              <view class="comment" wx:if="{{show_input_2}}">领取福利点击<button open-type="contact">回复1进群</button></view>
+              <view class="comment" 
+                    wx:if="{{show_input_1}}">加入粉丝福利群<button open-type="contact">回复1进群</button></view>
           </view>
         </view>
 
-
       </view>
       <!-- 话题结束 -->
+
+      <!-- 更多推荐 -->
+        <view class="more-article">
+           <view class="title">推荐话题</view>
+           <navigator wx:for="{{recommendList}}" 
+                      open-type="redirect" 
+                      class="article-nav"
+                      hover-class="none"
+                      wx:key="{{index}}"
+                      url="/pages/details/main?from=index&id={{item.id}}">{{item.title}}</navigator>
+            <navigator class="back-home" @tap="ArticleBtnToHome" data-url="/pages/index/main" data-type="indextopic"><text>>>进入首页</text>查看更多话题</navigator>
+        </view>
 
       <!-- 评论区 -->
       <view id="comm">
@@ -198,7 +221,6 @@
               <view class="commentsTxt" 
                     wx:else 
                     @tap="followCommentComment({{comm.id}}, {{cidx}}, {{comm.user_id}}, '最新评论一级', {{comm.nickName}}, {{comm.comment}})">{{comm.comment}}</view>
-                    <!-- style="border:1px solid red" -->
               <view class="comm-image">
                  <view class="c-image" 
                        wx:for="{{comm.image}}" 
@@ -214,7 +236,6 @@
               </view>
             </block>
             
-
             <view class="com_comments" 
                   wx:if="{{comm.follow_comment.length>0}}">
               <view class="font_24 border_bottom last-noborder" 
@@ -520,17 +541,24 @@
 
    <block>
 
-    <view class="botm-bar" wx:if="{{show_input_2}}">
+    <view class="botm-bar" wx:if="{{show_input_1}}">
       <block>
         <view class="is_userinfo">
-          <button class="btn-input" wx:if="{{is_accredit=='1'}}" @tap="writeComment">评论有赏...</button>
-          <button class="btn-input no_userinfo" wx:else open-type="getUserInfo" lang="zh_CN" @getuserinfo="getUserInfo">评论有赏....</button>
+          <button class="btn-input" 
+                  wx:if="{{is_accredit=='1'}}" 
+                  @tap="writeComment">评论有赏...</button>
+          <button class="btn-input no_userinfo" 
+                  wx:else 
+                  open-type="getUserInfo" 
+                  lang="zh_CN" 
+                  @getuserinfo="getUserInfo">评论有赏....</button>
         </view>
       </block>
 
       <view class="input-op">
         <view class="a-op">
-           <view class="a-icon like {{Article_likestatus=='1'?'like-active':''}}" @tap="likeArticle"></view>
+           <view class="a-icon like {{Article_likestatus=='1'?'like-active':''}}" 
+                 @tap="likeArticle"></view>
            <view class="num">{{Article_liketimes}}</view>
         </view>
         <view class="a-op">
@@ -545,45 +573,40 @@
     </view>
 </block>
 
-
-
- <!-- <button @tap="addComment" style="position:fixed;left:20rpx;top:500rpx">发送</button> -->
-
   <!-- loading -->
-  <view class="loading" wx:if="{{pageLoad}}">
+  <!-- <view class="loading" wx:if="{{pageLoad}}">
       <image mode="widthFix" style="width:100rpx;height:100rpx" src="https://gcdn.playonwechat.com/nvzhu/Spinner-1s-100px.gif"/>
-  </view>
-  <!-- 小房子回首页 -->
-  <!-- <form bindsubmit="goHomego" report-submit="true">
-    <button formType="submit" class="go-home"></button>
-  </form> -->
+  </view> -->
+
 
   <form bindsubmit="goHomego" report-submit="true">
     <button formType="submit" class="home-icon"></button>
   </form>
 
-  <!-- 回复1入群 -->
-  <!-- <button open-type="contact" class="join_group" wx:if="{{is_wechat}}"></button> -->
-
 <view class="zhanwei" style="width:500rpx;height:150rpx;"></view>
 
   <!-- toast -->
-  <myToast :title.sync="toastTitle" :jifen.sync="toastJiFen" :Experence.sync="toastJingyan" :toastShow.sync="toastShow"></myToast>
+  <myToast :title.sync="toastTitle" 
+           :jifen.sync="toastJiFen" 
+           :Experence.sync="toastJingyan" 
+           :toastShow.sync="toastShow"></myToast>
 
   <!-- 分享和下载海报弹层 -->
-  <action-sheet hidden="{{actionSheetHidden}}" 
-                catchchange="shareOpation">
-        <button open-type="share" 
-                data-name="item" 
-                class="action-item action-item0">发给朋友</button>
-        <button @tap="downloadPoster" 
-                data-name="item" 
-                class="action-item action-item1">生成图片分享朋友</button>
-    <!--自动隐藏action-sheet-->
-    <action-sheet-cancel>取消
-      <view style="width:750rpx;height:40rpx;background:#fff"></view>
-      </action-sheet-cancel>
-  </action-sheet>
+  <block wx:if="{{actionSheetHidden?false:true}}">
+    <action-sheet hidden="{{actionSheetHidden}}" 
+                  catchchange="shareOpation">
+          <button open-type="share" 
+                  data-name="item" 
+                  class="action-item action-item0">发给朋友</button>
+          <button @tap="downloadPoster" 
+                  data-name="item" 
+                  class="action-item action-item1">生成图片分享朋友</button>
+      <!--自动隐藏action-sheet-->
+      <action-sheet-cancel>取消
+        <view style="width:750rpx;height:40rpx;background:#fff"></view>
+        </action-sheet-cancel>
+    </action-sheet>
+  </block>
 
   <!-- 打赏弹层 -->
   <RewardPoup :showReward.sync="showReward" 
@@ -596,7 +619,9 @@
               @changeRewardMoney.user="changeRewardMoney"></RewardPoup>
 
 <!-- 页面 点击肌肤测试 -->
-  <view wx:if="{{ArticleId=='1924'}}" class="click-test {{clickBtnShow?'click-show':'click-hide'}}" @tap="openSkinTest"></view>
+  <view wx:if="{{ArticleId=='1924'}}" 
+        class="click-test {{clickBtnShow?'click-show':'click-hide'}}" 
+        @tap="openSkinTest"></view>
 
 </scroll-view>
 </template>
@@ -625,7 +650,6 @@ export default class Detail extends wepy.page {
     comment: [],                   // 最新评论内容
     inputFcus: false,              // 输入框焦点
     commContent: '',               // 评论内容
-    commImageArr:[],               // 评论图片数组图片
     commTitle: '热门评论',          // 评论bar的标题
     
     inputCursor: -1,               // 输入框光标位置
@@ -715,6 +739,7 @@ export default class Detail extends wepy.page {
     RewardUserId: null,
     EditMoney: true,                  // 默认显示已有金额， false显示输入框
     currentRewardMoney: null,         // 打赏金额
+    recommendList: [],                // 更多推荐
                                       // 打赏数组
     moneyList:[{
         money: '0.16',
@@ -742,7 +767,7 @@ export default class Detail extends wepy.page {
         active: false
       }],   
     fromPage: '',                        // 来自页面
-    show_input_2: 0,                     // 是否显示入群
+    show_input_1: 0,                     // 是否显示入群
     is_letter: 0                         // 文章类型是解忧
 
   };
@@ -817,7 +842,7 @@ export default class Detail extends wepy.page {
     // 这里数据字节过大，把数据拆分分次传递
     let _page_data = detail.data.data;
     this.is_story = _page_data.is_story;
-    this.show_input_2 = _page_data.show_input_2;
+    this.show_input_1 = _page_data.show_input_1;
     let voteList = _page_data.votedata;
     if(voteList){
       // 是否存在投票
@@ -856,6 +881,7 @@ export default class Detail extends wepy.page {
     this.is_announce = _page_data.is_announce;
     this.is_letter = _page_data.is_letter;
     this.Article_author = _page_data.author;
+    this.recommendList = _page_data.recommendList;
 
     this.systemInfo = wx.getStorageSync('systemInfo');
     this.$apply();
@@ -1034,6 +1060,7 @@ export default class Detail extends wepy.page {
     this.comment_view = _page_data.comment_view;
     this.is_letter = _page_data.is_letter;
     this.Article_author = _page_data.author;
+    this.recommendList = _page_data.recommendList;
     this.page = 2;
     this.$apply();
     wx.stopPullDownRefresh();
@@ -1282,18 +1309,9 @@ export default class Detail extends wepy.page {
       }
     },
 
-    // 删除发送图片
-    deleteAddImage(e){
-       let dataset = e.currentTarget.dataset;
-       let commImageArr = this.commImageArr;
-        commImageArr.splice(dataset.idx,1);
-       this.commImageArr = commImageArr;
-       this.$apply();
-    },
     // 取消发送
     cencalComment(){
       this.inputShow = false;
-      this.commImageArr = [];
       this.commContent = '';
       this.$apply();
     },
@@ -1305,56 +1323,6 @@ export default class Detail extends wepy.page {
       wx.previewImage({
         current: dataset.arr[dataset.idx], 
         urls: dataset.arr 
-      })
-    },
-    // 点击评论添加图片
-    async addCommImage(){
-      let that = this;
-      let QiNiuToken = await utils.getQiNiuToken();
-      let _qiniu_token = QiNiuToken.upload_token;
-      let commImageArr = this.commImageArr;
-      let _commImageArr = [];
-      let commentDom = this.commentDom;
-      let len = 0;
-      console.log('图片评论对象', this.commentDom)
-      wx.chooseImage({
-        count: 9, // 默认9
-        sizeType: ['compressed'],
-        sourceType: ['album','camera'],
-        success: function (res) {
-          var tempFilePaths = res.tempFilePaths;
-          console.log('tempFilePaths', tempFilePaths)
-          tips.loading('上传中');
-          len = tempFilePaths.length;
-          for(let i=0;i<len;i++){
-               qiniuUploader.upload(tempFilePaths[i], (res) => {
-                  _commImageArr.push('https://gcdn.playonwechat.com'+res.imageURL);
-                  console.log(i+' '+ (len-1))
-                  if(i===len-1){
-                    that.commImageArr = commImageArr.concat(_commImageArr).slice(0,10);
-                    that.commentDom = commentDom;
-                    that.$apply();
-                  }
-                  console.log('这里是上传的图片列表', _commImageArr);
-                  
-                  wx.hideLoading();
-                }, (error) => {
-                  console.log('error: ' + error);
-                  wx.hideLoading();
-                }, {
-                  region: 'SCN',
-                  uptoken: _qiniu_token, 
-                  uptokenFunc: function() {
-                    return '[yourTokenString]';
-                  }
-                }, (res) => {
-                  console.log('上传进度', res.progress)
-                  console.log('已经上传的数据长度', res.totalBytesSent)
-                  console.log('预期需要上传的数据总长度', res.totalBytesExpectedToSend)
-                });
-          }
-
-        }
       })
     },
     // 已授权点击写评论
@@ -1446,6 +1414,11 @@ export default class Detail extends wepy.page {
        }
         wx.switchTab({url});
         wxRequest(api.clickbutton,{type:`${this.fromPage}`},'POST');
+    },
+    // 文章内部回首页
+    ArticleBtnToHome(e){
+       wx.switchTab({url:e.currentTarget.dataset.url});
+       wxRequest(api.clickbutton,{type:`indextopic`},'POST');
     },
     // input失去焦点
     inputBlur() {

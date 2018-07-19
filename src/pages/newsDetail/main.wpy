@@ -33,13 +33,24 @@
 
           <view class="article-info">
               <view class="info-item brower"><text>阅读</text>{{Article_readtimes}}</view>
-              <view class="comment" wx:if="{{show_input_2}}">领取福利点击<button open-type="contact">回复1进群</button></view>
+              <view class="comment" wx:if="{{show_input_1}}">加入粉丝福利群<button open-type="contact">回复1进群</button></view>
           </view>
         </view>
 
-
       </view>
       <!-- 话题结束 -->
+
+       <!-- 更多推荐 -->
+        <view class="more-article">
+           <view class="title">推荐文章</view>
+           <navigator wx:for="{{recommendList}}" 
+                      open-type="redirect" 
+                      hover-class="none"
+                      class="article-nav"
+                      wx:key="{{index}}"
+                      url="/pages/newsDetail/main?from=news&id={{item.id}}">{{item.title}}</navigator>
+            <view class="back-home" @tap="ArticleBtnToHome" data-url="/pages/news/main" data-type="indexnews"><text>>>进入首页</text>查看更多文章</view>
+        </view>
 
       <!-- 评论区 -->
       <view id="comm">
@@ -463,7 +474,7 @@
 
    <block>
 
-    <view class="botm-bar" wx:if="{{show_input_2}}">
+    <view class="botm-bar" wx:if="{{show_input_1}}">
       <block>
         <view class="is_userinfo">
           <button class="btn-input" wx:if="{{is_accredit=='1'}}" @tap="writeComment">评论有赏...</button>
@@ -517,6 +528,7 @@
   <myToast :title.sync="toastTitle" :jifen.sync="toastJiFen" :Experence.sync="toastJingyan" :toastShow.sync="toastShow"></myToast>
 
   <!-- 分享和下载海报弹层 -->
+<block wx:if="{{actionSheetHidden?false:true}}">
   <action-sheet hidden="{{actionSheetHidden}}" 
                 catchchange="shareOpation">
         <button open-type="share" 
@@ -530,6 +542,7 @@
       <view style="width:750rpx;height:40rpx;background:#fff"></view>
       </action-sheet-cancel>
   </action-sheet>
+</block>
 
   <!-- 打赏弹层 -->
   <RewardPoup :showReward.sync="showReward" 
@@ -568,7 +581,6 @@ export default class Detail extends wepy.page {
     comment: [],                   // 最新评论内容
     inputFcus: false,              // 输入框焦点
     commContent: '',               // 评论内容
-    commImageArr:[],               // 评论图片数组图片
     commTitle: '热门评论',          // 评论bar的标题
     
     inputCursor: -1,               // 输入框光标位置
@@ -607,6 +619,7 @@ export default class Detail extends wepy.page {
     article_Show_type: '',         // 文章显示类型，'wxparse' 'rich_text'
     comment_view: false,           // 是否显示文章评论
     systemInfo: '',                // 兼容iphone X
+    recommendList:[],              // 更多推荐
 
     // myToast
     toastTitle: '',                // toast标题
@@ -687,7 +700,7 @@ export default class Detail extends wepy.page {
         active: false
       }],   
     fromPage: '',                        // 来自页面
-    show_input_2: 0,                     // 是否显示入群
+    show_input_1: 0,                     // 是否显示入群
     is_letter: 0                         // 文章类型是解忧
 
   };
@@ -762,7 +775,7 @@ export default class Detail extends wepy.page {
     // 这里数据字节过大，把数据拆分分次传递
     let _page_data = detail.data.data;
     this.is_story = _page_data.is_story;
-    this.show_input_2 = _page_data.show_input_2;
+    this.show_input_1 = _page_data.show_input_1;
     let voteList = _page_data.votedata;
     if(voteList){
       // 是否存在投票
@@ -803,6 +816,7 @@ export default class Detail extends wepy.page {
     this.Article_author = _page_data.author;
     this.Article_collect = _page_data.is_collect;
     this.Article_collect_Num = _page_data.collecttimes;
+    this.recommendList = _page_data.recommendList;
 
     this.systemInfo = wx.getStorageSync('systemInfo');
     this.$apply();
@@ -999,6 +1013,7 @@ export default class Detail extends wepy.page {
     this.Article_author = _page_data.author;
     this.Article_collect = _page_data.is_collect;
     this.Article_collect_Num = _page_data.collecttimes;
+    this.recommendList = _page_data.recommendList;
     this.page = 2;
     this.$apply();
     wx.stopPullDownRefresh();
@@ -1215,18 +1230,9 @@ export default class Detail extends wepy.page {
          this.$apply();
       }
     },
-    // 删除发送图片
-    deleteAddImage(e){
-       let dataset = e.currentTarget.dataset;
-       let commImageArr = this.commImageArr;
-        commImageArr.splice(dataset.idx,1);
-       this.commImageArr = commImageArr;
-       this.$apply();
-    },
     // 取消发送
     cencalComment(){
       this.inputShow = false;
-      this.commImageArr = [];
       this.commContent = '';
       this.$apply();
     },
@@ -1238,56 +1244,6 @@ export default class Detail extends wepy.page {
       wx.previewImage({
         current: dataset.arr[dataset.idx], 
         urls: dataset.arr 
-      })
-    },
-    // 点击评论添加图片
-    async addCommImage(){
-      let that = this;
-      let QiNiuToken = await utils.getQiNiuToken();
-      let _qiniu_token = QiNiuToken.upload_token;
-      let commImageArr = this.commImageArr;
-      let _commImageArr = [];
-      let commentDom = this.commentDom;
-      let len = 0;
-      console.log('图片评论对象', this.commentDom)
-      wx.chooseImage({
-        count: 9, // 默认9
-        sizeType: ['compressed'],
-        sourceType: ['album','camera'],
-        success: function (res) {
-          var tempFilePaths = res.tempFilePaths;
-          console.log('tempFilePaths', tempFilePaths)
-          tips.loading('上传中');
-          len = tempFilePaths.length;
-          for(let i=0;i<len;i++){
-               qiniuUploader.upload(tempFilePaths[i], (res) => {
-                  _commImageArr.push('https://gcdn.playonwechat.com'+res.imageURL);
-                  console.log(i+' '+ (len-1))
-                  if(i===len-1){
-                    that.commImageArr = commImageArr.concat(_commImageArr).slice(0,10);
-                    that.commentDom = commentDom;
-                    that.$apply();
-                  }
-                  console.log('这里是上传的图片列表', _commImageArr);
-                  
-                  wx.hideLoading();
-                }, (error) => {
-                  console.log('error: ' + error);
-                  wx.hideLoading();
-                }, {
-                  region: 'SCN',
-                  uptoken: _qiniu_token, 
-                  uptokenFunc: function() {
-                    return '[yourTokenString]';
-                  }
-                }, (res) => {
-                  console.log('上传进度', res.progress)
-                  console.log('已经上传的数据长度', res.totalBytesSent)
-                  console.log('预期需要上传的数据总长度', res.totalBytesExpectedToSend)
-                });
-          }
-
-        }
       })
     },
     // 已授权点击写评论
@@ -1375,6 +1331,11 @@ export default class Detail extends wepy.page {
        this.saveFormId(formId);
         wx.switchTab({url:'/pages/news/main'});
         wxRequest(api.clickbutton,{type:'news'},'POST');
+    },
+    // 文章内部回首页
+    ArticleBtnToHome(e){
+       wx.switchTab({url:e.currentTarget.dataset.url});
+       wxRequest(api.clickbutton,{type:'indexnews'},'POST');
     },
     // input失去焦点
     inputBlur() {

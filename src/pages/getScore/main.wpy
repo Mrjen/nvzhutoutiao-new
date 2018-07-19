@@ -67,7 +67,7 @@ export default class getScore extends wepy.page{
   }
   
   onLoad(options){
-    wx.setBackgroundColor({backgroundColor: '#7c48c6'});
+    try {wx.setBackgroundColor({backgroundColor: '#7c48c6'}); } catch (error) {}
   }
 
   async onShow(){

@@ -2,7 +2,7 @@
   <view class="exchange-main">
       <!-- 输入账号 -->
       <view class="f-input" wx:if="{{typeAccount=='virtual'}}">
-          <input type="text" @input="inputAccount" placeholder="在此输入需要充值手机号/账号"/>
+          <input type="text" @input="inputAccount" placeholder="在此输入需要充值手机号"/>
       </view>
       <block wx:else>
           <view  wx:if="{{address.id?true:false}}" @tap="EditAddress">

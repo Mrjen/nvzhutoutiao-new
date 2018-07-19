@@ -57,12 +57,13 @@
           <view class="readBg">
             <image class="message" src="{{item.iconPath}}" />
             <view class="messageTxt">{{item.text}}</view>
+            <view class="lottery" wx:if="{{index===1}}"></view>
             <view class="msg-tag" wx:if="{{item.msgNum>0?true:false}}">{{item.msgNum}}</view>
           </view>
           <image class="jump" src="../image/jump.png" />
         </navigator>
 
-        <view class="wxtext">
+        <view class="wxtext" wx:if="{{insertnum>3?false:true}}">
           <view class="text-l">
             <view class="text01">添加<text class="text-bold">萤宝宝</text>微信，实时获取福利秘籍哟</view>
             <view class="text02">微信号：INBaby922 </view>
@@ -92,7 +93,8 @@ export default class myCenter extends wepy.page {
       comment: 20,
       like: 17
     },
-    userInfo: {},
+    userInfo: {},            // 用户信息
+    insertnum: null,         // 用户来到个人中心次数
     listData: [
       //   {
       //     url: '/pages/message/main',
@@ -161,7 +163,6 @@ export default class myCenter extends wepy.page {
       wx.setClipboardData({
         data: 'INBaby922',
         success: function(res) {
-          // tips.success('复制成功')
           tips.alertText('微信号已复制');
         }
       })
@@ -201,6 +202,8 @@ export default class myCenter extends wepy.page {
       let _info = info.data.data;
       let listNav = this.listNav;
       let listData = this.listData;
+      let insertnum = info.data.data.insertnum;
+      this.insertnum = insertnum;
       this.todaySign = _info.is_signin;
       console.log('_info.id', _info.id);
       listNav[0].num = _info.likeNum;
@@ -210,7 +213,7 @@ export default class myCenter extends wepy.page {
       // listNav[3].url = `../followers/main?user_id=${_info.id}`;
       this.listNav = listNav;
       if (_info.msgNum > 0) {
-        wx.setTabBarBadge({ index: 2, text: _info.msgNum.toString() });
+        wx.setTabBarBadge({ index: 3, text: _info.msgNum.toString() });
       } else {
         wx.removeTabBarBadge({ index: 3 });
       }
@@ -221,6 +224,9 @@ export default class myCenter extends wepy.page {
       }
       this.lvIconArr = lvIconArr;
       this.$apply();
+
+      let json = await wxRequest(api.saveUserInfo,{insertnum:Number(insertnum)+1});
+
     }
   }
 
@@ -446,4 +452,45 @@ page {
   }
 }
 
+// 气泡
+.lottery{
+    width: 70rpx;
+    height: 30rpx;
+    line-height: 60rpx;
+    font-size: 18rpx;
+    text-align: center;
+    position:absolute;
+    left: 220rpx;
+    top:10rpx;
+    color: #fff;
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIMAAAA5CAMAAAAiEmhHAAAAhFBMVEUAAAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/////nJz/0dH/a2v/Jib/9PT/uLj/3d3/WFj/6en/jY3/QkL/qqr/xcX/fX1dE7kKAAAAHHRSTlMA+4O8J+ipAT0ww3wT81/XzLGMah8JBeOcS5Vre0slMwAAAvBJREFUWMPNmety2jAQRuOkhJCQJmmbppf9ZF19ff/3qxAmMtisyYzq+PxAaGCY49VqjVdXI2yu71cZ/V+y1c3Dl6tzbG5oLl7GLdYPGc1H9n1M4RfNy/XQ4ZrmZhCJu4zmJjvNiWean9uTMNBncByIbzQHfFo+0Wdw31f4yWSkEHIw55BC0B4z8U1a9R22dB5ADOYcAqBABdTEkp2kQwKH6tjBABXxHO2KFA5Gt9EhhCGXEcU7bN9SODgNlD2HBkdI3uGWUjgECfPuIPERh6+UxoGU9RKdg9LQMfy5n3AOPx7pHLJ3GTmGDCXeHWxYmI5y5804rO8pmQNVdbcWBjBKkOcQE87hgc5TCQ+Q+9cqRyE83dxjgLP1wX9mlUGuaIfdhYFx2GTEEdc/R340JznuoBqAWm2Vd0Dh9nWiIcbh9YmSOjgDjx/VPiJaqhATzuEPpXQoLQLvc+1DERQYh9+UzsEZDY8xQD+pgwLjsF2lc2jh0aKK9wtSQoO/b8UCOelQCSunHJQPu1CxVquygaeQxBAL5JSDBlBNrkVdxr2pjIXHWxFLKJATqNYU2GEph5UBwIRRMPXBf9uTe6sJhxuaokR3NVX41RM4B6ebsiJK4CAAdEXucocyD4tm/DDJBRtTWlF9tE7GFG0ucFg/EyWsD6XoY7rbSkSO7ou7pA45eARTH1I51HmPAh6d9ylHHfzuTOMwxAI5IGmC+DcuvUMNGKWh3aRDXI3EDgIoFDlAtxc4bN/SO6gG0K4rcbViHQKbx8QOSuigsKPdvRVqwmE6JdzB4ZDmPs5htGMOrtYAbHWYWngLUyrOgW9EuUaIAmgvq9WuNPstKSgiNDxeuxaMw5rJS+zQau9QiNNKeBIvzzD2ShTnH7Ri8+GFdbCOYj5EhjUqhL2lsQWyQM0/b77e0DROupPkk/J4zrY8+OfuKDE/TB9mLjKmHzUXq6X15RbRn1xCn3YJ/epF9O2XcH6xiHOcuc+z/i71XO8zzjf/AdG3+mGRwPoHAAAAAElFTkSuQmCC');
+    background-size: 100% 100%;
+    animation: bounce 1.5s infinite;
+}
+
+@keyframes bounce {
+  0%, 100%, 20%, 53%, 80% {
+    -webkit-transition-timing-function: cubic-bezier(0.215, .61, .355, 1);
+    transition-timing-function: cubic-bezier(0.215, .61, .355, 1);
+    -webkit-transform: translate3d(0, 0, 0);
+    -ms-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0)
+  }
+  40%,
+  43% {
+    -webkit-transition-timing-function: cubic-bezier(0.755, .050, .855, .060);
+    transition-timing-function: cubic-bezier(0.755, .050, .855, .060);
+    transform: translate3d(0, -20rpx, 0)
+  }
+  70% {
+    -webkit-transition-timing-function: cubic-bezier(0.755, .050, .855, .060);
+    transition-timing-function: cubic-bezier(0.755, .050, .855, .060);
+    transform: translate3d(0, -13rpx, 0)
+  }
+  90% {
+    -webkit-transform: translate3d(0, -4rpx, 0);
+    -ms-transform: translate3d(0, -4rpx, 0);
+    transform: translate3d(0, -4rpx, 0)
+  }
+}
 </style>

@@ -323,8 +323,13 @@ function ApplyUpdate(){
 
 // 获取用户是否有未读消息
 async function upDataMsgTag(){
-   let msg = await wxRequest(api.getUserInfo,{token:wx.getStorageSync('token')}, 'POST');
-    // console.log('msgmsgmsgmsg',msg.data.data)
+   let data = {};
+   let token = wx.getStorageSync('token');
+   if(!token){
+      let _token = await getToken();
+      data.token = _token.data.data.token;
+   }
+   let msg = await wxRequest(api.getUserInfo, data, 'POST');
     if (msg.data.code === api.STATUS){
       wx.setStorage({key:'userInfo', data: msg.data.data});
       // 用户是否有未读通知

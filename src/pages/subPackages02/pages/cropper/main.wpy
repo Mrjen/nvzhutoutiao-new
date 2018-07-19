@@ -27,7 +27,7 @@
 import wepy from 'wepy';
 import WeCropper from 'we-cropper';
 import utils from '@/utils/utils.js';
-import tips from '../../utils/tips.js';
+import tips from '@/utils/tips.js';
 
 export default class wxcropper extends wepy.page {
   config = {
@@ -172,11 +172,11 @@ export default class wxcropper extends wepy.page {
               console.log('upImageArr', upImageArr);
               let url = '';
               if (that.options.type === 'cover') {
-                url = `../EditDayQuote/main?cover=${upImageArr[0]}&from=copper`;
+                url = `/pages/subPackages02/pages/EditDayQuote/main?cover=${upImageArr[0]}&from=copper`;
               } else if (that.options.type === 'logo') {
-                url = `../EditDayQuote/main?logo=${upImageArr[0]}&from=copper`;
+                url = `/pages/subPackages02/pages/EditDayQuote/main?logo=${upImageArr[0]}&from=copper`;
               } else if (that.options.type === 'avatar') {
-                url = `../editUserInfo/main?avatar=${upImageArr[0]}`;
+                url = `/pages/subPackages02/pages/editUserInfo/main?avatar=${upImageArr[0]}`;
               }
               console.log('url', url);
               wx.redirectTo({ url: url });

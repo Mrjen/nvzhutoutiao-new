@@ -7,8 +7,6 @@
       </view>
   </view>
 
-  <!-- <lotter></lotter> -->
-
   <!-- 商城主体 -->
 <block> 
   <view class="shop-main">
@@ -30,6 +28,9 @@
     <view class="shop-bar"></view>
 
     <view class="shop-list">
+       <navigator class="p-item" url="/pages/subPackages02/pages/fruitMachine/main">
+         <image class="banner" src="https://gcdn.playonwechat.com/nvzhu/lottery-banner.png" mode="widthFix"/>
+       </navigator>
        <view class="p-item" 
              wx:for="{{shopList}}" 
              wx:key="{{index}}">
@@ -126,13 +127,9 @@ import wxRequest from '../../../../utils/http.js';
 import api from '../../../../utils/api.js';
 import tips from '../../../../utils/tips.js';
 
-import lotter from '../../../../components/lotter';
 export default class shop extends wepy.page {
   config={
     navigationBarTitleText:'积分商城'
-  }
-  components={
-    lotter
   }
   data = {
      signList:[],
@@ -154,9 +151,6 @@ export default class shop extends wepy.page {
     // 兑换商品
     Exchange(e){
        let dataset = e.currentTarget.dataset;
-       console.log(dataset.score)
-       console.log(this.integral)
-       console.log(Number(dataset.score)>Number(this.integral))
        if(Number(dataset.score)>Number(this.integral)){
           wx.showModal({
             title: '您的积分还不够兑换',
@@ -233,7 +227,7 @@ export default class shop extends wepy.page {
   }
 
   onLoad(){
-    wx.setBackgroundColor({backgroundColor: '#7c48c6'})
+    try {wx.setBackgroundColor({backgroundColor: '#7c48c6'}); } catch (error) {}
   }
 
   async onShow(){
@@ -638,6 +632,9 @@ export default class shop extends wepy.page {
       border-radius: 6rpx;
       margin-bottom: 20rpx;
       box-shadow: 0 0 17rpx 0 rgba(102, 63, 157, 0.1);
+      .banner{
+        width: 100%;
+      }
     }
     .p-cover{
       width: 240rpx;
