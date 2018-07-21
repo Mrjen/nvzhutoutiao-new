@@ -22,7 +22,6 @@
                   {{item.type}}
                 </button>
               </form>
-               
             </view>
          </scroll-view>
       </view>
@@ -95,11 +94,8 @@
   <lotteryPopup @closeLottery.user="closeLottery"
                 :showLottery.sync="showLottery"></lotteryPopup>
 
- <!--这里显示无网络状态-->
- <view class="no-network" style="">
-    <view class="re-reload"></view>
- </view>
-
+  <!--无网络-->
+  <noNetwork @onLoad.user="ReonLoad" :showReload.sync="showReload"></noNetwork>
 
 </view>
 </template>
@@ -111,31 +107,37 @@ import api from '@/utils/api.js';
 import utils from '@/utils/utils.js';
 import Loading from '@/components/loading';
 import lotteryPopup from '@/components/lotteryPopup';
+import noNetwork from '@/components/noNetwork';
 
 let touchDot = 0;
 let time = 0;
 let interval = 0;
 export default class News extends wepy.page {
-  config={
-  }
+  config={}
   components = {
     Loading,
-    lotteryPopup
+    lotteryPopup,
+    noNetwork
   }
 
   data = {
     typeNav:[],
-    currentTypeId: '',           // 当前处文章在什么
-    currentTypeIdx: 0,           // 当前处于导航的index
-    page: 2,                     // 加载的数据处于的page
-    arcitleList:[],              // 文章列表
-    showLoading: false,          // 是否显示加载中
-    rand: 0,                     // 是否启用随机加载
-    touchMoveEnd: true,          // 触摸结束
+    currentTypeId: '',            // 当前处文章在什么
+    currentTypeIdx: 0,            // 当前处于导航的index
+    page: 2,                      // 加载的数据处于的page
+    arcitleList:[],               // 文章列表
+    showLoading: false,           // 是否显示加载中
+    rand: 0,                      // 是否启用随机加载
+    touchMoveEnd: true,           // 触摸结束
     loadEnd: true,                // 请求完成
-    showLottery: 0            // 是否显示抽奖弹层
+    showReload: false,            // 是否显示无网络
+    pageOptions: '',              // 页面进入参数
+    showLottery: 0                // 是否显示抽奖弹层
   }
   methods = {
+    ReonLoad(){
+      this.onLoad(this.pageOptions);
+    },
     // 关闭抽奖弹层
     closeLottery(){
       this.showLottery = 0;
@@ -204,10 +206,6 @@ export default class News extends wepy.page {
          wxRequest(api.saveFormId, { formid: e.detail.formId },'post');
       }
     },
-    // 触顶加载
-    scrollPageTop(e){
-       
-    },
     // 触底加载更多
     async scrollPageBottom(){
       console.log('触底了');
@@ -247,7 +245,8 @@ export default class News extends wepy.page {
             that.arcitleList = [...oldList,...data.article_list];
             that.$apply();
           }else{
-
+            that.arcitleList = [...data.article_list,...oldList];
+            that.$apply();
           }
         }else if(data.article_list.length===0){
           that.page = 1;
@@ -261,21 +260,28 @@ export default class News extends wepy.page {
 
   async onLoad(options){
     let that = this;
-    let data = await this.getList('1');
-    let typeNav = data.newsType;
-    typeNav.map(el=>{
-      el.active = false;
-    })
-    typeNav[0].active = true;
-    this.typeNav = typeNav;
-    this.currentTypeId = typeNav[0].news_type_id;
-    this.arcitleList = data.article_list;
+    this.pageOptions = options;
     this.$apply();
-   // 检查用户是否是从别的用户分享而来
-    if (options.share_user_id){
-        console.log('此用户从邀请新朋友进入小程序');
-        wxRequest(api.getintegralshare,{share_user_id:options.share_user_id},'POST')
+    try {
+      let data = await this.getList('1');
+      let typeNav = data.newsType;
+      typeNav.map(el=>{
+        el.active = false;
+      })
+      typeNav[0].active = true;
+      this.typeNav = typeNav;
+      this.currentTypeId = typeNav[0].news_type_id;
+      this.arcitleList = data.article_list;
+      this.showReload = utils.hasData(this.arcitleList);
+    // 检查用户是否是从别的用户分享而来
+      if (options.share_user_id){
+          console.log('此用户从邀请新朋友进入小程序');
+          wxRequest(api.getintegralshare,{share_user_id:options.share_user_id},'POST')
+      }
+    } catch (error) {
+      this.showReload = utils.hasData(this.arcitleList);
     }
+    this.$apply();
     
   }
 

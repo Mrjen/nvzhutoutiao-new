@@ -1,11 +1,9 @@
 <template>
-  <scroll-view 
-     class="detail" 
-     scroll-y 
-     scroll-into-view="{{toView}}" 
-     enable-back-to-top
-     style="width:100vw;height:100vh;box-sizing:border-box;background:#fff;" @scrolltolower="LoadMore">
+<view class="detail">
         <!-- 话题主题 -->
+      <view class="page-video">
+      <!-- <video class="page-video" autoplay  src="http://119.147.39.233/69750B6863A3C717F1D4B3928/03000A07005B20F1669A8E34533396AE0F1C0D-910E-46E2-9E0C-FC60CAA560D3.mp4?ccode=0502&duration=393&expire=18000&psid=f77fe7ae741a9286122c767e839bdf25&sp=&ups_client_netip=716eb1a8&ups_ts=1532000613&ups_userid=&utid=r5OdE%2BoQ3kcCAXFu0vLxC3n8&vid=XMzY2MDI5NDM0MA%3D%3D&vkey=B8bf29ee40042de39d2adc45d26692753&s=dca053efbfbd36efbfbd&ali_redirect_domain=vali-dns.cp31.ott.cibntv.net"></video> -->
+      </view>
       <view class="topic" id="topic">
         <view class="topic_top">
           <view class="topic_title">{{ArticleTtictle}}</view>
@@ -33,7 +31,7 @@
 
           <view class="article-info">
               <view class="info-item brower"><text>阅读</text>{{Article_readtimes}}</view>
-              <view class="comment" wx:if="{{show_input_1}}">加入粉丝福利群<button open-type="contact">回复1进群</button></view>
+              <view class="comment" wx:if="{{show_input_2}}">加入粉丝福利群<button open-type="contact">回复1进群</button></view>
           </view>
         </view>
 
@@ -83,10 +81,10 @@
                         class="head_img" 
                         style="border-radius:50%;overflow:hidden"
                         @tap="toUserCenter({{comm.user_id}}, {{comm.is_self}})"/>
-                    <view class="head-reward" 
+                    <!-- <view class="head-reward" 
                           data-uid="{{comm.user_id}}"
                           data-comid="{{comm.id}}"
-                          @tap="RewardBtn">赏</view>
+                          @tap="RewardBtn">赏</view> -->
                 </view>
                 <view>
                   <view class="display_flex flex_warp">
@@ -292,10 +290,10 @@
                         class="head_img" 
                         style="border-radius:50%;overflow:hidden"
                         @tap="toUserCenter({{comm.user_id}}, {{comm.is_self}})"/>
-                    <view class="head-reward" 
+                    <!-- <view class="head-reward" 
                           data-uid="{{comm.user_id}}"
                           data-comid="{{comm.id}}"
-                          @tap="RewardBtn">赏</view>
+                          @tap="RewardBtn">赏</view> -->
                 </view>
                 <view>
                   <view class="display_flex flex_wrap">
@@ -474,11 +472,11 @@
 
    <block>
 
-    <view class="botm-bar" wx:if="{{show_input_1}}">
+    <view class="botm-bar" wx:if="{{show_input_2}}">
       <block>
         <view class="is_userinfo">
-          <button class="btn-input" wx:if="{{is_accredit=='1'}}" @tap="writeComment">评论有赏...</button>
-          <button class="btn-input no_userinfo" wx:else open-type="getUserInfo" lang="zh_CN" @getuserinfo="getUserInfo">评论有赏....</button>
+          <button class="btn-input" wx:if="{{is_accredit=='1'}}" @tap="writeComment">说说你的看法...</button>
+          <button class="btn-input no_userinfo" wx:else open-type="getUserInfo" lang="zh_CN" @getuserinfo="getUserInfo">说说你的看法....</button>
         </view>
       </block>
 
@@ -553,9 +551,7 @@
               @TapEditMoney.user="TapEditMoney"
               @payMoney.user="payMoney"
               @changeRewardMoney.user="changeRewardMoney"></RewardPoup>
-
-
-</scroll-view>
+</view>
 </template>
 
 <script>
@@ -700,7 +696,7 @@ export default class Detail extends wepy.page {
         active: false
       }],   
     fromPage: '',                        // 来自页面
-    show_input_1: 0,                     // 是否显示入群
+    show_input_2: 0,                     // 是否显示入群
     is_letter: 0                         // 文章类型是解忧
 
   };
@@ -758,10 +754,15 @@ export default class Detail extends wepy.page {
       console.log('滚动到评论')
       reid = options.reid;
       data.reid = options.reid;
-      setTimeout(()=>{
-        that.toView = `cc${options.reid}`;
+      this.toView = `cc${options.reid}`;
+      this.$apply();
+      setTimeout(async ()=>{
+        let position = await utils.getElementRact(`cc${options.reid}`);
+        wx.pageScrollTo({
+          scrollTop: position[0].top,
+          duration: 500
+        })
         that.$apply();
-        console.log('that.toView', that.toView)
       },500)
     }
     
@@ -775,7 +776,7 @@ export default class Detail extends wepy.page {
     // 这里数据字节过大，把数据拆分分次传递
     let _page_data = detail.data.data;
     this.is_story = _page_data.is_story;
-    this.show_input_1 = _page_data.show_input_1;
+    this.show_input_2 = _page_data.show_input_2;
     let voteList = _page_data.votedata;
     if(voteList){
       // 是否存在投票
@@ -1257,16 +1258,14 @@ export default class Detail extends wepy.page {
        this.$apply();
     },
     // 点击滚动到评论
-    toComment(){
+    async toComment(){
       console.log('滚动到评论')
       let that = this;
-      if(this.toView==='comm'){
-         this.toView = 'topic';
-         this.$apply();
-      }else{
-         this.toView = 'comm';
-         this.$apply();
-      }
+      let position = await utils.getElementRact(`comm`);
+      wx.pageScrollTo({
+        scrollTop: position[0].top,
+        duration: 500
+      })
     },
     // 点击投票
     async VoteBtn(){
@@ -1718,6 +1717,10 @@ export default class Detail extends wepy.page {
   }
 }
 
+.detail{
+  background: #fff;
+}
+
 page {
   background-color: #eeeeee;
 }
@@ -2003,7 +2006,7 @@ page {
 .commentsTxt {
   color: #333333;
   font-size: 28rpx;
-  margin: -14rpx 13rpx 30rpx 97rpx;
+  margin: 10rpx 13rpx 30rpx 97rpx;
   padding: 0;
   background: transparent;
   text-align: justify;

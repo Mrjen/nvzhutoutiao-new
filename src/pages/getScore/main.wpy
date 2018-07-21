@@ -79,11 +79,11 @@ export default class getScore extends wepy.page{
       workList[0] = {...workList[0], text:'登录', url:'', navtype:'nav', btnText: '去登录',tips: ''};
       workList[1] = {...workList[1], text:'签到', url:'/pages/checkIn/main', navtype:'nav', btnText: '去签到'};
       workList[2] = {...workList[2], text:'点亮5次', url:'/pages/index/main', navtype:'switch', btnText: '去点亮',tips: '点亮文章/话题/评论+10/次'};
-      workList[3] = {...workList[3], text:'打赏5次', url:'/pages/index/main', navtype:'switch', btnText: '去打赏',tips: '打赏评论人+20/次'};
-      workList[4] = {...workList[4], text:'评论5次', url:'/pages/index/main', navtype:'switch', btnText: '去评论',tips: '评论文章/话题+20/次'};
-      workList[5] = {...workList[5], text:'热门评论2次', url:'/pages/index/main', navtype:'switch', btnText: '去评论',tips: '评论被点亮20次上热门 +50/次'};
-      workList[6] = {...workList[6], text:'分享文章', url:'/pages/news/main', navtype:'switch', btnText: '去分享',tips: '好友阅读文章/话题+20/人'};
-      workList[7] = {...workList[7], text:'邀请新朋友', url:'/pages/news/main', navtype:'switch', btnText: '去邀请',tips: '每增加一位新朋友+20'};
+      // workList[3] = {...workList[3], text:'打赏5次', url:'/pages/index/main', navtype:'switch', btnText: '去打赏',tips: '打赏评论人+20/次'};
+      workList[3] = {...workList[3], text:'评论5次', url:'/pages/index/main', navtype:'switch', btnText: '去评论',tips: '评论文章/话题+20/次'};
+      workList[4] = {...workList[4], text:'热门评论2次', url:'/pages/index/main', navtype:'switch', btnText: '去评论',tips: '评论被点亮20次上热门 +50/次'};
+      workList[5] = {...workList[5], text:'分享文章', url:'/pages/news/main', navtype:'switch', btnText: '去分享',tips: '好友阅读文章/话题+20/人'};
+      workList[6] = {...workList[6], text:'邀请新朋友', url:'/pages/news/main', navtype:'switch', btnText: '去邀请',tips: '每增加一位新朋友+20'};
 
       this.work = data;
       this.workList = workList;
@@ -239,19 +239,19 @@ export default class getScore extends wepy.page{
   .w-icon2{
     background-position: -92rpx -184rpx;
   }
+  // .w-icon3{
+  //   background-position: -184rpx 0;
+  // }
   .w-icon3{
-    background-position: -184rpx 0;
-  }
-  .w-icon4{
     background-position: 0 0;
   }
-  .w-icon5{
+  .w-icon4{
     background-position: -92rpx 0;
   }
-  .w-icon6{
+  .w-icon5{
     background-position: -184rpx -92rpx;
   }
-  .w-icon7{
+  .w-icon6{
     background-position: 0 -92rpx;
   }
   .w-left{

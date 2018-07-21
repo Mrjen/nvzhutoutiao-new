@@ -1,0 +1,55 @@
+<template>
+ <!--这里显示无网络状态-->
+ <view class="no-network" wx:if="{{showReload}}">
+    <view class="reload-icon"><image src="../pages/image/no-network.png" style="width:205rpx;height:234rpx;"/></view>
+    <button class="re-reload" @tap="ReLoad">重新加载页面</button>
+ </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+export default class noNetwork extends wepy.component  {
+  props={
+    showReload:{
+      type: Boolean,
+      default: true
+    }
+  }
+  methods={
+    ReLoad(){
+      this.$emit('onLoad');
+    }
+  }
+}
+</script>
+
+<style lang="less" scoped>
+// 没有网络
+.no-network{
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  .re-reload{
+    display: flex;
+    background: transparent;
+    width: 262rpx;
+    height: 83rpx;
+    line-height: 83rpx;
+    padding: 0;
+    text-align: center;
+    border:1px solid #a1a1a1;
+    border-radius: 50rpx;
+    margin:50rpx auto;
+    justify-content: center;
+    font-size: 26rpx;
+  }
+}
+</style>

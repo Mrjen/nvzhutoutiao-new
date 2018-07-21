@@ -353,6 +353,22 @@ function getSystemInfoSync(){
   })
 }
 
+// 获取某元素距离页面顶部的距离
+function getElementRact(el){
+  console.log('elelel',el)
+  let query = wx.createSelectorQuery();
+  query.select('#'+el).boundingClientRect();
+  return new Promise((resolve,reject)=>{
+    query.exec((res)=>{
+       resolve(res)
+    })
+  })
+}
+
+function hasData(arr){
+  return arr.length? false : true;
+}
+
 export default {
   formatTime,
   getUserInfo,
@@ -373,5 +389,7 @@ export default {
   upLoadImageQiNiu,
   ApplyUpdate,
   upDataMsgTag,
-  getSystemInfoSync
+  getSystemInfoSync,
+  getElementRact,
+  hasData
 };

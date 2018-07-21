@@ -43,7 +43,7 @@ export default class inputComment extends wepy.page {
     follow_index: '',                     // 大评论的index
     user_id: '',                          // 用户id
     options:{},
-    inputPlaceholder: '认真评论可能获得赞赏哦...',
+    inputPlaceholder: '认真的评论容易上热门哦...',
     commTitle: '',
     recomment:'',
     commImageArr: [],                     // 图片数组

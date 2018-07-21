@@ -71,7 +71,7 @@
                       </view>
                     </view>
                 </view>
-                <view class="main-right">
+                <view class="main-right cover-box">
                     <image mode="aspectFill" class="cover" src="{{item.article_cover}}"/>
                 </view>
              </button>
@@ -146,23 +146,28 @@
          </button>
       </form>
 
+  <!--无网络-->
+  <noNetwork @onLoad.user="ReonLoad" :showReload.sync="showReload"></noNetwork>
+      
+
   </view>
 </template>
 
 <script>
 import wepy from 'wepy';
-import wxRequest from '../../utils/http.js';
-import api from '../../utils/api.js';
-import utils from '../../utils/utils';
-import userAuth from '../../utils/userMethod/userAuth.js';
-import myToast from '../../components/myToast';
+import wxRequest from '@/utils/http.js';
+import api from '@/utils/api.js';
+import utils from '@/utils/utils';
+import userAuth from '@/utils/userMethod/userAuth.js';
+import myToast from '@/components/myToast';
 import check from './components/check';
 import redPack from './components/redpack';
 import redPackOpen from './components/redpackOpen';
 import joinGrop from './components/joinGroup';
-import tips from '../../utils/tips.js';
-import Loading from '../../components/loading';
+import tips from '@/utils/tips.js';
+import Loading from '@/components/loading';
 import lotteryPopup from '@/components/lotteryPopup';
+import noNetwork from '@/components/noNetwork';
 
 const app = getApp();
 
@@ -170,76 +175,80 @@ export default class Index extends wepy.page {
   config = {
     navigationBarTitleText: '萤火虫亮了'
   };
-
-  data = {
-    page: 2,
-    loadEnd: false,                         // 请求完成
-    bannerData: [],
-    typeNav: [],                           // 类型标签
-    currentTypeId: '',                     // 当前所在标签id
-    article_list: [],                      // 文章列表
-    loadCount: 1,
-    pagefrom: '',                          // 页面来源 
-
-    token: '',
-
-    //  myToast
-    toastTitle: '',
-    toastJiFen: '',
-    toastJingyan: '',
-    toastShow: false,
-    showLottery: 0,                        // 是否显示抽奖弹层
-
-    // 签到                      
-    show_check: 0,                         // 是否显示签到弹层
-    continue_sign: 0,                      // 连续签到天数
-    total_sign: 0,                         // 总签到天数
-    todayIsCheck: 0,                       // 今天是否已签到
-    showCheck: false,                      // 是否显示签到弹层
-    redPackIsOpen: false,                  // 签到红包被拆开
-    redPackIsShow: false,                  // 是否显示未拆开的红包
-    openRedPackMoney: 0,                   // 拆红包的金额
-    redpackType: 'common',                 // 红包类型 common/签到红包   task/任务红包
-    joinGroup: false,                      // 拼团红包
-    isSelfRedPack: 0,                      // 是否是我自己组团的红包
-    isSecondRedPack: true,                 // 是否显示再拆一个红包按钮
-    hsaIjoin: 0,                           // 我是否已助力
-    is_help: 0,                            // 我今天是否已助力过
-    hasIuserInfo:{},                       // 我的信息
-    checkList: [],                         // 签到列表
-    integral: 0,                           // 签到获得的积分
-    redPacketInfo: {},                     // 我的组团红包信息 
-    redpackStatus: '',                     // 红包状态
-    showJoinPopup: 0,                      // 是否显示红包入口
-    redPackCountDown: {},                  // 红包图标倒计时
-    redPackInCountDown: {},                // 红包助力弹层倒计时  
-    packet_task_id: '',                    // 被助力的红包id
-    showRedPackCountDown: true,            // 显示倒计时
-    isoverdue: 0,                          // 红包是否已过期 0->没过期 1 -> 过期
-    persionList: [{                        // 助力列表
-        id: '',
-        avatarUrl:'',
-        text: '已助力'
-    },{
-        id: '',
-        avatarUrl:'',
-        text: '已助力'
-    },{
-        id: '',
-        avatarUrl:'',
-        text: '已助力'
-    }]                       
-  };
-
   components = {
-    myToast,
-    check,
-    redPack,
-    redPackOpen,
-    joinGrop,
-    Loading,
-    lotteryPopup
-  };
+      myToast,
+      check,
+      redPack,
+      redPackOpen,
+      joinGrop,
+      Loading,
+      lotteryPopup,
+      noNetwork
+    };
+
+    data = {
+      page: 2,
+      loadEnd: false,                         // 请求完成
+      bannerData: [],
+      typeNav: [],                           // 类型标签
+      currentTypeId: '',                     // 当前所在标签id
+      article_list: [],                      // 文章列表
+      loadCount: 1,
+      pagefrom: '',                          // 页面来源 
+
+      token: '',
+      showReload: false,                     // 是否显示无网络状态
+
+      //  myToast
+      toastTitle: '',
+      toastJiFen: '',
+      toastJingyan: '',
+      toastShow: false,
+      showLottery: 0,                        // 是否显示抽奖弹层
+
+      // 签到                      
+      show_check: 0,                         // 是否显示签到弹层
+      continue_sign: 0,                      // 连续签到天数
+      total_sign: 0,                         // 总签到天数
+      todayIsCheck: 0,                       // 今天是否已签到
+      showCheck: false,                      // 是否显示签到弹层
+      redPackIsOpen: false,                  // 签到红包被拆开
+      redPackIsShow: false,                  // 是否显示未拆开的红包
+      openRedPackMoney: 0,                   // 拆红包的金额
+      redpackType: 'common',                 // 红包类型 common/签到红包   task/任务红包
+      joinGroup: false,                      // 拼团红包
+      isSelfRedPack: 0,                      // 是否是我自己组团的红包
+      isSecondRedPack: true,                 // 是否显示再拆一个红包按钮
+      hsaIjoin: 0,                           // 我是否已助力
+      is_help: 0,                            // 我今天是否已助力过
+      hasIuserInfo:{},                       // 我的信息
+      checkList: [],                         // 签到列表
+      integral: 0,                           // 签到获得的积分
+      redPacketInfo: {},                     // 我的组团红包信息 
+      redpackStatus: '',                     // 红包状态
+      showJoinPopup: 0,                      // 是否显示红包入口
+      redPackCountDown: {},                  // 红包图标倒计时
+      redPackInCountDown: {},                // 红包助力弹层倒计时  
+      packet_task_id: '',                    // 被助力的红包id
+      showRedPackCountDown: true,            // 显示倒计时
+      isoverdue: 0,                          // 红包是否已过期 0->没过期 1 -> 过期
+      persionList: [{                        // 助力列表
+          id: '',
+          avatarUrl:'',
+          text: '已助力'
+      },{
+          id: '',
+          avatarUrl:'',
+          text: '已助力'
+      },{
+          id: '',
+          avatarUrl:'',
+          text: '已助力'
+      }],
+      pageOptions:[]                         // 页面进入的参数                       
+    };
+
+  
 
   // 获取首页数据
   async getHomeData(data = {}) {
@@ -256,16 +265,17 @@ export default class Index extends wepy.page {
 
   async onLoad(options) {
     let that = this;
-    console.log('首页数据',options)
-    const code = await utils.getToken();
-    wx.setStorage({ key: 'token', data: code.data.data.token });
-    this.token = code.data.data.token;
+    this.pageOptions = options;
     this.$apply();
-
+    console.log('首页数据',options);
+    let token = wx.getStorageSync('token');
+    if(!token){
+      let code = await utils.getToken();
+      token = code.data.data.token;
+    }
     // 获取文章标签
-    let tag = await wxRequest(api.articletype, {token:code.data.data.token}, 'POST');
+    let tag = await wxRequest(api.articletype, {token}, 'POST');
     if (tag.data.code === api.STATUS) {
-      // console.log(tag.data.data);
       if (tag.data.data.length > 0) {
         tag.data.data.map(el => {
           el.active = false;
@@ -279,12 +289,12 @@ export default class Index extends wepy.page {
 
     // 判断用户是否从别人分享红包进入
     if(options.packet_task_id){
-       this.packet_task_id = options.packet_task_id;
-       this.pagefrom = options.from;
-       this.$apply();
-       let json = await wxRequest(api.onepackettask,{packet_task_id:options.packet_task_id},'POST');
-       console.log('别人的红包信息', json);
-       if(json.data.code===api.STATUS){
+      this.packet_task_id = options.packet_task_id;
+      this.pagefrom = options.from;
+      this.$apply();
+      let json = await wxRequest(api.onepackettask,{packet_task_id:options.packet_task_id},'POST');
+      console.log('别人的红包信息', json);
+      if(json.data.code===api.STATUS){
           let data = json.data.data;
           let persionList = this.persionList;
           for(let i=0;i<3;i++){
@@ -332,12 +342,12 @@ export default class Index extends wepy.page {
             }
 
             if(data.user_id===wx.getStorageSync('userInfo').id){
-               console.log('我自己进来，组团成功了')
-               this.showJoinPopup = true;
-               this.isSecondRedPack = false;
-               this.redPackCountDown = {h:'可领取',m:'',s:''};
-               this.$apply();
-               return;
+              console.log('我自己进来，组团成功了')
+              this.showJoinPopup = true;
+              this.isSecondRedPack = false;
+              this.redPackCountDown = {h:'可领取',m:'',s:''};
+              this.$apply();
+              return;
             }
             this.joinGroup = true;
             this.persionList = data.list;
@@ -349,19 +359,21 @@ export default class Index extends wepy.page {
             this.redPackCountDown = {h:'00',m:'00',s:'00'}
             this.$apply();
           }
-       }
+      }
     }
-
     // 检查用户是否是从别的用户分享而来
     if (options.share_user_id){
         console.log('此用户从别人分享进入小程序');
         wxRequest(api.getintegralshare,{share_user_id:options.share_user_id},'POST')
     }
-
-    
+    this.$apply();
   }
 
  methods = {
+  //  重载页面
+  ReonLoad(){
+    this.onLoad(this.pageOptions);
+  },
   // 关闭抽奖弹层
   closeLottery(){
     this.showLottery = 0;
@@ -645,12 +657,14 @@ export default class Index extends wepy.page {
   onHide() {}
 
   async onShow() {
-    let that = this;
-    // 获取用户是否有未读信息
-    console.log('this.token', this.token)
-      let dataToken = await utils.getToken();
-      console.log('dataToken', dataToken)
-      let token = dataToken.data.token;
+      let that = this;
+      // 获取用户是否有未读信息
+      let token = wx.getStorageSync('token');
+      if(!token){
+        let dataToken = await utils.getToken();
+        token = dataToken.data.token;
+      }
+
       let msg = await wxRequest(api.getUserInfo,{token: token}, 'POST');
       console.log('msg index',msg)
       if (msg.data.code === api.STATUS) {
@@ -849,6 +863,7 @@ export default class Index extends wepy.page {
         }).then(res => {
           console.log('切换导航数据', res);
           that.article_list = res.article_list;
+          that.showReload = utils.hasData(that.article_list);
           if (that.loadCount === 1) {
             let slider = [];
             if(res.slide_list.length<3){
@@ -856,6 +871,7 @@ export default class Index extends wepy.page {
             }else{
               slider = res.slide_list;
             }
+            that.showReload = utils.hasData(that.article_list);
             that.bannerData = slider;
           }
           that.loadCount = 0;
@@ -1030,7 +1046,7 @@ page {
     .title {
       font-size: 32rpx;
       height: 80rpx;
-      padding-right: 80rpx;
+      padding-right: 20rpx;
       margin-bottom: 26rpx;
       display: -webkit-box;
       -webkit-box-orient: vertical;
@@ -1052,10 +1068,10 @@ page {
   }
 }
 
-.main-right {
+.cover-box {
   flex-shrink: 0;
-  width: 170rpx;
-  height: 140rpx;
+  width: 230rpx;
+  height: 146rpx;
   overflow: hidden;
   border-radius: 10rpx;
   display: flex;

@@ -1,11 +1,5 @@
 <template>
-  <scroll-view 
-     class="detail" 
-     scroll-y 
-     scroll-into-view="{{toView}}" 
-     enable-back-to-top
-     @scroll="scrollViewScroll"
-     style="width:100vw;height:100vh;box-sizing:border-box;background:#fff;" @scrolltolower="LoadMore">
+  <view class="detail" >
         <!-- 话题主题 -->
       <view class="topic" id="topic">
         <view class="topic_top">
@@ -623,7 +617,7 @@
         class="click-test {{clickBtnShow?'click-show':'click-hide'}}" 
         @tap="openSkinTest"></view>
 
-</scroll-view>
+</view>
 </template>
 
 <script>
@@ -821,14 +815,20 @@ export default class Detail extends wepy.page {
       page: 1,
       token:wx.getStorageSync('token')||token.data.data.token
     }
+
     if(options.reid){
       console.log('滚动到评论')
       reid = options.reid;
       data.reid = options.reid;
-      setTimeout(()=>{
-        that.toView = `cc${options.reid}`;
+      this.toView = `cc${options.reid}`;
+      this.$apply();
+      setTimeout(async ()=>{
+        let position = await utils.getElementRact(`cc${options.reid}`);
+        wx.pageScrollTo({
+          scrollTop: position[0].top,
+          duration: 500
+        })
         that.$apply();
-        console.log('that.toView', that.toView)
       },500)
     }
     
@@ -1335,18 +1335,18 @@ export default class Detail extends wepy.page {
        wx.setStorage({key: 'commTitle', data: this.ArticleTtictle})
        this.$apply();
     },
+
     // 点击滚动到评论
-    toComment(){
+    async toComment(){
       console.log('滚动到评论')
       let that = this;
-      if(this.toView==='comm'){
-         this.toView = 'topic';
-         this.$apply();
-      }else{
-         this.toView = 'comm';
-         this.$apply();
-      }
+      let position = await utils.getElementRact(`comm`);
+      wx.pageScrollTo({
+        scrollTop: position[0].top,
+        duration: 500
+      })
     },
+
     // 点击投票
     async VoteBtn(){
        // 选项id，文章id
@@ -1740,26 +1740,25 @@ export default class Detail extends wepy.page {
     }
   }
 
-  // 触底加载更多
-  async LoadMore(){
-    console.log('触底了');
-    let showCommType = this.showCommType;
-    let more = await wxRequest(api.commentList, {
-      page: this.page,
-      id: this.ArticleId,
-      desc: showCommType
-    });
-    console.log('more', more);
-    if (more.data.code === api.STATUS) {
-      if (more.data.data.length > 0) {
-        let oldList = this.comment;
-        let comment = [...oldList, ...more.data.data];
-        this.comment = utils.commentUnique(comment);
-        wx.setStorage({key: 'comment', data:this.comment});
-        this.page++;
-        this.$apply();
+  async onReachBottom(){
+      console.log('触底了');
+      let showCommType = this.showCommType;
+      let more = await wxRequest(api.commentList, {
+        page: this.page,
+        id: this.ArticleId,
+        desc: showCommType
+      });
+      console.log('more', more);
+      if (more.data.code === api.STATUS) {
+        if (more.data.data.length > 0) {
+          let oldList = this.comment;
+          let comment = [...oldList, ...more.data.data];
+          this.comment = utils.commentUnique(comment);
+          wx.setStorage({key: 'comment', data:this.comment});
+          this.page++;
+          this.$apply();
+        }
       }
-    }
   }
 }
 </script>
@@ -1783,6 +1782,10 @@ export default class Detail extends wepy.page {
 
 page {
   background-color: #eeeeee;
+}
+
+.detail{
+  background: #fff;
 }
 
 .topic_title {
