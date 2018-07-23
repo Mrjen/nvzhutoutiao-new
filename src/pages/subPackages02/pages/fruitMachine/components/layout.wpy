@@ -27,25 +27,31 @@
        </view>
        <!-- 抽奖按钮 -->
        <block>
-        <view class="marquee_item marquee_item_btn reward-padding" 
-                wx:if="{{rewardPadding}}"></view>
-        <view class="lottery-padding" wx:else>
-            <view class="marquee_item marquee_item_btn" 
-                wx:if="{{lotteryMsg.type==='free'}}" 
-                bindtap="start"></view>
-            <view class="marquee_item marquee_item_btn integral" 
-                wx:if="{{lotteryMsg.type==='integral'}}" 
-                bindtap="start"></view> 
-            <view class="marquee_item marquee_item_btn" 
-                wx:if="{{lotteryMsg.type==='invite'}}" 
-                bindtap="start"></view> 
-            <button class="marquee_item marquee_item_btn share" 
-                wx:if="{{lotteryMsg.type==='invite_person'}}" 
-                data-type="lottery"
-                open-type="share"></button> 
-            <view class="marquee_item marquee_item_btn cant-option" 
-                wx:if="{{lotteryMsg.type==='no'}}"></view> 
-        </view>
+        <button class="marquee_item marquee_item_btn" 
+                wx:if="{{userInfo.is_accredit=='0'}}" 
+                open-type="getUserInfo" 
+                @getuserinfo="getUserInfo"></button>
+        <view wx:elif="{{userInfo.is_accredit=='1'}}">
+            <view class="marquee_item marquee_item_btn reward-padding" 
+                    wx:if="{{rewardPadding&&userInfo.is_accredit=='1'?1:0}}">抽奖中</view>
+            <view class="lottery-padding" wx:else>
+                <view class="marquee_item marquee_item_btn" 
+                    wx:if="{{lotteryMsg.type==='free'}}" 
+                    bindtap="start"></view>
+                <view class="marquee_item marquee_item_btn integral" 
+                    wx:if="{{lotteryMsg.type==='integral'}}" 
+                    bindtap="start"></view> 
+                <view class="marquee_item marquee_item_btn" 
+                    wx:if="{{lotteryMsg.type==='invite'}}" 
+                    bindtap="start"></view> 
+                <button class="marquee_item marquee_item_btn share" 
+                    wx:if="{{lotteryMsg.type==='invite_person'}}" 
+                    data-type="lottery"
+                    open-type="share"></button> 
+                <view class="marquee_item marquee_item_btn cant-option" 
+                    wx:if="{{lotteryMsg.type==='no'}}"></view> 
+            </view>
+          </view>
        </block>
        
        <view class="marquee_item {{machine == 5 ? 'on' : ''}}" >
@@ -103,28 +109,30 @@
 
 <script>
 import wepy from 'wepy';
+import wxRequest from '@/utils/http.js';
+import api from '@/utils/api.js';
 export default class Detail extends wepy.component  {
  data={
 
  }
  props = {
-   machine:{
+   machine:{                    // 中奖位置
      type: Number,
      default: 1
    },
-   giftList:{
+   lotteryList:{                // 奖品列表
      type: Object,
      default: {}
    },
-   lotteryList:{
-     type: Object,
-     default: {}
-   },
-   rewardPadding:{
+   rewardPadding:{              // 是否正在抽奖中
      type: Boolean,
      default: false
    },
-   lotteryMsg:{
+   lotteryMsg:{                 // 中奖弹窗
+     type: Object,
+     default: {}
+   },
+   userInfo:{
      type: Object,
      default: {}
    }
@@ -133,15 +141,22 @@ export default class Detail extends wepy.component  {
     // 开始
     start(){
       this.$emit('fruitMachineStart')
+    },
+    // 获取用户信息
+    async getUserInfo(e){
+       let userInfo = e.detail.userInfo;
+       if (!userInfo) return;
+       userInfo.is_accredit = 1;
+       let json = await wxRequest(api.saveUserInfo,userInfo);
+       if(json.data.code===api.STATUS){
+          this.$emit('fruitMachineStart')
+       }
     }
  }
 
  watch = {
     'machine':function(n,o){
         // console.log('n', n, 'o', o);
-    },
-    'giftList':function(n,o){
-        console.log('n', n, 'o', o);
     }
 }
 

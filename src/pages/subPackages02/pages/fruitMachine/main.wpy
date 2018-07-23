@@ -4,6 +4,7 @@
                   :machine.sync="idx"
                   :lotteryList.sync="lotteryList"
                   :lotteryMsg.sync="lotteryMsg"
+                  :userInfo.sync="userInfo"
                   :rewardPadding.sync="rewardPadding"></rewardLayout>
     <view class="btn-option">
         <navigator class="btn to-shop" 
@@ -22,6 +23,33 @@
         <view class="text">2、每人每天可使用积分兑换2次抽奖机会，每次兑换将消耗200积分</view>
         <view class="text">3、每人每天可通过邀请新朋友获得抽奖机会，最多获得2次抽奖机会</view>
     </view>
+
+  <!-- <view class="adv-view">
+    <view class="adv01">
+       <Adver></Adver>
+    </view>
+    <view class="adv01">
+       <Adver></Adver>
+    </view>
+    <view class="adv01">
+       <Adver></Adver>
+    </view>
+  </view> -->
+
+  <!-- 今日热点 -->
+  <!-- <view class="hot-article">
+     <view class="header">今日热点</view>
+     <view class="a-item">
+        <view class="a-left">
+            <view class="a-title">为什么中国普遍不支持高中生早恋</view>
+            <view class="hot">788</view>
+        </view>
+        <view class="cover">
+           <image src="http://iph.href.lu/230x146?text=cover"/>
+        </view>
+     </view>
+  </view> -->
+    
 
     <!-- 中奖弹窗  :giftList.sync="list"-->
     <rewardPopup :giftList.sync="list" 
@@ -65,10 +93,12 @@ import utils from '@/utils/utils.js';
 import FruitMachine from '../../utils/fruitMachine.js';
 import rewardLayout from './components/layout';
 import rewardPopup from './components/rewardPopup';
+import Adver from './components/adver';
 export default class Detail extends wepy.page  {
   components = {
     rewardLayout,
-    rewardPopup
+    rewardPopup,
+    Adver
   }
   data={
     idx: 1,                   // 中奖位置
@@ -78,7 +108,7 @@ export default class Detail extends wepy.page  {
     rewardShow: false,        // 是否显示中奖弹窗
     rewardPadding: false,     // 是否正在抽奖中
     dmIdx:'',                 // 当前显示弹幕的位置
-    DanMuAnimation:{},
+    userInfo: {},             // 用户信息
     danmu:[],                 // 弹幕列表
     currentDanMu:[],          // 当前轮播的弹幕,         
     sharePosterType: 1        // 分享海报类型 1 2 
@@ -91,6 +121,7 @@ export default class Detail extends wepy.page  {
     this.list = await this.getPrizeList();
     this.lotteryList = JSON.parse(JSON.stringify(this.list.list));
     this.lotteryMsg = JSON.parse(JSON.stringify(this.list.msgArr));
+    this.userInfo = JSON.parse(JSON.stringify(this.list.user));
     this.$apply();
     // 检查是否是从分享红包来的
     if (options.prize_user_id){
@@ -342,6 +373,30 @@ export default class Detail extends wepy.page  {
       margin-right: 10rpx;
       border-radius: 50%;
       overflow: hidden;
+    }
+  }
+
+  // 广告位
+  .adv-view{
+    .adv01{
+      margin-bottom: 20rpx;
+    }
+  }
+
+  // 文章
+  .hot-article{
+    background: #fff;
+    .header{
+      width: 750rpx;
+      height: 88rpx;
+      line-height: 88rpx;
+      display: flex;
+    }
+    .header:before{
+      content: '';
+      display: block;
+      width: 50rpx;
+      height: 50rpx;
     }
   }
 }

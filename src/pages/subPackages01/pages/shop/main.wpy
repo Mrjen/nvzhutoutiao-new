@@ -28,9 +28,9 @@
     <view class="shop-bar"></view>
 
     <view class="shop-list">
-       <navigator class="p-item" url="/pages/subPackages02/pages/fruitMachine/main">
+       <!-- <navigator class="p-item" url="/pages/subPackages02/pages/fruitMachine/main">
          <image class="banner" src="https://gcdn.playonwechat.com/nvzhu/lottery-banner.png" mode="widthFix"/>
-       </navigator>
+       </navigator> -->
        <view class="p-item" 
              wx:for="{{shopList}}" 
              wx:key="{{index}}">

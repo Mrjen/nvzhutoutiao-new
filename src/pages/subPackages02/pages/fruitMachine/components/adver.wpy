@@ -1,0 +1,30 @@
+<template>
+ <view class="adv">
+     <image src="http://iph.href.lu/706x240" />
+ </view> 
+</template>
+
+<script>
+import wepy from 'wepy';
+export default class Adver extends wepy.component  {
+  data = {}
+}
+</script>
+
+<style lang="less">
+.adv{
+    width: 706rpx;
+    height: 240rpx;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transform: translateX(-50%);
+    position: relative;
+    left: 50%;
+    overflow: hidden;
+    border-radius: 10rpx;
+    image{
+      width: 100%;
+    }
+}
+</style>
