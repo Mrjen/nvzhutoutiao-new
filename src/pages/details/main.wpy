@@ -145,10 +145,10 @@
                         class="head_img" 
                         style="border-radius:50%;overflow:hidden"
                         @tap="toUserCenter({{comm.user_id}}, {{comm.is_self}})"/>
-                    <view class="head-reward" 
+                    <!-- <view class="head-reward" 
                           data-uid="{{comm.user_id}}"
                           data-comid="{{comm.id}}"
-                          @tap="RewardBtn">赏</view>
+                          @tap="RewardBtn">赏</view> -->
                 </view>
                 <view>
                   <view class="display_flex flex_warp">
@@ -352,10 +352,10 @@
                         class="head_img" 
                         style="border-radius:50%;overflow:hidden"
                         @tap="toUserCenter({{comm.user_id}}, {{comm.is_self}})"/>
-                    <view class="head-reward" 
+                    <!-- <view class="head-reward" 
                           data-uid="{{comm.user_id}}"
                           data-comid="{{comm.id}}"
-                          @tap="RewardBtn">赏</view>
+                          @tap="RewardBtn">赏</view> -->
                 </view>
                 <view>
                   <view class="display_flex flex_wrap">
@@ -2069,7 +2069,7 @@ page {
 .commentsTxt {
   color: #333333;
   font-size: 28rpx;
-  margin: -14rpx 13rpx 30rpx 97rpx;
+  margin: 10rpx 13rpx 30rpx 97rpx;
   padding: 0;
   background: transparent;
   text-align: justify;
@@ -2140,7 +2140,7 @@ page {
     max-width: 680rpx;
     margin: 0;
     padding: 0;
-    display: block;
+    // display: block;
     // border:1px solid red;
     // position: relative;
     // left: 50%;
