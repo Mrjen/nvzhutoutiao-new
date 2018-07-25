@@ -1,0 +1,17 @@
+<template>
+<view class="vote">
+   
+</view>
+    
+</template>
+
+<script>
+import wepy from 'wepy'
+export default class vote extends wepy.component {
+  data={}
+}
+</script>
+
+<style lang="less" scoped>
+
+</style>

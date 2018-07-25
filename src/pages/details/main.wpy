@@ -540,12 +540,12 @@
         <view class="is_userinfo">
           <button class="btn-input" 
                   wx:if="{{is_accredit=='1'}}" 
-                  @tap="writeComment">评论有赏...</button>
+                  @tap="writeComment">说说你的看法...</button>
           <button class="btn-input no_userinfo" 
                   wx:else 
                   open-type="getUserInfo" 
                   lang="zh_CN" 
-                  @getuserinfo="getUserInfo">评论有赏....</button>
+                  @getuserinfo="getUserInfo">说说你的看法....</button>
         </view>
       </block>
 
