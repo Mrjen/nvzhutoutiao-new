@@ -2023,7 +2023,6 @@ page {
 .content {
   width: 680rpx;
   margin: 0 auto;
-  min-height: 100vh;
   margin-bottom: 80rpx;
 }
 

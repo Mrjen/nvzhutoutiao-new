@@ -10,10 +10,12 @@
               <text class="create_time">{{Article_createtime}}</text>
           </view>
 
+        <!-- <vote></vote> -->    
+
         <!-- 文章正文 -->
         <form bindsubmit="saveFormId" report-submit="true">
           <view class="content" @tap="inputBlur">
-                  <rich-text class="richtext" nodes="{{ArticleContent}}"></rich-text>
+              <!-- <rich-text class="richtext" nodes="{{ArticleContent}}"></rich-text> -->
           </view>
           
           <!-- 肌肤测试 -->
@@ -631,6 +633,8 @@ import utils from '../../utils/utils';
 import myToast from '../../components/myToast';
 import qiniuUploader from '../../utils/qiniuUploader';
 import RewardPoup from '../../components/rewardPopup';
+import vote from '../../components/vote';
+
 export default class Detail extends wepy.page {
   config = {
     navigationBarTitleText: '话题详情'
@@ -768,7 +772,8 @@ export default class Detail extends wepy.page {
 
   components = {
     myToast: myToast,
-    RewardPoup:RewardPoup
+    RewardPoup:RewardPoup,
+    vote:vote
   };
 
   async onLoad(options) {
@@ -2086,7 +2091,6 @@ page {
 .content {
   width: 680rpx;
   margin: 0 auto;
-  min-height: 100vh;
   margin-bottom: 80rpx;
 }
 

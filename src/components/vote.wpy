@@ -1,17 +1,141 @@
 <template>
-<view class="vote">
-   
+<view class="vote-compent">
+    <view class="vote-title">抑郁高发群体，是否具有一些共同特质?11</view>
+    <view class="deadline row row-center">剩余天数：
+      <text class="day">25天</text>
+      <text class="time">22:47:39</text>
+    </view>
+    <view class="main">
+        <view class="cover row row-center">
+            <image src="http://iph.href.lu/690x320" mode="widthFix"/>
+        </view>
+        <block>
+            <view class="vote-main row">
+                <view class="v-item v-left">
+                    <view class="v-title">
+                        <text class="tag tag1">A：</text>
+                        <text class="v-content">是节目组的错应主动联系版权</text>
+                    </view>
+                    <view class="vote-btn vote-btn1 row row-center">投票</view>
+                    <view class="vote-num vote-num1 row row-center"><text>233</text>票</view>
+                </view>
+                <view class="v-item v-right">
+                    <view class="v-title">
+                        <text class="tag tag2">B：</text>
+                        <text class="v-content">是歌手的错歌手应确认版权</text>
+                    </view>
+                    <view class="vote-btn vote-btn2 row row-center">投票</view>
+                    <view class="vote-num vote-num2 row row-center"><text>233</text>票</view>
+                </view>
+            </view>
+            <view class="vote-bar row row-between">
+              <view class="bar bar-left"></view>
+              <view class="bar bar-right"></view>
+            </view>
+        </block>
+    </view>
 </view>
-    
 </template>
 
 <script>
 import wepy from 'wepy'
 export default class vote extends wepy.component {
   data={}
+  props={
+    voteType: {
+       type: Number,
+       default: 2
+    }
+  }
 }
 </script>
 
 <style lang="less" scoped>
+.vote-compent{
+  .vote-title{
+        text-align: center;
+        font-weight: bold;
+        font-size: 34rpx;
+        margin-bottom: 50rpx;
+    }
+    .deadline{
+        .day{
+            color: #f15969;
+        }
+        .time{
+            color: #f15969;
+        }
+    }  
+    .cover{
+        width: 690rpx;
+        height: 320rpx;
+        margin: 40rpx auto 80rpx auto;
+        border-radius: 8rpx;
+        overflow: hidden;
+        image{
+            display: block;
+            width: 690rpx;
+        }
+    }
+    .vote-main{
+        width: 690rpx;
+        margin: 0 auto;
+        .v-title{
+            padding: 0 20rpx;
+        }
+        .vote-btn{
+            color: #fff;
+            width: 240rpx;
+            height: 72rpx;
+            border-radius: 40rpx;
+            margin: 40rpx auto 20rpx auto;
+        }
+        .vote-btn1{
+            background: #bf76d9;
+        }
+        .vote-btn2{
+            background: #56afe9;
+        }
+        .tag1,.vote-num1{
+           color: #bf76d9;
+        }
+        .tag2{
+           color: #56afe9;
+        }
+        .vote-num1{
+           color: #bf76d9;
+           text{
+               display: inline-block;
+               margin-right: 10rpx;
+           }
+        }
+        .vote-num2{
+            color: #56afe9;
+            text{
+               display: inline-block;
+               margin-right: 10rpx;
+           }
+        }
+    }
+    .vote-bar{
+        width: 584rpx;
+        height: 14rpx;
+        margin: 30rpx auto 0 auto;
+        background: #f5f5f5;
+        border-radius: 40rpx;
+        .bar{
+           height: 14rpx;
+           border-radius: 40rpx;
+        }
+        .bar-left{
+            width: 100rpx;
+            background: #bf76d9;
+        }
+        .bar-right{
+            width: 120rpx;
+            background: #56afe9;
+        }
+    }
+}
 
 </style>
